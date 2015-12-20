@@ -1,0 +1,23 @@
+/* main stylesheet */
+
+/* CSS reset */
+body, header, section, footer, figure, h1 {
+  margin:0;
+  border:0;
+  padding:0;
+}
+/* basic body styles */
+body {
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  color: #fff;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+/* semantic element styles */
+header, section, footer {
+  width:100%;
+  border-bottom: 1px solid green;
+}
