@@ -3,7 +3,7 @@
     "unsafe-perm": true
   },
   "scripts": {
-    "preinstall": "npm i -g bower copyfiles rimraf mkdirp browserify uglify mocha",
+    "preinstall": "npm i -g bower copyfiles rimraf mkdirp browserify uglifyjs mocha",
     "build-three": "bower install threejs",
     "build-lib": "copyfiles -f bower_components/three.js/build/three.min.js bower_components/three.js/examples/js/controls/VRControls.js bower_components/three.js/examples/js/effects/VREffect.js node_modules/webvr-polyfill/build/webvr-polyfill.js js/lib",
     "build-app": "browserify src/main.js | uglifyjs > js/webvr-page.js",
