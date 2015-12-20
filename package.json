@@ -1,4 +1,7 @@
 {
+  "config": {
+    "unsafe-perm": true
+  },
   "scripts": {
     "preinstall": "npm i -g bower copyfiles rimraf mkdirp browserify uglify mocha",
     "build-three": "bower install threejs",
