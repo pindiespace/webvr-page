@@ -4,18 +4,22 @@
   },
   "scripts": {
     "preinstall": "npm i -g bower copyfiles rimraf mkdirp browserify uglifyjs mocha",
-    "build-three": "bower install threejs",
-    "build-lib": "copyfiles -f bower_components/three.js/build/three.min.js bower_components/three.js/examples/js/controls/VRControls.js bower_components/three.js/examples/js/effects/VREffect.js node_modules/webvr-polyfill/build/webvr-polyfill.js js/lib",
+    "install-three": "bower install threejs",
+    "install-polyfill": "npm install webvr-polyfill",
+    "install-platform": "npm install platform",
+    "build-three": "copyfiles -f bower_components/three.js/build/three.min.js bower_components/three.js/examples/js/controls/VRControls.js bower_components/three.js/examples/js/effects/VREffect.js js/lib",
+    "build-polyfill": "copyfiles -f node_modules/webvr-polyfill/build/webvr-polyfill.js js/lib",
+    "build-platform": "copyfiles -f node_modules/platform/platform.js js/lib",
     "build-app": "browserify src/main.js | uglifyjs > js/webvr-page.js",
-    "build": "npm run build-lib && npm run build-app",
-    "buildall": "npm install webvr-polyfill && npm run build-three && npm run build-lib && npm run build-app",
+    "build": "npm run build-app",
+    "buildall": "npm run install-platform && npm run build-platform && npm run install-polyfill && npm run build-polyfill npm run install-three && npm run build-three && npm run build-app",
     "lint": "cat src/*.js | jscs",
     "test": "mocha test",
     "start": "node server.js",
     "clean": "rimraf js"
   },
   "devDependencies": {
-    "webvr-polyfill": "latest",
+
     "jshint": "latest",
     "serve-favicon": "latest",
     "express": "latest",
@@ -24,5 +28,9 @@
     "grunt-contrib-copy": "latest",
     "grunt-ftp-push": "latest",
     "copyfiles": "latest"
+  },
+  "dependencies": {
+    "webvr-polyfill": "latest",
+    "platform": "latest"
   }
 }

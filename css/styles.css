@@ -19,5 +19,23 @@ body {
 /* semantic element styles */
 header, section, footer {
   width:100%;
-  border-bottom: 1px solid green;
+  border-bottom: 1px solid red;
+}
+
+/* VR player styles */
+.webvr-page {
+  position:relative;
+  width:80%;
+  height:600px;
+  border:1px solid green;
+}
+
+.webvr-page figcaption {
+  position:absolute;
+  bottom:0;
+}
+
+.webvr-page canvas {
+  width:100%;
+  height:100%;
 }

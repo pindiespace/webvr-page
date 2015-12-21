@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <title>Web VR Page Boilerplate</title>
 <meta charset="utf-8">
 <!--favicon-->
-<link rel="icon" href="/img/favicon.ico?v=1.1">
+<link rel="icon" href="img/favicon.ico?v=1.1">
 <!--set the viewport-->
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 <!--handle iOS and android mobile
@@ -15,29 +14,38 @@ http://www.html5rocks.com/en/mobile/fullscreen/ -->
 <!--android fullscreen-->
 <meta name="mobile-web-app-capable" content="yes">
 <!--hide the Apple status bar-->
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <!--default styles-->
 <link rel="stylesheet" href="css/styles.css">
-
 </head>
 
 <body>
   <header>
     <h1>WebVR - DOM Page-Friendly Boilerplate</h1>
+    <div class="menu">
+      <button id="go-fullscreen">Go Fullscreen</button>
+    </div>
   </header>
   <main>
     <section>
       <h2>Page Section</h2>
       <article id="sample-webvr">
         <!--webvr sample goes here-->
+        <figure class="webvr-page">
+          <canvas id='scene-cube'>Canvas is not enabled, upgrade your browser</canvas>
+          <figcaption>Spinning Cube</figcaption>
+        </figure>
+        <!--second webvr sample goes here-->
+        <figure class="webvr-page">
+          <canvas id='scene-text'>Canvas is not supported, upgrade your browser.</canvas>
+          <figcaption>3D Text</figcaption>
+        </figure>
       </article>
     </section>
   </main>
   <footer>
     <h2>Page Footer</h2>
   </footer>
-
-</body>
 
 <script>
 /*
@@ -59,19 +67,24 @@ WebVRPageConfig = {
 </script>
 
 <!--
+  platform.js detection library
+  -->
+<script src="js/lib/platform.js"></script>
+
+<!--
   three.js 3d library
   -->
 <script src="js/lib/three.min.js"></script>
 
 <!--
+  VREffect.js handles stereo camera setup and rendering. NOTE: this needs to load before VRControls.js
+  -->
+<script src="js/lib/VREffect.js"></script>
+
+<!--
   VRControls.js acquires positional information from connected VR devices and applies the transformations to a three.js camera object.
    -->
 <script src="js/lib/VRControls.js"></script>
-
-<!--
-  VREffect.js handles stereo camera setup and rendering.
-  -->
-<script src="js/lib/VREffect.js"></script>
 
 <!--
   A polyfill for WebVR using the Device{Motion,Orientation}Event API.
@@ -87,11 +100,23 @@ WebVRPageConfig = {
 <script>
 // Setup three.js WebGL renderer. Note: Antialiasing is a big performance hit.
 // Only enable it if you actually need to.
-var renderer = new THREE.WebGLRenderer({antialias: true});
+
+document.addEventListener('DOMContentLoaded', function() {
+
+
+
+  document.getElementById('go-fullscreen').addEventListener('click', function(e) {
+    manager.requestFullscreen_();
+  }.bind(this), false);
+
+var renderer = new THREE.WebGLRenderer({
+  antialias: true,
+  canvas:document.getElementById('scene-cube')
+});
 renderer.setPixelRatio(window.devicePixelRatio);
 
 // Append the canvas element created by the renderer to document body element.
-document.body.appendChild(renderer.domElement);
+//document.body.appendChild(renderer.domElement);
 
 // Create a three.js scene.
 var scene = new THREE.Scene();
@@ -127,7 +152,7 @@ scene.add(skybox);
 
 
 // Create a VR manager helper to enter and exit VR mode.
-var manager = new WebVRPageManager(renderer, effect, {hideButton: false});
+window.manager = new WebVRPageManager(renderer, effect, camera, {hideButton: false});
 
 // Create 3D objects.
 var geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
@@ -166,6 +191,8 @@ function onKey(event) {
 }
 window.addEventListener('keydown', onKey, true);
 
-</script>
+}); //end of DOMCOntentLoaded callback.
 
+</script>
+</body>
 </html>

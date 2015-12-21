@@ -4,9 +4,9 @@
 Developed from WebVR Boilerplate, with additions allowing multiple VR scenes
 to work well in a web page DOM, and a more sophisticated Ui player.
 
-WebVR [Boilerplate] is a a [THREE.js](http://threejs.org) and [webvr-boilerplate](https://github.com/borismus/webvr-polyfill)- based starting point for VR experiences that work well in both Google Cardboard and other VR headsets. The goal of this project is to move the generic display (which fills an entire browser window) so it plays nice with other VR scenes on the same page. This way, one could have animated image galleries on a web page showing VR scenes for users to select.
+WebVR [Boilerplate] is a a [THREE.js](http://threejs.org) and [webvr-boilerplate](https://github.com/borismus/webvr-polyfill)- based starting point for VR experiences that work well in both Google Cardboard and other VR headsets. The goal of this project is to add a display mode for 3D scenes that allows them to be embedded in a standard web page. Current VR boilerplates grab the entire browser window. WebVR Page plays nice with other VR scenes embedded on the same page. This allows creating web pages with animated image galleries showing VR scenes for users to select. By contrast, most 3D browser frameworks use a static image on the web page, which links to a "fullwindow" version of the 3D scene. WebVR Page is therefore, an attempt to improve User Experience.
 
-The project also defines a minimal semantically-coded HTML5 player for the VR scene, which will validate when embedded in a web page along with other DOM content. This differs from other current VR boilerplates, which can only run in full-window or fullscreen mode.
+The project also defines a minimal semantically-coded HTML5 player for the VR scene, which will validate when embedded in a web page along with other DOM content and play nice with text readers and search engines. This differs from other current VR boilerplates, are non-validating and unfriendly to text readers in their fullscreen and VR modes.
 
 Finally, the adaptation is not restricted to THREE.js, but potentially could be modified to work with other libraries, e.g. Babylon.js.
 
@@ -103,13 +103,21 @@ Check this article for more build methods for npm that
 
 -------------------------------------
 ## Running the boilerplate:
-This boilerplate implements a webpage-friendly version of webvr-boilerplate, so that
-you can add VR scenes as elements in a larger web page. Clicking on either the 'fullscreen'
-or 'VR' icons will bring the system to fullscreen.
+You can test the boilerplate simply by double-clicking on index.html, after installation. It is a good idea to have your console tools open to look for problems.
 
-In 'VR' mode, it will automatically create two stereo images of the scene.
+The file 'server.js' creates a simple Node-based web server. To run it, just open a new command-prompt or Terminal window, navigate to the default directory for the install, and type:
+>`node server.js`
 
-### Running on a desktop computer
+Access the server at http://localhost:3000
+
+This boilerplate a couple of default scenes in a simple player application in index.html, demonstrating that
+you can add VR scenes as elements in a larger web page.
+* Click on the 'fullscreen' icon to go fullscreen
+* Click on the 'vr' icon to go into VR (which is stereo view on a desktop)
+* Press the escape key on your keyboard to exit fullscreen or VR mode
+* On a mobile, rotate the mobile to landscape to get a VR view suitable for Google Cardboard or Samsung Gear
+
+### Stereo view on a desktop computer
 If you don't have an HMD, you can still experiment with the VR system (though you won't
 see the true VR, obviously). This only works if you enable the webvr-polyfill library,
 which provides VR functions to web browsers which lack it or have it turned off by
@@ -132,10 +140,10 @@ Best desktop browsers:
 4. You will see the stereo images
 5. If you can cross your eyes, you can see in 3D(!)
 
-### Running with an Oculus or other Head-Mounted Device (HMD):
+### Running VR with an Oculus or other Head-Mounted Device (HMD):
 If you have an HMD, it should be detected (that is what WebVR do!).
 
-## Running the boilerplate on a mobile device:
+## Running the boilerplate VR on a mobile device:
 The newest browsers on iOS (iPhone/iPad) and Android systems support VR by default.
 
 *Best Mobile Browsers:*
