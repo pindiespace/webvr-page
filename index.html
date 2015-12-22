@@ -67,12 +67,13 @@ WebVRPageConfig = {
 </script>
 
 <!--
-  platform.js detection library
-  -->
-<script src="js/lib/platform.js"></script>
+  Promise polyfill by taylorhakes
+  https://github.com/taylorhakes/promise-polyfill
+-->
+<script src="js/lib/Promise.min.js"></script>
 
 <!--
-  three.js 3d library
+  three.js 3d library by
   -->
 <script src="js/lib/three.min.js"></script>
 
@@ -103,20 +104,23 @@ WebVRPageConfig = {
 
 document.addEventListener('DOMContentLoaded', function() {
 
-
+  // Example at: https://github.com/jeromeetienne/threejsboilerplate/blob/master/index.html
 
   document.getElementById('go-fullscreen').addEventListener('click', function(e) {
-    manager.requestFullscreen_();
+    manager.requestFullscreen();
   }.bind(this), false);
 
+// Use an existing canvas.
+var canvas = document.getElementById('scene-cube');
 var renderer = new THREE.WebGLRenderer({
   antialias: true,
-  canvas:document.getElementById('scene-cube')
+  canvas:canvas
 });
 renderer.setPixelRatio(window.devicePixelRatio);
 
-// Append the canvas element created by the renderer to document body element.
-//document.body.appendChild(renderer.domElement);
+var w = getComputedStyle(canvas).getPropertyValue('width');
+var h = getComputedStyle(canvas).getPropertyValue('height');
+console.log('COMPUTED WIDTH:' + w + ' CLIENTWIDTH:' + canvas.clientWidth);
 
 // Create a three.js scene.
 var scene = new THREE.Scene();

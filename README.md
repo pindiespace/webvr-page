@@ -25,6 +25,10 @@ Desktops can't create a true VR experience (you'd have to put your screen into a
 
 * [webvr-polyfill](https://github.com/borismus/webvr-polyfill)
 
+### Other Polyfills:
+These polyfills allow greater compatibility with older browsers, so the web page will render correctly even if VR mode or WebGL is not available.
+* [Promise](https://github.com/taylorhakes/promise-polyfill/blob/master/Promise.js)
+
 ### Development libraries
 This boilerplate uses command-line tools in a NodeJS environment. To work with it, you'll need to become comfortable with issuing some commands via the command-prompt (Windows) or Terminal (Mac).
 

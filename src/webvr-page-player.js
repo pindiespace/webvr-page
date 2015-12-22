@@ -30,13 +30,15 @@ function WebVRPagePlayer(renderer, params) {
 
   // Save params.
   this.params = params || {};
-  this.fullscreen = false;
 
   // Save the renderer.
   this.renderer = renderer;
 
+  // Save the drawing canvas.
+  this.canvas = this.renderer.domElement;
+
   // Find the enclosing player container, or create one.
-  this.dom = this.renderer.domElement.parentNode;
+  this.dom = this.canvas.parentNode;
 
 };
 
@@ -44,23 +46,36 @@ WebVRPagePlayer.prototype = new Emitter();
 
 // Respond to events.
 
-// Fullscreen request initiated.
-WebVRPagePlayer.prototype.requestFullscreen_ = function() {
-};
-
 // Screen toggling between full and DOM.
 WebVRPagePlayer.prototype.onFullscreenChange_ = function() {
-  console.log('in Player fullscreen change');
-  if(this.fullscreen === true) {
-    this.fullscreen = false;
-  } else {
-    this.fullscreen = true;
-  }
-}
+  console.log('Player onFullscreenChange event');
+};
+
+// Fullscreen request initiated, add fullscreen class and return element.
+WebVRPagePlayer.prototype.requestFullscreen = function(e) {
+  console.log('Player requestFullscreen');
+  var cn = this.getContainer();
+  var cs = this.getCanvas();
+  cn.classList.add(Util.fullscreenClass);
+  return cn;
+};
+
+// Exit fullscreen request initiated, remove fullscreen classes.
+WebVRPagePlayer.prototype.exitFullscreen = function(e) {
+  console.log('Player exitFullscreen');
+  var cn = this.getContainer();
+  var cs = this.getCanvas();
+  cn.classList.remove(Util.fullscreenClass);
+};
 
 // Get the Player container.
 WebVRPagePlayer.prototype.getContainer = function() {
   return this.dom;
+};
+
+// Get the Player canvas.
+WebVRPagePlayer.prototype.getCanvas = function() {
+  return this.canvas;
 };
 
 // Get the computed width of the Player.

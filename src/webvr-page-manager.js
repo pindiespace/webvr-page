@@ -1,19 +1,19 @@
 /*
- * This application is Licensed under the Apache License, Version 2.0 (the "License");
+ * This application is Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an 'AS IS' BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
  * Portions of this software derive from webvr-boilerplate
  * Copyright 2015 Google Inc. All Rights Reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the 'License');
  */
 
 var Emitter = require('./emitter.js');
@@ -41,8 +41,9 @@ function WebVRPageManager(renderer, effect, camera, params) {
   // Get the Player object
   this.player = new WebVRPagePlayer(renderer, params);
 
-  // Get info for any HMD (head-mounted device).
-  // Check if the browser is compatible with WebVR.
+  /*
+   * Get info for any HMD (head-mounted device).
+  */
   this.getDeviceByType_(HMDVRDevice).then(function(hmd) {
     this.hmd = hmd;
   }.bind(this));
@@ -62,12 +63,17 @@ function WebVRPageManager(renderer, effect, camera, params) {
 
   // Bind events.
 
-  // Emit an initialization event to all managers on the page.
+  // Emit an a general initialization event to all managers on the page.
   this.emit('initialized');
 };
 
 WebVRPageManager.prototype = new Emitter();
 
+// Make these modules visible outside manager.
+WebVRPageManager.Modes = Modes;
+WebVRPageManager.Util = Util;
+
+// Render the scene.
 WebVRPageManager.prototype.render = function(scene) {
   this.effect.render( scene, this.camera );
 };
@@ -91,16 +97,17 @@ WebVRPageManager.prototype.getDeviceByType_ = function(type) {
   });
 };
 
+// Start listening for fullscreen change and exit events.
 WebVRPageManager.prototype.listenFullscreen_ = function() {
   // Whenever we enter fullscreen, we are entering VR or immersive mode.
   document.addEventListener('fullscreenchange',
     this.onFullscreenChange_.bind(this));
 
-  document.addEventListener('exitFullscreen',
-    this.exitFullscreen_.bind(this));
+  document.addEventListener('exitfullscreen',
+    this.onExitFullscreen_.bind(this));
 };
 
-// Listen for orientation events.
+// Start listening for orientation events.
 WebVRPageManager.prototype.listenOrientation_ = function() {
   window.addEventListener('orientationchange',
       this.onOrientationChange_.bind(this));
@@ -116,9 +123,6 @@ WebVRPageManager.prototype.listenResize_ = function() {
 
 // Callback for window resize events.
 WebVRPageManager.prototype.onResize_ = function(e) {
-  //camera.aspect = window.innerWidth / window.innerHeight;
-  //camera.updateProjectionMatrix();
-  //effect.setSize( window.innerWidth, window.innerHeight );
   console.log('resize event');
   var size = this.player.getSize();
   this.resize(size.width, size.height);
@@ -131,28 +135,44 @@ WebVRPageManager.prototype.resize = function(width, height) {
   this.effect.setSize(width, height);
 };
 
-WebVRPageManager.prototype.onFullscreenChange_ = function(e) {
-  console.log("FULLSCREENCHANGE E IS A:" + e)
-  this.player.onFullscreenChange_()
-  console.log('fullscreen change');
-};
-
+// Take action when screen orientatio changes.
 WebVRPageManager.prototype.onOrientationChange_ = function(e) {
-  console.log("ORIENTATION E IS A:" + e)
-  console.log('orientation change');
+  console.log('orientation change event, object is:' + e);
 };
 
-WebVRPageManager.prototype.requestFullscreen_ = function() {
-  console.log('entering fullscreen');
-  this.player.requestFullscreen_();
-  var canvas = this.player.getContainer();
+// Take action when screen toggles between normal and fullscreen.
+WebVRPageManager.prototype.onFullscreenChange_ = function(e) {
+  console.log('fullscreen change');
+  if(document.fullscreenElement === null) {
+    console.log('was fullscreen, dispatching exitfullscreen event, object is:' + e);
+    var event = new CustomEvent('exitfullscreen');
+    document.dispatchEvent(event);
+  }
+  this.player.onFullscreenChange_(e);
+};
+
+// Take action when exiting a fullscreen. Triggered by custom event 'exitfullscreen'.
+WebVRPageManager.prototype.onExitFullscreen_ = function(e) {
+  console.log('onExitFullscreen_ custom event, object is:' + e);
+  this.exitFullscreen();
+};
+
+WebVRPageManager.prototype.onErrorFullscreen_ = function(e) {
+  console.log('error on fullscreen change, object is:' + e);
+};
+
+// Trigger a fullscreen event.
+WebVRPageManager.prototype.requestFullscreen = function() {
+  console.log('USER entering fullscreen');
+  var canvas = this.player.requestFullscreen();
   canvas.requestFullscreen({vrDisplay: this.hmd});
 };
 
-WebVRPageManager.prototype.exitFullscreen_ = function() {
-  console.log('exiting fullscreen');
+// Trigger an exitfullscreen event.
+WebVRPageManager.prototype.exitFullscreen = function() {
+  console.log('exiting exitFullscreen');
+  this.player.exitFullscreen();
   document.exitFullscreen();
 };
-
 
 module.exports = WebVRPageManager;
