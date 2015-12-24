@@ -40,6 +40,9 @@ function WebVRPagePlayer(renderer, params) {
   // Find the enclosing player container, or create one.
   this.dom = this.canvas.parentNode;
 
+  // Always resize the player to the initial aspect ratio (unless manually changed).
+  this.aspect = this.getCurrentWidth() / this.getCurrentHeight();
+
 };
 
 WebVRPagePlayer.prototype = new Emitter();
@@ -78,6 +81,10 @@ WebVRPagePlayer.prototype.getCanvas = function() {
   return this.canvas;
 };
 
+WebVRPagePlayer.prototype.getAspect = function() {
+  return this.aspect;
+};
+
 // Get the computed width of the Player.
 WebVRPagePlayer.prototype.getCurrentWidth = function() {
   return parseFloat(getComputedStyle(this.dom).getPropertyValue('width'));
@@ -89,9 +96,15 @@ WebVRPagePlayer.prototype.getCurrentHeight = function() {
 }
 
 WebVRPagePlayer.prototype.getSize = function() {
+  var h;
+  if(document.fullscreenElement !== null) {
+    h = this.getCurrentHeight();
+  } else {
+    h = this.getCurrentWidth() / this.aspect;
+  }
   return {
     width: this.getCurrentWidth(),
-    height: this.getCurrentHeight()
+    height:h //this.getCurrentHeight()
   };
 };
 

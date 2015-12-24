@@ -48,6 +48,11 @@ function WebVRPageManager(renderer, effect, camera, params) {
     this.hmd = hmd;
   }.bind(this));
 
+  // Save the input device for later sending timing data.
+  this.getDeviceByType_(PositionSensorVRDevice).then(function(input) {
+    this.input = input;
+  }.bind(this));
+
   // Set default size.
   var size = this.player.getSize();
   this.resize(size.width, size.height);
@@ -67,6 +72,8 @@ function WebVRPageManager(renderer, effect, camera, params) {
   this.emit('initialized');
 };
 
+
+
 WebVRPageManager.prototype = new Emitter();
 
 // Make these modules visible outside manager.
@@ -75,7 +82,8 @@ WebVRPageManager.Util = Util;
 
 // Render the scene.
 WebVRPageManager.prototype.render = function(scene) {
-  this.effect.render( scene, this.camera );
+  this.camera.updateProjectionMatrix();
+  this.effect.render(scene, this.camera);
 };
 
 // Get the VR device.
@@ -96,6 +104,71 @@ WebVRPageManager.prototype.getDeviceByType_ = function(type) {
     });
   });
 };
+
+WebVRPageManager.prototype.getDefaultDeviceFOV_ = function() {
+  return {
+    downDegrees:40,
+    leftDegrees:40,
+    rightDegrees:40,
+    upDegrees:40
+  };
+};
+
+// Make a copy of the FOV for this device.
+WebVRPageManager.prototype.cloneFOV_ = function(fovObj) {
+  return {
+    downDegrees:fovObj.downDegrees,
+    upDegrees:fovObj.upDegrees,
+    leftDegrees:fovObj.leftDegrees,
+    rightDegrees:fovObj.rightDegrees
+  };
+};
+
+// Polyfill for managinging different HMD object structures.
+WebVRPageManager.prototype.getFOV_ = function() {
+  var eyeFOVL, eyeFOVR;
+      window.hhmd = this.hmd;
+  if(this.hmd) {
+    var h = this.hmd;
+    if (h.getEyeParameters !== undefined) {
+      var eyeParamsL = h.getEyeParameters('left');
+      var eyeParamsR = h.getEyeParameters('right');
+      eyeFOVL = this.cloneFOV_(eyeParamsL.recommendedFieldOfView);
+      eyeFOVR = this.cloneFOV_(eyeParamsR.recommendedFieldOfView);
+    } else if (h.getRecommendedFOV !== undefined) {
+      // MS Edge Browser in mobile emulation mode.
+      var eyeParamsL = h.getRecommendedFOV('left');
+      var eyeParamsR = h.getREcommendedFOV('right');
+      eyeFOVL = this.cloneFOV_(eyeParamsL);
+      eyeFOVR = this.cloneFOV_(eyeParamsR);
+    } else {
+      // Obsolete code path.
+      eyeFOVL = this.cloneFOV_(h.getRecommendedEyeFieldOfView('left'));
+      eyeFOVR = this.cloneFOV_(h.getRecommendedEyeFieldOfView('right'));
+    }
+  } else {
+    // Return a generic FOV
+    eyeFOVL = this.getDefaultDeviceFOV_();
+    eyeFOVR = this.getDefaultDeviceFOV_();
+  }
+  return {
+    eyeFOVL:eyeFOVL,
+    eyeFOVR:eyeFOVR
+  };
+};
+
+WebVRPageManager.prototype.adjustFOV_ = function(width, height) {
+  if(this.hmd) {
+    var aspectChange = height / (width);
+    console.log("going to adjust FOV, aspectChange:" + aspectChange);
+    var fov = this.getFOV_();
+    if(aspectChange > 1) {
+      fov.eyeFOVL.upDegrees = fov.eyeFOVL.downDegrees =
+      fov.eyeFOVR.upDegrees = fov.eyeFOVR.downDegrees *= aspectChange;
+    }
+    this.effect.setFOV(fov.eyeFOVL, fov.eyeFOVR);
+  }
+}
 
 // Start listening for fullscreen change and exit events.
 WebVRPageManager.prototype.listenFullscreen_ = function() {
@@ -132,6 +205,7 @@ WebVRPageManager.prototype.onResize_ = function(e) {
 WebVRPageManager.prototype.resize = function(width, height) {
   this.camera.aspect = width / height;
   this.camera.updateProjectionMatrix();
+  this.renderer.setSize(width, height);
   this.effect.setSize(width, height);
 };
 
@@ -143,6 +217,8 @@ WebVRPageManager.prototype.onOrientationChange_ = function(e) {
 // Take action when screen toggles between normal and fullscreen.
 WebVRPageManager.prototype.onFullscreenChange_ = function(e) {
   console.log('fullscreen change');
+
+  // Catches 'escape' key pressed in fullscreen view.
   if(document.fullscreenElement === null) {
     console.log('was fullscreen, dispatching exitfullscreen event, object is:' + e);
     var event = new CustomEvent('exitfullscreen');
@@ -154,6 +230,10 @@ WebVRPageManager.prototype.onFullscreenChange_ = function(e) {
 // Take action when exiting a fullscreen. Triggered by custom event 'exitfullscreen'.
 WebVRPageManager.prototype.onExitFullscreen_ = function(e) {
   console.log('onExitFullscreen_ custom event, object is:' + e);
+  console.log('ABOUT TO RESET FOV')
+  var fov = this.getFOV_();
+  window.fov =fov;
+  this.effect.setFOV(fov.eyeFOVL, fov.eyeFOVR);
   this.exitFullscreen();
 };
 
@@ -164,8 +244,14 @@ WebVRPageManager.prototype.onErrorFullscreen_ = function(e) {
 // Trigger a fullscreen event.
 WebVRPageManager.prototype.requestFullscreen = function() {
   console.log('USER entering fullscreen');
+  this.adjustFOV_(screen.width, screen.height);
   var canvas = this.player.requestFullscreen();
+  //this.effect.setFullScreen(true);
+  //TODO: this is a way to pass in an altered HMD to the renderer
+  //RECOMPUTE field of view, when pass in.
+
   canvas.requestFullscreen({vrDisplay: this.hmd});
+  //canvas.requestFullscreen();
 };
 
 // Trigger an exitfullscreen event.

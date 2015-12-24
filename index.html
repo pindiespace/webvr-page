@@ -118,22 +118,15 @@ var renderer = new THREE.WebGLRenderer({
 });
 renderer.setPixelRatio(window.devicePixelRatio);
 
-var w = getComputedStyle(canvas).getPropertyValue('width');
-var h = getComputedStyle(canvas).getPropertyValue('height');
-console.log('COMPUTED WIDTH:' + w + ' CLIENTWIDTH:' + canvas.clientWidth);
+// Size.
+var w = parseFloat(getComputedStyle(canvas).getPropertyValue('width'));
+var h = parseFloat(getComputedStyle(canvas).getPropertyValue('height'));
+var aspect = w/h;
+
+console.log("ORIGINAL width:" + w + " HEIGHT:" + h);
 
 // Create a three.js scene.
 var scene = new THREE.Scene();
-
-// Create a three.js camera.
-var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
-
-// Apply VR headset positional data to camera.
-var controls = new THREE.VRControls(camera);
-
-// Apply VR stereo rendering to renderer.
-var effect = new THREE.VREffect(renderer);
-effect.setSize(window.innerWidth, window.innerHeight);
 
 // Add a repeating grid as a skybox.
 var boxWidth = 5;
@@ -154,10 +147,6 @@ var material = new THREE.MeshBasicMaterial({
 var skybox = new THREE.Mesh(geometry, material);
 scene.add(skybox);
 
-
-// Create a VR manager helper to enter and exit VR mode.
-window.manager = new WebVRPageManager(renderer, effect, camera, {hideButton: false});
-
 // Create 3D objects.
 var geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
 var material = new THREE.MeshNormalMaterial();
@@ -166,9 +155,31 @@ var cube = new THREE.Mesh(geometry, material);
 // Position cube mesh
 cube.position.z = -1;
 
-
 // Add cube mesh to your three.js scene
 scene.add(cube);
+
+console.log('COMPUTED WIDTH:' + w + ' CLIENTWIDTH:' + canvas.clientWidth);
+
+// Create a three.js camera.
+var camera = new THREE.PerspectiveCamera(75, w / h, 0.1, 10000);
+
+// Apply VR headset positional data to camera.
+var controls = new THREE.VRControls(camera);
+
+// Apply VR stereo rendering to renderer.
+var effect = new THREE.VREffect(renderer);
+effect.setSize(w, h);
+
+// Create a VR manager helper to enter and exit VR mode.
+window.manager = new WebVRPageManager(renderer, effect, camera, {hideButton: false});
+
+// Reset the position sensor when 'z' pressed.
+function onKey(event) {
+  if (event.keyCode == 90) { // z
+    controls.resetSensor();
+  }
+}
+window.addEventListener('keydown', onKey, true);
 
 // Request animation frame loop function
 function animate(timestamp) {
@@ -186,14 +197,6 @@ function animate(timestamp) {
 
 // Kick off animation loop
 animate();
-
-// Reset the position sensor when 'z' pressed.
-function onKey(event) {
-  if (event.keyCode == 90) { // z
-    controls.resetSensor();
-  }
-}
-window.addEventListener('keydown', onKey, true);
 
 }); //end of DOMCOntentLoaded callback.
 

@@ -33,6 +33,13 @@ THREE.VREffect = function ( renderer, onError ) {
 					eyeFOVL = eyeParamsL.recommendedFieldOfView;
 					eyeFOVR = eyeParamsR.recommendedFieldOfView;
 
+				} else if (vrHMD.eyeTranslationLeft) {
+
+					//TODO: MS Edge Browser
+					eyeTranslationL = vrHMD.eyeTranslationLeft;
+					eyeTranslationR = vrHMD.eyeTranslationRight;
+					eyeFOVL = vrHMD.recommendedFOV;
+					eyeFOVR = vrHMD.recommendedFOV;
 				} else {
 
 					// TODO: This is an older code path and not spec compliant.
@@ -41,9 +48,7 @@ THREE.VREffect = function ( renderer, onError ) {
 					eyeTranslationR = vrHMD.getEyeTranslation( 'right' );
 					eyeFOVL = vrHMD.getRecommendedEyeFieldOfView( 'left' );
 					eyeFOVR = vrHMD.getRecommendedEyeFieldOfView( 'right' );
-
 				}
-
 				break; // We keep the first we encounter
 
 			}
@@ -64,14 +69,18 @@ THREE.VREffect = function ( renderer, onError ) {
 
 	}
 
-	//
-
 	this.scale = 1;
 
 	this.setSize = function( width, height ) {
 
 		renderer.setSize( width, height );
 
+	};
+
+	// ADDED: fov
+	this.setFOV = function( fovL, fovR ) {
+		eyeFOVL = fovL;
+		eyeFOVR = fovR;
 	};
 
 	// fullscreen
@@ -87,19 +96,20 @@ THREE.VREffect = function ( renderer, onError ) {
 
 	}, false );
 
+
 	this.setFullScreen = function ( boolean ) {
 
 		if ( vrHMD === undefined ) return;
 		if ( isFullscreen === boolean ) return;
 
 		if ( canvas.mozRequestFullScreen ) {
-
 			canvas.mozRequestFullScreen( { vrDisplay: vrHMD } );
 
 		} else if ( canvas.webkitRequestFullscreen ) {
-
 			canvas.webkitRequestFullscreen( { vrDisplay: vrHMD } );
 
+		} else if ( canvas.requestFullscreen ) {
+			canvas.requestFullscreen( { vrDisplay: vrHMD } );
 		}
 
 	};
@@ -129,6 +139,7 @@ THREE.VREffect = function ( renderer, onError ) {
 
 			var size = renderer.getSize();
 			size.width /= 2;
+			//size.height /=2;
 
 			renderer.enableScissorTest( true );
 			renderer.clear();

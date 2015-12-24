@@ -30,7 +30,6 @@ header, section, footer {
 .webvr-page {
   position:relative;
   width:80%;
-  height:600px;
   border:1px solid green;
 }
 

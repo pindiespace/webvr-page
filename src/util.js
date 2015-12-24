@@ -66,14 +66,17 @@ Util.ua = (function(complete) {
   ua.os.blackberry = /(blackberry|bb10|rim[0-9])/i.test(ua.name);
   ua.os.firefoxOS = /mobile.*(firefox)/i.test(ua.name);
 
-  // Device detects.
+  // General device detects.
   ua.device.mobile = ua.os.ios || ua.os.android || (/mobi|ip(hone|od|ad)|touch|blackberry|bb10|windows phone|kindle|silk|htc|(hpw|web)os|opera mini|fxios/i.test(ua.name));
   ua.device.tablet = /ipad|tablet|nexus[\s]+(7|9|10)|playbook|silk|ideapad|slate|touchpad|playbook|toshiba|xoom/i.test(ua.name);
   ua.device.console = /(nintendo|wiiu|3ds|playstation|xbox)/i.test(ua.name);
   ua.device.tv = /crkey|(google|apple|smart|hbb|opera).*tv|(lg|aquos|inettv).*browser|roku|espial/i.test(ua.name);
 
   // Specific device tests may be added as needed here.
+  // Galaxy Note5, Galaxy S6, Galaxy S6 Edge, Galaxy S6 Edge+
   // https://github.com/serbanghita/Mobile-Detect/blob/master/Mobile_Detect.php
+  // https://github.com/faisalman/ua-parser-js/blob/master/src/ua-parser.js
+  // https://github.com/hgoebl/mobile-detect.js/blob/master/mobile-detect.js#L292
   ua.device.note4 = (ua.os.android && ua.name.indexOf('samsung sm-n910c') >= 0);
 
   // Specific Browser detects when feature-detection isn't enought.
@@ -89,8 +92,11 @@ Util.ua = (function(complete) {
 })();
 
 /**
- * Add recommended fullscreen stles.
+ * Add recommended fullscreen styles.
  * https://wiki.mozilla.org/Gecko%3aFullScreenAPI#onfullscreenchange_attribute
+ * https://blog.idrsolutions.com/2014/01/adding-fullscreen-using-javascript-api/
+ * http://www.sitepoint.com/html5-full-screen-api/
+ *
  */
 Util.fullscreenClass = (function(fullscreenClass) {
   var head = document.querySelector('head');
@@ -211,6 +217,7 @@ Util.setFullscreen = (function() {
       if(document.fullscreenElement === null) {
         document.fullscreenElement = this;
       }
+
       // Assign listen for escape key pressed.
       document.addEventListener('keydown', escHandler, false);
       // Add the fullscreen class to the element.
@@ -221,8 +228,10 @@ Util.setFullscreen = (function() {
       event.target = this;
       // Handle bound onfullscreenchange function.
       if (typeof document.onfullscreenchange == 'function') {
-        document.onfullscreenchange(event);
+        console.log('dispatching from onfullscreenchange in requestFullscreen');
+        ////////document.onfullscreenchange(event);
       } else {
+        console.log('dispatching fullscreenchange in requestFullscreen');
         document.dispatchEvent(event);
       }
     };
@@ -233,7 +242,7 @@ Util.setFullscreen = (function() {
     var screenChange = function(e) {
       e.stopImmediatePropagation();
       if(e.type !== 'fullscreenchange') {
-        console.log('dispatching fullscreenchange')
+        console.log('dispatching fullscreenchange in screenChange')
         var event = new CustomEvent('fullscreenchange', e);
         document.dispatchEvent(event);
       }
@@ -271,6 +280,7 @@ Util.setFullscreen = (function() {
 
     // Error handling event.
     var screenError = function(e) {
+      console.log("fullscreenError in screenError");
       e.stopImmediatePropagation();
       		var event = new CustomEvent('fullscreenerror', e);
       		document.dispatchEvent(event);
