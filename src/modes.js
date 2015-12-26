@@ -16,7 +16,7 @@
 var Modes = {
   // Who knows, Highlander?
   UNKNOWN: 0,
-  // Not fullscreen, just tracking.
+  // Not fullscreen, may be in DOM.
   NORMAL: 1,
   // Magic window fullscreen immersive mode.
   MAGIC_WINDOW: 2,

@@ -4,7 +4,7 @@
 <title>Web VR Page Boilerplate</title>
 <meta charset="utf-8">
 <!--favicon-->
-<link rel="icon" href="img/favicon.ico?v=1.1">
+<link rel="icon" href="img/favicon.ico">
 <!--set the viewport-->
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 <!--handle iOS and android mobile
@@ -29,13 +29,15 @@ http://www.html5rocks.com/en/mobile/fullscreen/ -->
   <main>
     <section>
       <h2>Page Section</h2>
+      <!--webvr sample goes here-->
       <article id="sample-webvr">
-        <!--webvr sample goes here-->
         <figure class="webvr-page">
           <canvas id='scene-cube'>Canvas is not enabled, upgrade your browser</canvas>
           <figcaption>Spinning Cube</figcaption>
         </figure>
-        <!--second webvr sample goes here-->
+      </article>
+      <!--second webvr sample goes here-->
+      <article id="second-webvr">
         <figure class="webvr-page">
           <canvas id='scene-text'>Canvas is not supported, upgrade your browser.</canvas>
           <figcaption>3D Text</figcaption>
@@ -64,6 +66,26 @@ WebVRPageConfig = {
    // panoramas with nothing interesting above or below.
    //YAW_ONLY: true, // Default: false.
  };
+</script>
+
+<!--
+  WebVR Boilerplate Polyfill.
+-->
+<script>
+// Enable if WebVR polyfill is used.
+WebVRConfig = {
+  // Forces availability of VR mode.
+  // FORCE_ENABLE_VR: true, // Default: false.
+  // Complementary filter coefficient. 0 for accelerometer, 1 for gyro.
+  //K_FILTER: 0.98, // Default: 0.98.
+  // How far into the future to predict during fast motion.
+  //PREDICTION_TIME_S: 0.040, // Default: 0.040 (in seconds).
+  // Flag to disable touch panner. In case you have your own touch controls
+  //TOUCH_PANNER_DISABLED: true, // Default: false.
+  // Enable yaw panning only, disabling roll and pitch. This can be useful for
+  // panoramas with nothing interesting above or below.
+  //YAW_ONLY: true, // Default: false.
+};
 </script>
 
 <!--
@@ -101,7 +123,6 @@ WebVRPageConfig = {
 <script>
 // Setup three.js WebGL renderer. Note: Antialiasing is a big performance hit.
 // Only enable it if you actually need to.
-
 document.addEventListener('DOMContentLoaded', function() {
 
   // Example at: https://github.com/jeromeetienne/threejsboilerplate/blob/master/index.html

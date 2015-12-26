@@ -33,6 +33,10 @@ Util.getUniqueId = (function(prefix) {
   return inc;
 })();
 
+Util.base64 = function(mimeType, base64) {
+  return 'data:' + mimeType + ';base64,' + base64;
+};
+
 /**
  * This user-agent test is only for things NOT picked up in the feature-detection
  * part of the boilerplate.
@@ -92,6 +96,66 @@ Util.ua = (function(complete) {
 })();
 
 /**
+ * Polyfill array.filter
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
+ */
+ if (!Array.prototype.filter) {
+   Array.prototype.filter = function(fun/*, thisArg*/) {
+     'use strict';
+
+     if (this === void 0 || this === null) {
+       throw new TypeError();
+     }
+
+     var t = Object(this);
+     var len = t.length >>> 0;
+     if (typeof fun !== 'function') {
+       throw new TypeError();
+     }
+
+     var res = [];
+     var thisArg = arguments.length >= 2 ? arguments[1] : void 0;
+     for (var i = 0; i < len; i++) {
+       if (i in t) {
+         var val = t[i];
+
+         // NOTE: Technically this should Object.defineProperty at
+         //       the next index, as push can be affected by
+         //       properties on Object.prototype and Array.prototype.
+         //       But that method's new, and collisions should be
+         //       rare, so use the more-compatible alternative.
+         if (fun.call(thisArg, val, i, t)) {
+           res.push(val);
+         }
+       }
+     }
+
+     return res;
+   };
+ }
+
+ /**
+  * Polfill CustomEvent for IE 9, 10, 11.
+  * https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent
+  */
+  (function () {
+    // IE gives a false positive, so detect it here so we don't replace native CustomEvent.
+    //if (!window.CustomEvent || Object.hasOwnProperty.call(window, "ActiveXObject") && !window.ActiveXObject) {
+    if(window.location.hash = !!window.MSInputMethodContext && !!document.documentMode) {
+      // is IE11
+      function CustomEvent ( event, params ) {
+        params = params || { bubbles: false, cancelable: false, detail: undefined };
+        var evt = document.createEvent( 'CustomEvent' );
+        evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
+        return evt;
+      };
+
+      CustomEvent.prototype = window.Event.prototype;
+      window.CustomEvent = CustomEvent;
+    }
+  })();
+
+/**
  * Add recommended fullscreen styles.
  * https://wiki.mozilla.org/Gecko%3aFullScreenAPI#onfullscreenchange_attribute
  * https://blog.idrsolutions.com/2014/01/adding-fullscreen-using-javascript-api/
@@ -141,157 +205,162 @@ Util.isFullScreen = function() {
  * Adapted from:
  * @link https://github.com/ethanius/fullscreen-api
  */
-Util.setFullscreen = (function() {
+(function() {
   var hasStyles = false;
 
-  // Polyfill the escape keypress handler.
-  var escHandler = function(e) {
-    console.log('in exitfullscreen keypress');
-		if (e.keyCode == 27) {
-			e.stopImmediatePropagation();
-			document.exitFullscreen();
-		}
-  };
-
-  // Check for presence of fullscreenElement.
-  if (!('fullscreenElement' in document)) {
-    Object.defineProperty(document, 'fullscreenElement', {
-      get: function() {
-        return document.mozFullScreenElement ||
-               document.msFullscreenElement ||
-               document.webkitFullscreenElement ||
-               null;
-      }
-    });
-  }
+  // Set the fullscreenElement to null (even if it exists).
+  document.fullscreenElement = null;
 
   /*
-   * Set the fullscreen enabled flag. To make this
-   * work on Mobile Safari, we need to manually test
-   * if we satisfy the conditions for fullscreen (all iframes
+   * Set the function checking if fullscreen is enabled.
+   * Enable if we satisfy the conditions for fullscreen (all iframes
    * have allowfullscreen attribute, no plugins in window).
    */
   if (!('fullscreenEnabled' in document)) {
     Object.defineProperty(document, 'fullscreenEnabled', {
       get: function() {
         return document.msFullscreenEnabled ||
-              document.mozFullScreenEnabled ||
-              document.webkitFullscreenEnabled ||
-              (function() {
-                console.log('entering fullscreenEnabled polyfill function')
-                var iframes = document.getElementsByTagName('iframe');
-                window.ifs = iframes;
-                // All iframe elements must have .allowfullscreen attribute set.
-                for (var i = 0; i < iframes.length; i++) {
-                  console.log('trying iframe number:' + i)
-                  if (!iframes[i].allowfullscreen) {
-                    console.log('found an iframe');
-                    return false;
-                  }
-                }
-                // No windowed plugins.
-                return true;
-              })();
-      }
+          document.mozFullScreenEnabled ||
+          document.webkitFullscreenEnabled ||
+          (function() {
+            console.log('entering fullscreenEnabled polyfill function')
+            var iframes = document.getElementsByTagName('iframe');
+            window.ifs = iframes;
+            // All iframe elements must have .allowfullscreen attribute set.
+            for (var i = 0; i < iframes.length; i++) {
+              console.log('trying iframe number:' + i)
+              if (!iframes[i].allowfullscreen) {
+                console.log('found an iframe');
+                return false;
+              }
+            }
+            // No windowed plugins.
+            return true;
+          })();
+      } // end of get.
     });
   }
+
+  /*
+   * A keypress handler for browsers not implementing
+   * fullscreen API. Note that IE11 will ignore keydowns if
+   * the Console is visible.
+  */
+  var escHandler = function(e) {
+    if(e.keyCode == 27) {
+        e.stopImmediatePropagation();
+        document.exitFullscreen();
+    }
+  };
 
   /*
    * Polyfill requestFullscreen method.
    * Edge goes fullscreen, regardless of element's CSS.
    * Webkit leaves CSS styles IN PLACE
    * Firefox goes fullscreen, regardless of element's CSS.
+   * hmd = head-mounted device {vrDisplay: this.hmd}
    */
-    Element.prototype.requestFullscreen = Element.prototype.requestFullscreen ||
+  Element.prototype.requestFullscreen = Element.prototype.requestFullscreen ||
     Element.prototype.webkitRequestFullscreen ||
     Element.prototype.mozRequestFullScreen ||
     Element.prototype.msRequestFullscreen ||
-    function(elem) {
-      console.log('in requestFullscreen polyfill fn');
+    function(hmd) {
+      console.log('in requestFullscreen() polyfill');
       // IFRAME needs 'allowfullscreen' attribute set for fullscreen
-      if (elem.nodeName === 'IFRAME' && !elem.allowfullscreen) {
+      console.log("IN REQUESTFULLSCREEN, fullscreen element set to:"+ ('fullscreenElement' in document) + " and typeof:" + typeof document.fullscreenElement + " and value:" + document.fullscreenElement)
+
+      if (this.nodeName === 'IFRAME' && !this.allowfullscreen) {
+        console.log('invalid iframe, setting fullscreenElement to NULL');
         document.fullscreenElement = null;
         return;
       }
+
       // Assign fullscreen element.
       if(document.fullscreenElement === null) {
         document.fullscreenElement = this;
       }
 
-      // Assign listen for escape key pressed.
+      // Assign listener for escape key pressed.
       document.addEventListener('keydown', escHandler, false);
-      // Add the fullscreen class to the element.
+
+      // Always add the fullscreen class to the element, since implementions differ.
       console.log('adding fullscreen class:' + Util.fullscreenClass);
       this.classList.add(Util.fullscreenClass);
+
+      var event = new Event('fullscreenchange');
+
       // Create and send a (custom fullscreenchange) event.
       var event = new CustomEvent('fullscreenchange');
-      event.target = this;
+
       // Handle bound onfullscreenchange function.
       if (typeof document.onfullscreenchange == 'function') {
         console.log('dispatching from onfullscreenchange in requestFullscreen');
-        ////////document.onfullscreenchange(event);
       } else {
         console.log('dispatching fullscreenchange in requestFullscreen');
         document.dispatchEvent(event);
       }
-    };
+    }; //end of requestFullscreen.
+
+    /*
+     * this toggle variable is necessary to update document.fullscreenElement when it is triggered
+     * via pressing the escape key, in browsers using mozFullScreenElement,
+     * msFullscreenElement, or webkitFullscreenElement
+     */
+    var toFS = 'true';
 
     /*
      * Polyfill fullscreenchange event.
      */
     var screenChange = function(e) {
       e.stopImmediatePropagation();
-      if(e.type !== 'fullscreenchange') {
-        console.log('dispatching fullscreenchange in screenChange')
-        var event = new CustomEvent('fullscreenchange', e);
-        document.dispatchEvent(event);
+      if(toFS === 'true') { //normal to fullscreen
+        document.fullscreenElement = e.target;
+        toFS = 'false';
+      } else { //fullscreen to normal
+        toFS = 'true';
+        document.fullscreenElement = null;
       }
-    }
+      console.log('dispatching fullscreenchange in screenChange, toggle:' + toFS)
+      var bob = document.fullscreenElement;
+      console.log('bob is a type:' + typeof bob + ' and value:' + bob)
+      var event = new CustomEvent('fullscreenchange', e);
+      document.dispatchEvent(event);
+    };
     document.addEventListener('webkitfullscreenchange', screenChange);
     document.addEventListener('mozfullscreenchange', screenChange);
     document.addEventListener('MSFullscreenChange', screenChange); // Does not exist in edge
 
     /*
-     * Polyfill exitFullscreen exit function.
+     * Polyfill exitFullscreen function.
      * FF nightly doesn't reset the background of the page.
-     * Edge exits correctly.
-     * Chrome, Opera exit correctly.
     */
     document.exitFullscreen = document.exitFullscreen ||
-    document.msExitFullscreen ||
-    document.mozCancelFullScreen ||
-    document.webkitExitFullscreen ||
-    function() {
-      console.log('in exitfullscreen polyfill fn');
-      if (document.fullscreenEnabled != null) {
-        document.removeEventListener('keydown', escHandler, false);
-        if (document.fullscreenElement) {
-          document.fullscreenElement.classList.remove(Util.fullscreenClass);
-          document.fullscreenElement = null;
+      document.mozCancelFullScreen ||
+      document.webkitExitFullscreen ||
+      document.msExitFullscreen ||
+      function (d) {
+        d.d = true;
+        if(document.fullscreenEnabled === true) {
+          document.removeEventListener('keydown', escHandler, false);
+          var event = new CustomEvent('fullscreenchange');
+          if (typeof document.onfullscreenchange == 'function') {
+            document.onfullscreenchange(event);
+          } else {
+            document.dispatchEvent(event);
+          }
         }
-      }
-      var event = new CustomEvent('fullscreenchange');
-      if (typeof document.onfullscreenchange == 'function') {
-        document.onfullscreenchange(event);
-      } else {
-        document.dispatchEvent(event);
-      }
-    };
+      };
 
-    // Error handling event.
+    // Error handling.
     var screenError = function(e) {
-      console.log("fullscreenError in screenError");
+      console.error("A fullscreen request error has occurred");
       e.stopImmediatePropagation();
-      		var event = new CustomEvent('fullscreenerror', e);
-      		document.dispatchEvent(event);
+      var event = new CustomEvent('fullscreenerror', e);
+      document.dispatchEvent(event);
     };
     document.addEventListener('webkitfullscreenerror', screenError, false);
     document.addEventListener('mozfullscreenerror', screenError, false);
     document.addEventListener('MSFullscreenError', screenError, false);
-
-  return function() {
-    return document.fullscreenEnabled
-  };
 })();
 
 module.exports = Util;

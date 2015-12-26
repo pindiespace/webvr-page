@@ -1,4 +1,7 @@
 /*
+ * Custom Player for webvr-page.
+ *
+ *
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +19,7 @@
 var Emitter = require('./emitter.js');
 var Modes = require('./modes.js');
 var Util = require('./util.js');
+ var WebVRPageButtons = require('./webvr-page-buttons.js');
 
 /**
  * The Player is a wrapper for a VR-enabled canvas,
@@ -40,6 +44,9 @@ function WebVRPagePlayer(renderer, params) {
   // Find the enclosing player container, or create one.
   this.dom = this.canvas.parentNode;
 
+  // Add control buttons to screen, as necessary.
+  this.buttons = new WebVRPageButtons(params);
+
   // Always resize the player to the initial aspect ratio (unless manually changed).
   this.aspect = this.getCurrentWidth() / this.getCurrentHeight();
 
@@ -59,6 +66,7 @@ WebVRPagePlayer.prototype.requestFullscreen = function(e) {
   console.log('Player requestFullscreen');
   var cn = this.getContainer();
   var cs = this.getCanvas();
+  // Return the parent DOM object (Player) rather than the drawing <canvas>.
   cn.classList.add(Util.fullscreenClass);
   return cn;
 };

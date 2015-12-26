@@ -41,6 +41,15 @@ function WebVRPageManager(renderer, effect, camera, params) {
   // Get the Player object
   this.player = new WebVRPagePlayer(renderer, params);
 
+  // Add a method to the THREE.JS effect to adjust field of view if necessary in VR mode.
+  if(this.effect.setFOV !== 'function') {
+    console.log('setFOV() missing from VREffect.js, adding it');
+    this.effect.setFOV = function(fovL, fovR) {
+      eyeFOVL = fovL;
+      eyeFOVR = fovR;
+    };
+  }
+
   /*
    * Get info for any HMD (head-mounted device).
   */
@@ -52,6 +61,8 @@ function WebVRPageManager(renderer, effect, camera, params) {
   this.getDeviceByType_(PositionSensorVRDevice).then(function(input) {
     this.input = input;
   }.bind(this));
+
+  console.log("GOT THE DEVICES")
 
   // Set default size.
   var size = this.player.getSize();
@@ -71,8 +82,6 @@ function WebVRPageManager(renderer, effect, camera, params) {
   // Emit an a general initialization event to all managers on the page.
   this.emit('initialized');
 };
-
-
 
 WebVRPageManager.prototype = new Emitter();
 
@@ -127,7 +136,6 @@ WebVRPageManager.prototype.cloneFOV_ = function(fovObj) {
 // Polyfill for managinging different HMD object structures.
 WebVRPageManager.prototype.getFOV_ = function() {
   var eyeFOVL, eyeFOVR;
-      window.hhmd = this.hmd;
   if(this.hmd) {
     var h = this.hmd;
     if (h.getEyeParameters !== undefined) {
@@ -209,18 +217,19 @@ WebVRPageManager.prototype.resize = function(width, height) {
   this.effect.setSize(width, height);
 };
 
-// Take action when screen orientatio changes.
+// Take action when screen orientation changes.
 WebVRPageManager.prototype.onOrientationChange_ = function(e) {
-  console.log('orientation change event, object is:' + e);
+  console.log('Manager orientation change event, object is:' + e);
 };
 
 // Take action when screen toggles between normal and fullscreen.
 WebVRPageManager.prototype.onFullscreenChange_ = function(e) {
-  console.log('fullscreen change');
-
-  // Catches 'escape' key pressed in fullscreen view.
+  console.log("Manager onFullscreenChange_, target:" + e.target);
+  console.log("Manager onFullscreenChange_, document.fullscreenElement is a:" + typeof document.fullscreenElement + " value:" + document.fullscreenElement)
+  // Catches exit from fullscreen, both manually, and via 'escape' key pressed in fullscreen view.
   if(document.fullscreenElement === null) {
-    console.log('was fullscreen, dispatching exitfullscreen event, object is:' + e);
+    console.log('Manager, exitFullscreen event triggered, dispatching exitfullscreen event');
+    document.exitFullscreen();
     var event = new CustomEvent('exitfullscreen');
     document.dispatchEvent(event);
   }
@@ -229,7 +238,7 @@ WebVRPageManager.prototype.onFullscreenChange_ = function(e) {
 
 // Take action when exiting a fullscreen. Triggered by custom event 'exitfullscreen'.
 WebVRPageManager.prototype.onExitFullscreen_ = function(e) {
-  console.log('onExitFullscreen_ custom event, object is:' + e);
+  console.log('Manager onExitFullscreen_ custom event, object is:' + e);
   console.log('ABOUT TO RESET FOV')
   var fov = this.getFOV_();
   window.fov =fov;
@@ -238,18 +247,23 @@ WebVRPageManager.prototype.onExitFullscreen_ = function(e) {
 };
 
 WebVRPageManager.prototype.onErrorFullscreen_ = function(e) {
-  console.log('error on fullscreen change, object is:' + e);
+  console.log('Manager error on fullscreen change, object is:' + e);
 };
 
 // Trigger a fullscreen event.
 WebVRPageManager.prototype.requestFullscreen = function() {
-  console.log('USER entering fullscreen');
+  console.log('Manager USER entering fullscreen');
+
+  // Adjust the scene to the screen dimensions.
   this.adjustFOV_(screen.width, screen.height);
+
+  // Let the player know we are going to fullscreen, and let it choose the fullscreen element.
   var canvas = this.player.requestFullscreen();
   //this.effect.setFullScreen(true);
   //TODO: this is a way to pass in an altered HMD to the renderer
   //RECOMPUTE field of view, when pass in.
 
+  // Trigger fullscreen.
   canvas.requestFullscreen({vrDisplay: this.hmd});
   //canvas.requestFullscreen();
 };
