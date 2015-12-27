@@ -45,7 +45,7 @@ function WebVRPageManager(renderer, effect, camera, params) {
   // Get the Player object
   this.player = new WebVRPagePlayer(renderer, params);
 
-  // Add a method to the THREE.JS effect to adjust field of view if necessary in VR mode.
+  // Add a method to the THREE.JS effect to adjust field of view (if necessary) in VR mode.
   if(this.effect.setFOV !== 'function') {
     console.log('setFOV() missing from VREffect.js, adding it');
     this.effect.setFOV = function(fovL, fovR) {
@@ -256,20 +256,21 @@ WebVRPageManager.prototype.onErrorFullscreen_ = function(e) {
 
 // Trigger a fullscreen event.
 WebVRPageManager.prototype.requestFullscreen = function() {
-  console.log('Manager USER entering fullscreen');
+  // Trigger fullscreen only if we support 3D.
+  if(this.params.webgl) {
+    console.log('Manager USER entering fullscreen');
 
   // Adjust the scene to the screen dimensions.
-  this.adjustFOV_(screen.width, screen.height);
+    this.adjustFOV_(screen.width, screen.height);
 
   // Let the player know we are going to fullscreen, and let it choose the fullscreen element.
-  var canvas = this.player.requestFullscreen();
-  //this.effect.setFullScreen(true);
-  //TODO: this is a way to pass in an altered HMD to the renderer
-  //RECOMPUTE field of view, when pass in.
-
-  // Trigger fullscreen.
-  canvas.requestFullscreen({vrDisplay: this.hmd});
-  //canvas.requestFullscreen();
+    var canvas = this.player.requestFullscreen();
+    //this.effect.setFullScreen(true);
+    //TODO: this is a way to pass in an altered HMD to the renderer
+    //TODO: RECOMPUTE field of view for FF, when passing in.
+    canvas.requestFullscreen({vrDisplay: this.hmd});
+    //canvas.requestFullscreen();
+  }
 };
 
 // Trigger an exitfullscreen event.

@@ -137,23 +137,23 @@ document.addEventListener('DOMContentLoaded', function() {
     manager.requestFullscreen();
   }.bind(this), false);
 
-// Use an existing canvas.
+// Use an existing <canvas> in the markup.
 var canvas = document.getElementById('scene-cube');
 var renderer;
-if(Detector.webgl) {
+if(Detector.webgl) { // 3D scenes ok.
   renderer = new THREE.WebGLRenderer({
     antialias: true,
     canvas: canvas
   });
   renderer.setPixelRatio(window.devicePixelRatio);
-} else {
+} else { // Can't do 3d, just draw the scene once and use as a fallback image.
   renderer = new THREE.CanvasRenderer({
     antialias: true,
     canvas: canvas
   });
 }
 
-// Size.
+// Canvas size determined by markup, not JS.
 var w = parseFloat(getComputedStyle(canvas).getPropertyValue('width'));
 var h = parseFloat(getComputedStyle(canvas).getPropertyValue('height'));
 var aspect = w/h;
@@ -191,8 +191,6 @@ cube.position.z = -1;
 // Add cube mesh to your three.js scene
 scene.add(cube);
 
-console.log('COMPUTED WIDTH:' + w + ' CLIENTWIDTH:' + canvas.clientWidth);
-
 // Create a three.js camera.
 var camera = new THREE.PerspectiveCamera(75, w / h, 0.1, 10000);
 
@@ -203,8 +201,14 @@ var controls = new THREE.VRControls(camera);
 var effect = new THREE.VREffect(renderer);
 effect.setSize(w, h);
 
+/*
+ * Params for the Manager.
+ * hidebutton - if true, don't show buttons
+ * webgl - if true, we can run and animate 3D scenes
+ */
+
 // Create a VR manager helper to enter and exit VR mode.
-window.manager = new WebVRPageManager(renderer, effect, camera, {hideButton: false});
+window.manager = new WebVRPageManager(renderer, effect, camera, {hideButton: false, canvas: Detector.canvas, webgl: Detector.webgl});
 
 // Reset the position sensor when 'z' pressed.
 function onKey(event) {

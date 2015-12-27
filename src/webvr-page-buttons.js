@@ -16,9 +16,10 @@
  * Licensed under the Apache License, Version 2.0 (the 'License');
  */
 
- var Emitter = require('./emitter.js');
- var Modes = require('./modes.js');
- var Util = require('./util.js');
+var Emitter = require('./emitter.js');
+var Modes = require('./modes.js');
+var Util = require('./util.js');
+var WebVRPageDialogs = require('./webvr-page-dialogs.js');
 
  /**
   * Everything having to do with the WebVR button.

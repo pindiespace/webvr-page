@@ -1,7 +1,6 @@
 /*
  * Custom Player for webvr-page.
  *
- *
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +18,8 @@
 var Emitter = require('./emitter.js');
 var Modes = require('./modes.js');
 var Util = require('./util.js');
- var WebVRPageButtons = require('./webvr-page-buttons.js');
+var WebVRPageDialogs = require('./webvr-page-dialogs.js');
+var WebVRPageButtons = require('./webvr-page-buttons.js');
 
 /**
  * The Player is a wrapper for a VR-enabled canvas,
@@ -47,6 +47,12 @@ function WebVRPagePlayer(renderer, params) {
   // Create default text for <figcaption> element.
   this.captionDefault = 'WebVR Page Player Scene #' + parseInt(params.uid);
 
+  // Save a warning if HTML5 canvas is not supported.
+  this.canvasWarn = 'Your web browser does not support HTML5 canvas. You need to upgrade to a modern browser.';
+
+  // Save a warning if 3D is not supported.
+  this.webglWarn = 'Your web browser cannot support 3D drawing necessary for VR. You need to upgrade to a modern browser';
+
   // Save the renderer.
   this.renderer = renderer;
 
@@ -56,9 +62,11 @@ function WebVRPagePlayer(renderer, params) {
   // Find the enclosing Player container (a <figure>), or create one.
   this.initFigure_();
 
+  // Display error messages if we can't support WebGL or other features.
+  this.errorMsgIfNeeded_();
+
   // Find the <figcaption> element, or create one.
   this.initCaption_();
-
 
   // Add control buttons to screen, as necessary.
   this.initButtons_();
@@ -69,6 +77,15 @@ function WebVRPagePlayer(renderer, params) {
 };
 
 WebVRPagePlayer.prototype = new Emitter();
+
+// Overwrite the <canvas> with errors if we can't run.
+WebVRPagePlayer.prototype.errorMsgIfNeeded_ = function() {
+  if(!this.params.canvas) {
+
+  } else if(!this.params.webgl) {
+
+  }
+};
 
 // Set up Player <figure> element.
 WebVRPagePlayer.prototype.initFigure_ = function() {
@@ -151,7 +168,8 @@ WebVRPagePlayer.prototype.requestFullscreen = function(e) {
   var cn = this.getContainer();
   var cs = this.getCanvas();
   // Return the parent DOM object (Player) rather than the drawing <canvas>.
-  cn.classList.add(Util.fullscreenClass);
+  Util.addClass(cn, Util.fullscreenClass);
+  //cn.classList.add(Util.fullscreenClass);
   return cn;
 };
 
@@ -160,7 +178,8 @@ WebVRPagePlayer.prototype.exitFullscreen = function(e) {
   console.log('Player exitFullscreen');
   var cn = this.getContainer();
   var cs = this.getCanvas();
-  cn.classList.remove(Util.fullscreenClass);
+  Util.removeClass(cn, Util.fullscreenClass);
+  //cn.classList.remove(Util.fullscreenClass);
 };
 
 // Get the Player container.

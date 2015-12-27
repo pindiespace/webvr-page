@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 var Util = {};
 
 // Get a unique, incrementing Id value for any object on the page.
@@ -191,7 +190,10 @@ Util.ua = (function() {
   * https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent
   */
   (function () {
-    // IE gives a false positive, so detect it here so we don't replace native CustomEvent.
+    /*
+     * IE11 gives a false positive for CustomEvent, so detect it here so we don't replace native CustomEvent
+     * in other browsers.
+     */
     //if (!window.CustomEvent || Object.hasOwnProperty.call(window, 'ActiveXObject') && !window.ActiveXObject) {
     if (window.location.hash = !!window.MSInputMethodContext && !!document.documentMode) {
       // is IE11
@@ -212,7 +214,6 @@ Util.ua = (function() {
  * https://wiki.mozilla.org/Gecko%3aFullScreenAPI#onfullscreenchange_attribute
  * https://blog.idrsolutions.com/2014/01/adding-fullscreen-using-javascript-api/
  * http://www.sitepoint.com/html5-full-screen-api/
- *
  */
 Util.fullscreenClass = (function(fullscreenClass) {
   var head = document.getElementsByTagName('head')[0];
@@ -307,9 +308,6 @@ Util.isFullScreen = function() {
 
   /*
    * Polyfill requestFullscreen method.
-   * Edge goes fullscreen, regardless of element's CSS.
-   * Webkit leaves CSS styles IN PLACE
-   * Firefox goes fullscreen, regardless of element's CSS.
    * hmd = head-mounted device {vrDisplay: this.hmd}
    */
   Element.prototype.requestFullscreen = Element.prototype.requestFullscreen ||
@@ -337,9 +335,8 @@ Util.isFullScreen = function() {
 
       // Always add the fullscreen class to the element, since implementions differ.
       console.log('adding fullscreen class:' + Util.fullscreenClass);
-      this.classList.add(Util.fullscreenClass);
-
-      var event = new Event('fullscreenchange');
+      Util.addClass(this, Util.fullscreenClass);
+      //this.classList.add(Util.fullscreenClass);
 
       // Create and send a (custom fullscreenchange) event.
       var event = new CustomEvent('fullscreenchange');
@@ -356,7 +353,8 @@ Util.isFullScreen = function() {
     /*
      * this toggle variable is necessary to update document.fullscreenElement when it is triggered
      * via pressing the escape key, in browsers using mozFullScreenElement,
-     * msFullscreenElement, or webkitFullscreenElement
+     * msFullscreenElement, or webkitFullscreenElement, which automatically implement
+     * the escape without providing a handler we can use.
      */
     var toFS = 'true';
 
@@ -384,7 +382,6 @@ Util.isFullScreen = function() {
 
     /*
      * Polyfill exitFullscreen function.
-     * FF nightly doesn't reset the background of the page.
     */
     document.exitFullscreen = document.exitFullscreen ||
       document.mozCancelFullScreen ||
@@ -403,7 +400,9 @@ Util.isFullScreen = function() {
         }
       };
 
-    // Error handling.
+    /*
+     * Error handling.
+     */
     var screenError = function(e) {
       console.error('A fullscreen request error has occurred');
       e.stopImmediatePropagation();
