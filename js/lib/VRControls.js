@@ -14,6 +14,7 @@ THREE.VRControls = function ( object, onError ) {
 		// Exclude Cardboard position sensor if Oculus exists.
 
 		var oculusDevices = devices.filter( function ( device ) {
+
 			if(device.deviceName) {
 				return device.deviceName.toLowerCase().indexOf( 'oculus' ) !== - 1;
 			} else {
@@ -25,12 +26,13 @@ THREE.VRControls = function ( object, onError ) {
 		if ( oculusDevices.length >= 1 ) {
 
 			return devices.filter( function ( device ) {
-				if(device.deviceName) {
 
+				if(device.deviceName) {
 					return device.deviceName.toLowerCase().indexOf( 'cardboard' ) === - 1;
 				} else {
 					return [];
 				}
+
 			} );
 
 		} else {

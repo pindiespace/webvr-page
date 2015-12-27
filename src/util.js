@@ -52,12 +52,14 @@ Util.base64 = function(mimeType, base64) {
  * http://cpansearch.perl.org/src/MAMOD/HTTP-UA-Parser-0.005/lib/HTTP/UA/Parser/regexes.yaml
  * https://udger.com/resources/ua-list/device-detail?device=Smart%20TV
  */
-Util.ua = (function(complete) {
+Util.ua = (function() {
   var ua = {
     browser: {},
     os: {},
     device: {}
   };
+
+  // User agent.
   ua.name = (navigator.userAgent || navigator.vendor || window.opera).toLowerCase();
 
   // OS detects
@@ -81,7 +83,7 @@ Util.ua = (function(complete) {
   // https://github.com/serbanghita/Mobile-Detect/blob/master/Mobile_Detect.php
   // https://github.com/faisalman/ua-parser-js/blob/master/src/ua-parser.js
   // https://github.com/hgoebl/mobile-detect.js/blob/master/mobile-detect.js#L292
-  ua.device.note4 = (ua.os.android && ua.name.indexOf('samsung sm-n910c') >= 0);
+  ua.device.Note4 = (ua.os.android && ua.name.indexOf('samsung sm-n910c') >= 0);
 
   // Specific Browser detects when feature-detection isn't enought.
   ua.browser.ie = (ua.name.indexOf('msie') >= 0 || ua.name.indexOf('trident') >= 0);
@@ -140,7 +142,7 @@ Util.ua = (function(complete) {
   */
   (function () {
     // IE gives a false positive, so detect it here so we don't replace native CustomEvent.
-    //if (!window.CustomEvent || Object.hasOwnProperty.call(window, "ActiveXObject") && !window.ActiveXObject) {
+    //if (!window.CustomEvent || Object.hasOwnProperty.call(window, 'ActiveXObject') && !window.ActiveXObject) {
     if(window.location.hash = !!window.MSInputMethodContext && !!document.documentMode) {
       // is IE11
       function CustomEvent ( event, params ) {
@@ -267,7 +269,7 @@ Util.isFullScreen = function() {
     function(hmd) {
       console.log('in requestFullscreen() polyfill');
       // IFRAME needs 'allowfullscreen' attribute set for fullscreen
-      console.log("IN REQUESTFULLSCREEN, fullscreen element set to:"+ ('fullscreenElement' in document) + " and typeof:" + typeof document.fullscreenElement + " and value:" + document.fullscreenElement)
+      console.log('IN REQUESTFULLSCREEN, fullscreen element set to:'+ ('fullscreenElement' in document) + ' and typeof:' + typeof document.fullscreenElement + ' and value:' + document.fullscreenElement)
 
       if (this.nodeName === 'IFRAME' && !this.allowfullscreen) {
         console.log('invalid iframe, setting fullscreenElement to NULL');
@@ -353,7 +355,7 @@ Util.isFullScreen = function() {
 
     // Error handling.
     var screenError = function(e) {
-      console.error("A fullscreen request error has occurred");
+      console.error('A fullscreen request error has occurred');
       e.stopImmediatePropagation();
       var event = new CustomEvent('fullscreenerror', e);
       document.dispatchEvent(event);

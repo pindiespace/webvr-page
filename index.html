@@ -71,22 +71,6 @@ WebVRPageConfig = {
 <!--
   WebVR Boilerplate Polyfill.
 -->
-<script>
-// Enable if WebVR polyfill is used.
-WebVRConfig = {
-  // Forces availability of VR mode.
-  // FORCE_ENABLE_VR: true, // Default: false.
-  // Complementary filter coefficient. 0 for accelerometer, 1 for gyro.
-  //K_FILTER: 0.98, // Default: 0.98.
-  // How far into the future to predict during fast motion.
-  //PREDICTION_TIME_S: 0.040, // Default: 0.040 (in seconds).
-  // Flag to disable touch panner. In case you have your own touch controls
-  //TOUCH_PANNER_DISABLED: true, // Default: false.
-  // Enable yaw panning only, disabling roll and pitch. This can be useful for
-  // panoramas with nothing interesting above or below.
-  //YAW_ONLY: true, // Default: false.
-};
-</script>
 
 <!--
   Promise polyfill by taylorhakes
@@ -98,6 +82,11 @@ WebVRConfig = {
   three.js 3d library by
   -->
 <script src="js/lib/three.min.js"></script>
+
+<!--
+  Detector.js for HTML5 canvas and WebGL support.
+-->
+<script src="js/lib/Detector.js"></script>
 
 <!--
   VREffect.js handles stereo camera setup and rendering. NOTE: this needs to load before VRControls.js
@@ -125,18 +114,32 @@ WebVRConfig = {
 // Only enable it if you actually need to.
 document.addEventListener('DOMContentLoaded', function() {
 
-  // Example at: https://github.com/jeromeetienne/threejsboilerplate/blob/master/index.html
+  // Feature-detect <canvas> support and WebGL API using THREE.js Detector.js (in examples).
+  // More sophsiticated tests at: https://github.com/facebookarchive/rng.io/blob/c96a962ec18beef5f456d04820d791cbda59c2bc/dist/tests.js
+  if(!Detector.canvas) {
+    //the <canvas> tags will display our error message.
+    return;
+  }
 
+  // Example at: https://github.com/jeromeetienne/threejsboilerplate/blob/master/index.html4
   document.getElementById('go-fullscreen').addEventListener('click', function(e) {
     manager.requestFullscreen();
   }.bind(this), false);
 
 // Use an existing canvas.
 var canvas = document.getElementById('scene-cube');
-var renderer = new THREE.WebGLRenderer({
-  antialias: true,
-  canvas:canvas
-});
+var renderer;
+if(Detector.webgl) {
+  renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    canvas: canvas
+  });
+} else {
+  renderer = new THREE.CanvasRenderer({
+    antialias: true,
+    canvas: canvas
+  });
+}
 renderer.setPixelRatio(window.devicePixelRatio);
 
 // Size.
@@ -217,7 +220,12 @@ function animate(timestamp) {
 }
 
 // Kick off animation loop
-animate();
+if(Detector.webgl) { // Animated 3D scene.
+  animate();
+} else { // Render exactly once to canvas, treat as image.
+  manager.render(scene, camera, timestamp);
+}
+
 
 }); //end of DOMCOntentLoaded callback.
 
