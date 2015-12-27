@@ -15,11 +15,7 @@ THREE.VRControls = function ( object, onError ) {
 
 		var oculusDevices = devices.filter( function ( device ) {
 
-			if(device.deviceName) {
-				return device.deviceName.toLowerCase().indexOf( 'oculus' ) !== - 1;
-			} else {
-				return [];
-			}
+			return device.deviceName.toLowerCase().indexOf( 'oculus' ) !== - 1;
 
 		} );
 
@@ -27,11 +23,7 @@ THREE.VRControls = function ( object, onError ) {
 
 			return devices.filter( function ( device ) {
 
-				if(device.deviceName) {
-					return device.deviceName.toLowerCase().indexOf( 'cardboard' ) === - 1;
-				} else {
-					return [];
-				}
+				return device.deviceName.toLowerCase().indexOf( 'cardboard' ) === - 1;
 
 			} );
 

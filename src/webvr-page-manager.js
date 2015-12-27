@@ -33,6 +33,9 @@ function WebVRPageManager(renderer, effect, camera, params) {
   // Give a unique to ID to each manager.
   this.prefix = 'webvr';
   this.uid = Util.getUniqueId(this.prefix);
+  if(params) {
+    params.uid = this.uid;
+  }
 
   // Save the THREE.js renderer and effect for later.
   this.renderer = renderer;

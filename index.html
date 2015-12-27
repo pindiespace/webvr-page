@@ -79,14 +79,25 @@ WebVRPageConfig = {
 <script src="js/lib/Promise.min.js"></script>
 
 <!--
-  three.js 3d library by
+  three.js 3d library by mrdoob
+  https://github.com/mrdoob/three.js/
+  typedarray.js by inexorabletrash
+  https://github.com/inexorabletash/polyfill
   -->
+<script src="js/lib/typedarray.js"></script><!--for ie9-->
 <script src="js/lib/three.min.js"></script>
 
 <!--
-  Detector.js for HTML5 canvas and WebGL support.
+  Detector.js (from threejs examples) for HTML5 canvas and WebGL support.
 -->
 <script src="js/lib/Detector.js"></script>
+
+<!--
+  Canvas renderer (from threejs examples) for one-time render in browsers lacking WebGL,
+  in particular, IE9 and IE10.
+-->
+<script src="js/lib/Projector.js"></script>
+<script src="js/lib/CanvasRenderer.js"></script>
 
 <!--
   VREffect.js handles stereo camera setup and rendering. NOTE: this needs to load before VRControls.js
@@ -117,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Feature-detect <canvas> support and WebGL API using THREE.js Detector.js (in examples).
   // More sophsiticated tests at: https://github.com/facebookarchive/rng.io/blob/c96a962ec18beef5f456d04820d791cbda59c2bc/dist/tests.js
   if(!Detector.canvas) {
-    //the <canvas> tags will display our error message.
+    //the <canvas> tags will display our error message (one reason for putting them into markup).
     return;
   }
 
@@ -134,20 +145,18 @@ if(Detector.webgl) {
     antialias: true,
     canvas: canvas
   });
+  renderer.setPixelRatio(window.devicePixelRatio);
 } else {
   renderer = new THREE.CanvasRenderer({
     antialias: true,
     canvas: canvas
   });
 }
-renderer.setPixelRatio(window.devicePixelRatio);
 
 // Size.
 var w = parseFloat(getComputedStyle(canvas).getPropertyValue('width'));
 var h = parseFloat(getComputedStyle(canvas).getPropertyValue('height'));
 var aspect = w/h;
-
-console.log("ORIGINAL width:" + w + " HEIGHT:" + h);
 
 // Create a three.js scene.
 var scene = new THREE.Scene();
@@ -219,11 +228,11 @@ function animate(timestamp) {
   requestAnimationFrame(animate);
 }
 
-// Kick off animation loop
-if(Detector.webgl) { // Animated 3D scene.
+// Kick off animation loop, or draw a still image one time.
+if(Detector.webgl) { // Render animated 3D scene.
   animate();
 } else { // Render exactly once to canvas, treat as image.
-  manager.render(scene, camera, timestamp);
+  manager.render(scene, camera);
 }
 
 

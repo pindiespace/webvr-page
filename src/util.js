@@ -33,8 +33,58 @@ Util.getUniqueId = (function(prefix) {
   return inc;
 })();
 
+// Convert to base64.
 Util.base64 = function(mimeType, base64) {
   return 'data:' + mimeType + ';base64,' + base64;
+};
+
+// Wrapper for checking if CSS class exists.
+Util.hasClass = function(elem, className) {
+  if (elem.classList) {
+    return elem.classList.contains(className);
+  } else if (elem.className.indexOf(className) >= 0) {
+    return true;
+  }
+  return false;
+};
+
+// Wrapper for checking if CSS class exists.
+Util.addClass = function(elem, className) {
+  if (elem.classList) {
+    elem.classList.add(className);
+  } else if (!this.hasClass(elem, className)) {
+    if (elem.className == '') {
+      elem.className = className;
+    } else {
+      elem.className += ' ' + className;
+    }
+  }
+};
+
+// Wrapper for removing CSS class.
+Util.removeClass = function(elem, className) {
+  if (elem.classList) {
+    elem.classList.remove(className);
+  } else if (this.hasClass(elem, className)) {
+    var reg = new RegExp('(\\s|^)' + className + '(\\s|$)')
+    elem.className = elem.className.replace(reg, ' ')
+  }
+};
+
+Util.getChildrenByTagName = function(elem, tagName) {
+  var arr = [], c = elem.children, len = c.length;
+  var t = tagName.toUpperCase();
+  for (var i = 0; i < len; i++) {
+    if (t == c[i].tagName) {
+      arr.push(c[i]);
+    }
+  }
+  return arr;
+};
+
+// Removes numbers from string (use for building Ids and classes)
+Util.parseText = function(str) {
+  return str.replace(/[0-9]/g, '');
 };
 
 /**
@@ -143,7 +193,7 @@ Util.ua = (function() {
   (function () {
     // IE gives a false positive, so detect it here so we don't replace native CustomEvent.
     //if (!window.CustomEvent || Object.hasOwnProperty.call(window, 'ActiveXObject') && !window.ActiveXObject) {
-    if(window.location.hash = !!window.MSInputMethodContext && !!document.documentMode) {
+    if (window.location.hash = !!window.MSInputMethodContext && !!document.documentMode) {
       // is IE11
       function CustomEvent ( event, params ) {
         params = params || { bubbles: false, cancelable: false, detail: undefined };
@@ -165,7 +215,7 @@ Util.ua = (function() {
  *
  */
 Util.fullscreenClass = (function(fullscreenClass) {
-  var head = document.querySelector('head');
+  var head = document.getElementsByTagName('head')[0];
   var s = document.createElement('style');
   s.type = 'text/css';
   s.id = 'webvr-util-fullscreen-style';
@@ -196,7 +246,7 @@ Util.fullscreenClass = (function(fullscreenClass) {
 
 // Check if program is in fullscreen mode (document.fullscreenElement polyfilled below).
 Util.isFullScreen = function() {
-  if(document.fullscreenElement === null) {
+  if (document.fullscreenElement === null) {
     return false;
   }
   return true;
@@ -249,7 +299,7 @@ Util.isFullScreen = function() {
    * the Console is visible.
   */
   var escHandler = function(e) {
-    if(e.keyCode == 27) {
+    if (e.keyCode == 27) {
         e.stopImmediatePropagation();
         document.exitFullscreen();
     }
@@ -278,7 +328,7 @@ Util.isFullScreen = function() {
       }
 
       // Assign fullscreen element.
-      if(document.fullscreenElement === null) {
+      if (document.fullscreenElement === null) {
         document.fullscreenElement = this;
       }
 
@@ -315,7 +365,7 @@ Util.isFullScreen = function() {
      */
     var screenChange = function(e) {
       e.stopImmediatePropagation();
-      if(toFS === 'true') { //normal to fullscreen
+      if (toFS === 'true') { //normal to fullscreen
         document.fullscreenElement = e.target;
         toFS = 'false';
       } else { //fullscreen to normal
@@ -342,7 +392,7 @@ Util.isFullScreen = function() {
       document.msExitFullscreen ||
       function (d) {
         d.d = true;
-        if(document.fullscreenEnabled === true) {
+        if (document.fullscreenEnabled === true) {
           document.removeEventListener('keydown', escHandler, false);
           var event = new CustomEvent('fullscreenchange');
           if (typeof document.onfullscreenchange == 'function') {
@@ -364,5 +414,18 @@ Util.isFullScreen = function() {
     document.addEventListener('mozfullscreenerror', screenError, false);
     document.addEventListener('MSFullscreenError', screenError, false);
 })();
+
+// From http://goo.gl/4WX3tg
+Util.getQueryParameter = function(name) {
+  name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+  var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+      results = regex.exec(location.search);
+  return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+};
+
+// Check if we are in landscape mode
+Util.isLandscapeMode = function() {
+  return (window.orientation == 90 || window.orientation == -90);
+};
 
 module.exports = Util;

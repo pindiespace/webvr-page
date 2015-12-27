@@ -32,8 +32,20 @@ var Util = require('./util.js');
  */
 function WebVRPagePlayer(renderer, params) {
 
+  this.playerClasses = {
+    player: 'player',    //player suffix
+    caption: '-caption', //<figcaption> suffix
+    canvas: 'canvas',   //canvas suffix
+  };
+
   // Save params.
   this.params = params || {};
+
+  // Assign base uid for Player elements.
+  this.uid = params.uid + '-' + this.playerClasses.player;
+
+  // Create default text for <figcaption> element.
+  this.captionDefault = 'WebVR Page Player Scene #' + parseInt(params.uid);
 
   // Save the renderer.
   this.renderer = renderer;
@@ -41,11 +53,15 @@ function WebVRPagePlayer(renderer, params) {
   // Save the drawing canvas.
   this.canvas = this.renderer.domElement;
 
-  // Find the enclosing player container, or create one.
-  this.dom = this.canvas.parentNode;
+  // Find the enclosing Player container (a <figure>), or create one.
+  this.initFigure_();
+
+  // Find the <figcaption> element, or create one.
+  this.initCaption_();
+
 
   // Add control buttons to screen, as necessary.
-  this.buttons = new WebVRPageButtons(params);
+  this.initButtons_();
 
   // Always resize the player to the initial aspect ratio (unless manually changed).
   this.aspect = this.getCurrentWidth() / this.getCurrentHeight();
@@ -53,6 +69,74 @@ function WebVRPagePlayer(renderer, params) {
 };
 
 WebVRPagePlayer.prototype = new Emitter();
+
+// Set up Player <figure> element.
+WebVRPagePlayer.prototype.initFigure_ = function() {
+  var c = this.canvas;
+
+  // If our canvas isn't wrapped in a Player <figure> container, add it.
+  if (c.parentNode.tagName != 'FIGURE') {
+    this.dom = document.createElement('figure');
+    c.parentNode.appendChild(this.dom);
+    this.dom.appendChild(c);
+  }
+  else {
+    // Supplied <canvas> is already inside a <figure> tag.
+    this.dom = c.parentNode;
+  }
+
+  // Set up CSS classes.
+  var d = this.dom;
+  var prefix = Util.parseText(this.params.uid);
+
+  // Set the Player id and standard class.
+  if (!d.id) {
+    d.id = this.uid;
+  }
+  Util.addClass(d, prefix + this.playerClasses.player);
+
+  // Set the Player canvas id and standard class
+  if (!c.id) {
+    c.id = this.uid + this.playerClasses.canvas;
+  }
+  Util.addClass(c, prefix + this.playerClasses.canvas);
+
+  // Set the ARIA attribute for figure caption.
+  d.setAttribute('aria-describedby', this.uid + this.playerClasses.caption);
+
+};
+
+// Set up the Player caption element.
+WebVRPagePlayer.prototype.initCaption_ = function() {
+  var figCaption = Util.getChildrenByTagName(this.dom, 'figcaption');
+  window.fig = figCaption;
+    if (figCaption[0]) {
+      figCaption = figCaption[0];
+    } else {
+      figCaption = document.createElement('figcaption');
+      this.dom.appendChild(figCaption);
+    }
+
+    // Link caption to its parent figure (required by ARIA).
+    figCaption.id = this.dom.getAttribute('aria-describedby');
+
+    // Set the standard class.
+    var prefix = Util.parseText(this.params.uid);
+    Util.addClass(figCaption, prefix + this.playerClasses.player + this.playerClasses.caption);
+
+    // Add caption text, if supplied, otherwise default.
+    if (this.params.caption) {
+      figCaption.textContent = this.params.caption;
+    } else {
+      if (figCaption.textContent == '') {
+        figCaption.textContent = this.captionDefault;
+      }
+    }
+};
+
+WebVRPagePlayer.prototype.initButtons_ = function() {
+    this.buttons = new WebVRPageButtons(this.params);
+};
 
 // Respond to events.
 
