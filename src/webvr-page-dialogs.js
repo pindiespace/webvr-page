@@ -24,6 +24,7 @@
   * Create dialog windows and buttons.
   */
 function WebVRPageDialogs(params) {
+  this.params = params || {};
 
  };
 
@@ -34,6 +35,25 @@ WebVRPageDialogs.prototype.createWindow_ = function() {
 };
 
 WebVRPageDialogs.prototype.createButton_ = function() {
+
+};
+
+WebVRPageDialogs.prototype.createErrorMsg = function(msg) {
+  if(document.createElement) {
+  var element = document.createElement( 'div' );
+  element.id = this.params.uid + '-error-message' || 'error';
+  element.style.fontFamily = 'monospace';
+  element.style.fontSize = '13px';
+  element.style.fontWeight = 'normal';
+  element.style.textAlign = 'center';
+  element.style.background = '#fff';
+  element.style.color = '#000';
+  element.style.padding = '1.5em';
+  element.style.width = '400px';
+  element.style.margin = '5em auto 0';
+} else {
+  alert(msg); // Never going to run this app.
+}
 
 };
 

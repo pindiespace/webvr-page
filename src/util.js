@@ -147,69 +147,6 @@ Util.ua = (function() {
 })();
 
 /**
- * Polyfill array.filter
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
- */
- if (!Array.prototype.filter) {
-   Array.prototype.filter = function(fun/*, thisArg*/) {
-     'use strict';
-
-     if (this === void 0 || this === null) {
-       throw new TypeError();
-     }
-
-     var t = Object(this);
-     var len = t.length >>> 0;
-     if (typeof fun !== 'function') {
-       throw new TypeError();
-     }
-
-     var res = [];
-     var thisArg = arguments.length >= 2 ? arguments[1] : void 0;
-     for (var i = 0; i < len; i++) {
-       if (i in t) {
-         var val = t[i];
-
-         // NOTE: Technically this should Object.defineProperty at
-         //       the next index, as push can be affected by
-         //       properties on Object.prototype and Array.prototype.
-         //       But that method's new, and collisions should be
-         //       rare, so use the more-compatible alternative.
-         if (fun.call(thisArg, val, i, t)) {
-           res.push(val);
-         }
-       }
-     }
-
-     return res;
-   };
- }
-
- /**
-  * Polfill CustomEvent for IE 9, 10, 11.
-  * https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent
-  */
-  (function () {
-    /*
-     * IE11 gives a false positive for CustomEvent, so detect it here so we don't replace native CustomEvent
-     * in other browsers.
-     */
-    //if (!window.CustomEvent || Object.hasOwnProperty.call(window, 'ActiveXObject') && !window.ActiveXObject) {
-    if (window.location.hash = !!window.MSInputMethodContext && !!document.documentMode) {
-      // is IE11
-      function CustomEvent ( event, params ) {
-        params = params || { bubbles: false, cancelable: false, detail: undefined };
-        var evt = document.createEvent( 'CustomEvent' );
-        evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
-        return evt;
-      };
-
-      CustomEvent.prototype = window.Event.prototype;
-      window.CustomEvent = CustomEvent;
-    }
-  })();
-
-/**
  * Add recommended fullscreen styles.
  * https://wiki.mozilla.org/Gecko%3aFullScreenAPI#onfullscreenchange_attribute
  * https://blog.idrsolutions.com/2014/01/adding-fullscreen-using-javascript-api/
