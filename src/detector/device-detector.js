@@ -67,7 +67,11 @@ var Detector = (function() {
   device.pixelRatio = window.devicePixelRatio || 1.0;
   device.screenWidth = Math.max(window.screen.width, window.screen.height)  || 0;
   device.screenHeight = Math.min(window.screen.width, window.screen.height) || 0;
+  device.pixelWidth = device.screenWidth * window.devicePixelRatio;
+  device.pixelHeight = device.screenHeight * device.pixelRatio;
   device.retina = (device.pixelRatio >= 2);
+
+  // Classify devices based on user-agent.
   device.mobile = os.ios || os.android || (/mobi|ip(hone|od|ad)|touch|blackberry|bb10|windows phone|kindle|silk|htc|(hpw|web)os|opera mini|fxios/i.test(ua));
   device.tablet = /ipad|tablet|nexus[\s]+(7|9|10)|playbook|silk|ideapad|slate|touchpad|playbook|toshiba|xoom/i.test(ua);
   device.console = /(nintendo|wiiu|3ds|playstation|xbox)/i.test(ua);
@@ -76,7 +80,14 @@ var Detector = (function() {
   // Specific Android devices.
   device.Note4 = (os.android && ua.indexOf('samsung sm-n910c') >= 0);
   if(os.android) {
-
+    device.nexus5 = /nexus 5 /.test(ua);
+    device.nexus5s = /nexus 5s/.test(ua);
+    device.nexus6 = /nexus 6 /.test(ua);
+    device.nexus6p = /nexus 6p/.test(ua);
+    device.galaxyS3 = /GT-I9300/.test(ua);
+    device.galaxyS4 = /GT-I9505/.test(ua);
+    device.galaxyS5 = /SM-G900F/.test(ua);
+    device.galaxyS6 = /SM-G920/.test(ua);
   }
 
   // Specific iOS devices.
