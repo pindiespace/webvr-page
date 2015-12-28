@@ -45,9 +45,6 @@ var Detector = (function() {
       }
     } //end of canvas and webgl tests.
 
-
-  // Test for Promise
-
   // User agent.
   var ua = (navigator.userAgent || navigator.vendor || window.opera).toLowerCase();
 
@@ -149,9 +146,13 @@ var Detector = (function() {
   browser.opera = ua.indexOf('opr/') >= 0; //new opera webkit
 
   return {
+    typedArray: ('ArrayBuffer' in window),
     canvas:canvas,
     webgl:webgl,
     glVersion:glVersion,
+    promise:('Promise' in this),
+    defineProperty: ('defineProperty' in Object),
+    defineProperties: ('defineProperties' in Object),
     os:os,
     device:device,
     browser:browser

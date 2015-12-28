@@ -69,6 +69,11 @@ WebVRPageConfig = {
 </script>
 
 <!--
+  Detector.js (from threejs examples) for HTML5 canvas and WebGL support.
+-->
+<script src="js/lib/device-detector.js"></script>
+
+<!--
   General polyfills.
 -->
 <script src="js/lib/polyfills.js"></script>
@@ -80,18 +85,18 @@ WebVRPageConfig = {
 <script src="js/lib/Promise.min.js"></script>
 
 <!--
+typedarray.js by inexorabletrash
+https://github.com/inexorabletash/polyfill
+-->
+<script src="js/lib/typedarray.js"></script><!--for ie9 running canvas 2d renderer-->
+
+<!--
   three.js 3d library by mrdoob
   https://github.com/mrdoob/three.js/
   typedarray.js by inexorabletrash
   https://github.com/inexorabletash/polyfill
   -->
-<script src="js/lib/typedarray.js"></script><!--for ie9-->
 <script src="js/lib/three.min.js"></script>
-
-<!--
-  Detector.js (from threejs examples) for HTML5 canvas and WebGL support.
--->
-<script src="js/lib/device-detector.js"></script>
 
 <!--
   Canvas renderer (from threejs examples) for one-time render in browsers lacking WebGL,

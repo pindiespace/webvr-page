@@ -23,6 +23,12 @@ var Util = require('./util.js');
 var WebVRPagePlayer = require('./webvr-page-player.js');
 
 /**
+ * WebVR page
+ * A DOM-friendly WebVR implementation
+ * 
+ * WebVR Spec.
+ * http://mozvr.github.io/webvr-spec/webvr.html
+ *
  * Create the manager.
  * Naming conventions
  * @link https://google.github.io/styleguide/javascriptguide.xml
@@ -71,6 +77,8 @@ function WebVRPageManager(renderer, effect, camera, params) {
   // Set default size.
   var size = this.player.getSize();
   this.resize(size.width, size.height);
+
+  this.listenMotion_();
 
   // Begin listening for resize events.
   this.listenResize_();
@@ -181,6 +189,19 @@ WebVRPageManager.prototype.adjustFOV_ = function(width, height) {
     this.effect.setFOV(fov.eyeFOVL, fov.eyeFOVR);
   }
 }
+
+WebVRPageManager.prototype.listenMotion_ = function() {
+  window.addEventListener('devicemotion', function (evt) {
+    console.log('devicemotion detected');
+			var current = evt.accelerationIncludingGravity,
+				time,
+				diff,
+				deltaX = 0,
+				deltaY = 0,
+				deltaZ = 0,
+				dist;
+      });
+};
 
 // Start listening for fullscreen change and exit events.
 WebVRPageManager.prototype.listenFullscreen_ = function() {

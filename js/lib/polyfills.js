@@ -15,10 +15,19 @@
  *
  */
 
- // ES 15.2.3.6 Object.defineProperty (O, P, Attributes).
-// Partial support for most common case - getters, setters, and values.
-(function() {
+(function(global) {
 
+  if (!('window' in global && 'document' in global))
+    return;
+
+  // Not used but could be valuable:
+  // https://github.com/Financial-Times/polyfill-service/tree/0585a1713c9102c7b3b75bfcf015a60f1d934557
+
+  // ES5 polyfills.
+  // https://github.com/inexorabletash/polyfill/tree/5c070ddef1b7ecf741567a37ffd3ac5658dd9683
+
+  // ES 15.2.3.6 Object.defineProperty (O, P, Attributes).
+  // Partial support for most common case - getters, setters, and values.
   if (!Object.defineProperty ||
       !(function () { try { Object.defineProperty({}, 'x', {}); return true; } catch (e) { return false; } } ())) {
     var orig = Object.defineProperty;
@@ -90,157 +99,138 @@
     };
   }
 
-  // DOMTokenList interface and Element.classList / Element.relList
-  // Needed for: IE9-
-  // Use getClassList(elem) instead of elem.classList() if IE7- support is needed
-  // Use getRelList(elem) instead of elem.relList() if IE7- support is needed
-    (function() {
-      function DOMTokenListShim(o, p) {
-        function split(s) { return s.length ? s.split(/\s+/g) : []; }
 
-        // NOTE: This does not exactly match the spec.
-        function removeTokenFromString(token, string) {
-          var tokens = split(string),
-              index = tokens.indexOf(token);
-          if (index !== -1) {
-            tokens.splice(index, 1);
+    /**
+     * https://github.com/moagrius/classList
+     *
+     * uses work by
+     * https://github.com/remy/polyfills/blob/master/classList.js
+     * https://github.com/eligrey/classList.js/blob/master/classList.js
+     */
+
+    // if we don't even support Element.prototype, quit now
+    if(!('Element' in this || !Element.prototype)){
+      return;
+    }
+    var tester = document.createElement('span');
+
+    if(!('classList' in tester)){ // no support at all, polyfill entire API
+
+      // IE8 doesn't have Array.indexOf
+      var indexOf = function(list, element){
+        for(var i = list.length - 1; i >= 0; i--){
+          if(list[i] == element){
+            break;
           }
-          return tokens.join(' ');
         }
+        return i;
+      };
 
-        Object.defineProperties(
-          this,
-          {
-            length: {
-              get: function() { return split(o[p]).length; }
-            },
+      // scope it so it's not hoisted, otherwise IE10 will fail to patch
+      (function(){
 
-            item: {
-              value: function(idx) {
-                var tokens = split(o[p]);
-                return 0 <= idx && idx < tokens.length ? tokens[idx] : null;
-              }
-            },
+        var DOMTokenList = function(element){
+          this.element = element;
+        };
+        DOMTokenList.prototype.contains = function(name){
+          var classes = this.element.className.split(/\s+/);
+          return indexOf(classes, name) != -1;
+        };
+        DOMTokenList.prototype.add = function(){
+          var classes = this.element.className.split(/\s+/);
+          for(var i = arguments.length - 1; i >= 0; i--) {
+            var name = arguments[i];
+            if(indexOf(classes, name) == -1){
+              classes.push(name);
+            }
+          }
+          this.element.className = classes.join(' ');
+        };
+        DOMTokenList.prototype.remove = function(name){
+          var classes = this.element.className.split(/\s+/);
+          for(var i = arguments.length - 1; i >= 0; i--) {
+            var index = indexOf(classes, name);
+            if(index != -1){
+              classes.splice(index, 1);
+            }
+          }
+          this.element.className = classes.join(' ');
+        };
+        DOMTokenList.prototype.item = function(index){
+          var classes = this.element.className.split(/\s+/);
+          return classes[index];
+        };
+        DOMTokenList.prototype.toggle = function(name, force){
+          var exists = this.contains(name);
+          if(exists === force){
+            return force;
+          }
+          if(exists){
+            this.remove(name);
+          } else {
+            this.add(name);
+          }
+          return !exists;
+        };
+        // replaced with getter, not supported in IE8, will always return 0
+        DOMTokenList.prototype.length = 0;
 
-            contains: {
-              value: function(token) {
-                token = String(token);
-                if (token.length === 0) { throw SyntaxError(); }
-                if (/\s/.test(token)) { throw Error("InvalidCharacterError"); }
-                var tokens = split(o[p]);
-
-                return tokens.indexOf(token) !== -1;
-              }
-            },
-
-            add: {
-              value: function(/*tokens...*/) {
-                var tokens = Array.prototype.slice.call(arguments).map(String);
-                if (tokens.some(function(token) { return token.length === 0; })) {
-                  throw SyntaxError();
-                }
-                if (tokens.some(function(token) { return (/\s/).test(token); })) {
-                  throw Error("InvalidCharacterError");
-                }
-
-                try {
-                  var underlying_string = o[p];
-                  var token_list = split(underlying_string);
-                  tokens = tokens.filter(function(token) { return token_list.indexOf(token) === -1; });
-                  if (tokens.length === 0) {
-                    return;
-                  }
-                  if (underlying_string.length !== 0 && !(/\s$/).test(underlying_string)) {
-                    underlying_string += ' ';
-                  }
-                  underlying_string += tokens.join(' ');
-                  o[p] = underlying_string;
-                } finally {
-                  var length = split(o[p]).length;
-                  if (this.length !== length) { this.length = length; }
-                }
-              }
-            },
-
-            remove: {
-              value: function(/*tokens...*/) {
-                var tokens = Array.prototype.slice.call(arguments).map(String);
-                if (tokens.some(function(token) { return token.length === 0; })) {
-                  throw SyntaxError();
-                }
-                if (tokens.some(function(token) { return (/\s/).test(token); })) {
-                  throw Error("InvalidCharacterError");
-                }
-
-                try {
-                  var underlying_string = o[p];
-                  tokens.forEach(function(token) {
-                    underlying_string = removeTokenFromString(token, underlying_string);
-                  });
-                  o[p] = underlying_string;
-                } finally {
-                  var length = split(o[p]).length;
-                  if (this.length !== length) { this.length = length; }
-                }
-              }
-            },
-
-            toggle: {
-              value: function(token, force) {
-                try {
-                  token = String(token);
-                  if (token.length === 0) { throw SyntaxError(); }
-                  if (/\s/.test(token)) { throw Error("InvalidCharacterError"); }
-                  var tokens = split(o[p]),
-                      index = tokens.indexOf(token);
-
-                  if (index !== -1 && (!force || force === (void 0))) {
-                    o[p] = removeTokenFromString(token, o[p]);
-                    return false;
-                  }
-                  if (index !== -1 && force) {
-                    return true;
-                  }
-                  var underlying_string = o[p];
-                  if (underlying_string.length !== 0 && !/\s$/.test(underlying_string)) {
-                    underlying_string += ' ';
-                  }
-                  underlying_string += token;
-                  o[p] = underlying_string;
-                  return true;
-                } finally {
-                  var length = split(o[p]).length;
-                  if (this.length !== length) { this.length = length; }
-                }
-              }
-            },
-
-            toString: {
-              value: function() {
-                return o[p];
-              }
+        if(Object.defineProperty) {
+          Object.defineProperty(Element.prototype, 'classList',{
+            get : function(){
+              return new DOMTokenList(this);
             }
           });
-        if (!('length' in this)) {
-          // In case getters are not supported
-          this.length = split(o[p]).length;
-        } else {
-          // If they are, shim in index getters (up to 100)
-          for (var i = 0; i < 100; ++i) {
-            Object.defineProperty(this, String(i), {
-              get: (function(n) { return function() { return this.item(n); }; }(i))
-            });
+          Object.defineProperty(DOMTokenList.prototype, 'length', function(){
+            var classes = this.element.className.split(/\s+/);
+            return classes.length;
+          });
+        } else if(Element.prototype.__defineGetter__){
+          Element.prototype.__defineGetter__('classList', function(){
+            return new DOMTokenList(this);
+          });
+        }
+
+      })();
+
+    } else {  // we have support, just patch methods as needed
+
+      if('DOMTokenList' in this){  // this should be true if classList is detected
+
+        // test and patch multiple argument support
+        tester.classList.add('a', 'b');
+        if(!tester.classList.contains('b')){
+          var methods = ['add', 'remove'];
+          var patch = function(definition, method){
+            var historic = definition[method];
+            definition[method] = function(){
+              for(var i = arguments.length - 1; i >= 0; i--){
+                var token = arguments[i];
+                historic.call(this, token);
+              }
+            };
+          };
+          for(var i = methods.length - 1; i >= 0; i--){
+            var method = methods[i];
+            patch(DOMTokenList.prototype, method);
           }
         }
-      }
 
-      function addToElementPrototype(p, f) {
-        if ('Element' in global && Element.prototype && Object.defineProperty) {
-          Object.defineProperty(Element.prototype, p, { get: f });
+        // test and patch toggle with force
+        tester.classList.toggle('c', false);
+        if(tester.classList.contains('c')){
+          var historic = DOMTokenList.prototype.toggle;
+          DOMTokenList.prototype.toggle = function(token, force){
+            if (arguments.length > 0 && this.contains(token) === force) {
+              return force;
+            }
+            return historic.call(this, token);
+          };
         }
+
       }
 
-    }());
+    }
 
   // Polyfill CustomEvent for IE 9, 10, 11.
   // https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent
@@ -260,4 +250,4 @@
     window.CustomEvent = CustomEvent;
   }
 
-})();
+})(this);
