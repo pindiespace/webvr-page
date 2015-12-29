@@ -19,7 +19,7 @@
 
 var Emitter = require('./emitter.js');
 var Modes = require('./modes.js');
-var DeviceInfo = require('./device-info.js');
+//var DeviceInfo = require('./device-info.js');
 var Util = require('./util.js');
 var WebVRPagePlayer = require('./webvr-page-player.js');
 
