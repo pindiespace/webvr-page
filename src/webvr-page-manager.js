@@ -12,6 +12,7 @@
  * limitations under the License.
  *
  * Portions of this software derive from webvr-boilerplate
+ *
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the 'License');
  */
@@ -25,7 +26,7 @@ var WebVRPagePlayer = require('./webvr-page-player.js');
 /**
  * WebVR page
  * A DOM-friendly WebVR implementation
- * 
+ *
  * WebVR Spec.
  * http://mozvr.github.io/webvr-spec/webvr.html
  *
@@ -39,7 +40,7 @@ function WebVRPageManager(renderer, effect, camera, params) {
   // Give a unique to ID to each manager.
   this.prefix = 'webvr';
   this.uid = Util.getUniqueId(this.prefix);
-  if(params) {
+  if (params) {
     params.uid = this.uid;
   }
 
@@ -48,11 +49,11 @@ function WebVRPageManager(renderer, effect, camera, params) {
   this.effect = effect;
   this.camera = camera;
 
-  // Get the Player object
+  // Create the Player.
   this.player = new WebVRPagePlayer(renderer, params);
 
   // Add a method to the THREE.JS effect to adjust field of view (if necessary) in VR mode.
-  if(this.effect.setFOV !== 'function') {
+  if (this.effect.setFOV !== 'function') {
     console.log('setFOV() missing from VREffect.js, adding it');
     this.effect.setFOV = function(fovL, fovR) {
       eyeFOVL = fovL;
@@ -86,7 +87,7 @@ function WebVRPageManager(renderer, effect, camera, params) {
   // Begin listening for fullscreen events.
   this.listenFullscreen_();
 
-  // Begin listening for orientation events.
+  // Begin listening for device orientation events.
   this.listenOrientation_();
 
   // Bind events.
@@ -148,7 +149,7 @@ WebVRPageManager.prototype.cloneFOV_ = function(fovObj) {
 // Polyfill for managinging different HMD object structures.
 WebVRPageManager.prototype.getFOV_ = function() {
   var eyeFOVL, eyeFOVR;
-  if(this.hmd) {
+  if (this.hmd) {
     var h = this.hmd;
     if (h.getEyeParameters !== undefined) {
       var eyeParamsL = h.getEyeParameters('left');
@@ -178,11 +179,11 @@ WebVRPageManager.prototype.getFOV_ = function() {
 };
 
 WebVRPageManager.prototype.adjustFOV_ = function(width, height) {
-  if(this.hmd) {
+  if (this.hmd) {
     var aspectChange = height / (width);
     console.log("going to adjust FOV, aspectChange:" + aspectChange);
     var fov = this.getFOV_();
-    if(aspectChange > 1) {
+    if (aspectChange > 1) {
       fov.eyeFOVL.upDegrees = fov.eyeFOVL.downDegrees =
       fov.eyeFOVR.upDegrees = fov.eyeFOVR.downDegrees *= aspectChange;
     }
@@ -252,7 +253,7 @@ WebVRPageManager.prototype.onFullscreenChange_ = function(e) {
   console.log("Manager onFullscreenChange_, target:" + e.target);
   console.log("Manager onFullscreenChange_, document.fullscreenElement is a:" + typeof document.fullscreenElement + " value:" + document.fullscreenElement)
   // Catches exit from fullscreen, both manually, and via 'escape' key pressed in fullscreen view.
-  if(document.fullscreenElement === null) {
+  if (document.fullscreenElement === null) {
     console.log('Manager, exitFullscreen event triggered, dispatching exitfullscreen event');
     document.exitFullscreen();
     var event = new CustomEvent('exitfullscreen');
@@ -278,7 +279,7 @@ WebVRPageManager.prototype.onErrorFullscreen_ = function(e) {
 // Trigger a fullscreen event.
 WebVRPageManager.prototype.requestFullscreen = function() {
   // Trigger fullscreen only if we support 3D.
-  if(this.params.webgl) {
+  if (this.params.webgl) {
     console.log('Manager USER entering fullscreen');
 
   // Adjust the scene to the screen dimensions.
