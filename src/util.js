@@ -101,50 +101,6 @@ Util.parseText = function(str) {
  * http://cpansearch.perl.org/src/MAMOD/HTTP-UA-Parser-0.005/lib/HTTP/UA/Parser/regexes.yaml
  * https://udger.com/resources/ua-list/device-detail?device=Smart%20TV
  */
-Util.ua = (function() {
-  var ua = {
-    browser: {},
-    os: {},
-    device: {}
-  };
-
-  // User agent.
-  ua.name = (navigator.userAgent || navigator.vendor || window.opera).toLowerCase();
-
-  // OS detects
-  ua.os.ios = /(iphone|ipad|ipod)/i.test(ua.name);
-  ua.os.crios = /(cros|crmo)/i.test(ua.name);
-  ua.os.mac = ua.name.indexOf('mac os x') >= 0;
-  ua.os.linux = ua.name.indexOf('linux') >= 0;
-  ua.os.windows = ua.name.indexOf('windows') >= 0;
-  ua.os.android = ua.name.indexOf('android') >= 0;
-  ua.os.blackberry = /(blackberry|bb10|rim[0-9])/i.test(ua.name);
-  ua.os.firefoxOS = /mobile.*(firefox)/i.test(ua.name);
-
-  // General device detects.
-  ua.device.mobile = ua.os.ios || ua.os.android || (/mobi|ip(hone|od|ad)|touch|blackberry|bb10|windows phone|kindle|silk|htc|(hpw|web)os|opera mini|fxios/i.test(ua.name));
-  ua.device.tablet = /ipad|tablet|nexus[\s]+(7|9|10)|playbook|silk|ideapad|slate|touchpad|playbook|toshiba|xoom/i.test(ua.name);
-  ua.device.console = /(nintendo|wiiu|3ds|playstation|xbox)/i.test(ua.name);
-  ua.device.tv = /crkey|(google|apple|smart|hbb|opera).*tv|(lg|aquos|inettv).*browser|roku|espial/i.test(ua.name);
-
-  // Specific device tests may be added as needed here.
-  // Galaxy Note5, Galaxy S6, Galaxy S6 Edge, Galaxy S6 Edge+
-  // https://github.com/serbanghita/Mobile-Detect/blob/master/Mobile_Detect.php
-  // https://github.com/faisalman/ua-parser-js/blob/master/src/ua-parser.js
-  // https://github.com/hgoebl/mobile-detect.js/blob/master/mobile-detect.js#L292
-  ua.device.Note4 = (ua.os.android && ua.name.indexOf('samsung sm-n910c') >= 0);
-
-  // Specific Browser detects when feature-detection isn't enought.
-  ua.browser.ie = (ua.name.indexOf('msie') >= 0 || ua.name.indexOf('trident') >= 0);
-  ua.browser.ie11 = /(trident).+rv[:\s]([\w\.]+).+like\sgecko/i.test(ua.name); //only version of IE supporting WebGL
-  ua.browser.edge = ua.name.indexOf('edge') >= 0;
-  ua.browser.safari = (ua.name.indexOf('safari') >= 0 && !ua.name.indexOf('chrome') >= 0);
-  ua.browser.chrome = ua.name.indexOf('chrome') >= 0;
-  ua.browser.amazon = ua.name.indexOf('silk') >= 0;
-  ua.browser.firefox = ua.name.indexOf('firefox') >= 0;
-  ua.browser.opera = ua.name.indexOf('opr/') >= 0; //new opera webkit
-  return ua;
-})();
 
 /**
  * Add recommended fullscreen styles.

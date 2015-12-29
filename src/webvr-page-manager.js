@@ -52,18 +52,7 @@ function WebVRPageManager(renderer, effect, camera, params) {
   // Create the Player.
   this.player = new WebVRPagePlayer(renderer, params);
 
-  // Add a method to the THREE.JS effect to adjust field of view (if necessary) in VR mode.
-  if (this.effect.setFOV !== 'function') {
-    console.log('setFOV() missing from VREffect.js, adding it');
-    this.effect.setFOV = function(fovL, fovR) {
-      eyeFOVL = fovL;
-      eyeFOVR = fovR;
-    };
-  }
-
-  /*
-   * Get info for any HMD (head-mounted device).
-  */
+  // Get info for any HMD (head-mounted device).
   this.getDeviceByType_(HMDVRDevice).then(function(hmd) {
     this.hmd = hmd;
   }.bind(this));
@@ -181,12 +170,13 @@ WebVRPageManager.prototype.getFOV_ = function() {
 WebVRPageManager.prototype.adjustFOV_ = function(width, height) {
   if (this.hmd) {
     var aspectChange = height / (width);
-    console.log("going to adjust FOV, aspectChange:" + aspectChange);
     var fov = this.getFOV_();
     if (aspectChange > 1) {
       fov.eyeFOVL.upDegrees = fov.eyeFOVL.downDegrees =
       fov.eyeFOVR.upDegrees = fov.eyeFOVR.downDegrees *= aspectChange;
     }
+    console.log("going to adjust FOV, aspectChange:" + aspectChange);
+    window.eff = this.effect;
     this.effect.setFOV(fov.eyeFOVL, fov.eyeFOVR);
   }
 }

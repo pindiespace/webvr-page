@@ -107,6 +107,7 @@ https://github.com/inexorabletash/polyfill
 
 <!--
   VREffect.js handles stereo camera setup and rendering. NOTE: this needs to load before VRControls.js
+  NOTE: needs setFOV() added to work!
   -->
 <script src="js/lib/VREffect.js"></script>
 
@@ -125,11 +126,15 @@ https://github.com/inexorabletash/polyfill
   -->
 <script src="js/webvr-page.js"></script>
 
-
+<!--
+  set up the VR scene.
+-->
 <script>
 // Setup three.js WebGL renderer. Note: Antialiasing is a big performance hit.
 // Only enable it if you actually need to.
 document.addEventListener('DOMContentLoaded', function() {
+
+  window.dd = Detector.detect();
 
   // Feature-detect <canvas> support and WebGL API using THREE.js Detector.js (in examples).
   // More sophsiticated tests at: https://github.com/facebookarchive/rng.io/blob/c96a962ec18beef5f456d04820d791cbda59c2bc/dist/tests.js
@@ -146,7 +151,8 @@ document.addEventListener('DOMContentLoaded', function() {
 // Use an existing <canvas> in the markup.
 var canvas = document.getElementById('scene-cube');
 var renderer;
-if(Detector.webgl) { // 3D scenes ok.
+if(Detector.webGL) { // 3D scenes ok.
+
   renderer = new THREE.WebGLRenderer({
     antialias: true,
     canvas: canvas
@@ -214,7 +220,7 @@ effect.setSize(w, h);
  */
 
 // Create a VR manager helper to enter and exit VR mode.
-window.manager = new WebVRPageManager(renderer, effect, camera, {hideButton: false, canvas: Detector.canvas, webgl: Detector.webgl});
+window.manager = new WebVRPageManager(renderer, effect, camera, {hideButton: false, canvas: Detector.canvas, webgl: Detector.webGL});
 
 // Reset the position sensor when 'z' pressed.
 function onKey(event) {
@@ -239,7 +245,7 @@ function animate(timestamp) {
 }
 
 // Kick off animation loop, or draw a still image one time.
-if(Detector.webgl) { // Render animated 3D scene.
+if(Detector.webGL) { // Render animated 3D scene.
   animate();
 } else { // Render exactly once to canvas, treat as image.
   manager.render(scene, camera);
