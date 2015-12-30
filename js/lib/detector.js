@@ -1,14 +1,14 @@
 /*
  * Device and feature detector for the boilerplate.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an 'AS IS' BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -24,34 +24,69 @@
 
 var Detector = (function(paramList) {
   var cs, ctx;
-  var webgl = false, glVersion = false;
+
+  /*
+   * Feature detection.
+   *
+   * Our feature detectors are wrapped in named functions so they
+   * can be re-tested after loading polyfills.
+   */
 
   // Test for HTML5 canvas
-  var canvas = !!window.CanvasRenderingContext2D;
+  var detectCanvas = function() {
+    return !!window.CanvasRenderingContext2D;
+  };
 
-  // Test for WebGL, https://www.browserleaks.com/webgl#howto-detect-webgl
-    if (canvas) {
-      try {
+  var detectWebGL = function() {
+
+    if (detectCanvas()) {
         cs = document.createElement('canvas');
-        ctx = cs.getContext('webgl') ||
-          cs.getContext('experimental-webgl') ||
-          cs.getContext('moz-webgl');
-          if (ctx) {
-            webgl = true;
-            var glVersion =  ctx.getParameter(ctx.VERSION).toLowerCase();
-          }
-      } catch(e) {
-        console.log('webgl not availabe');
-      }
-    } //end of canvas and webgl tests.
+        var names = ['3d', 'webgl', 'experimental-webgl', 'moz-webgl'];
+        for(i in names) {
+          try {
+            ctx = cs.getContext(names[i]);
+            if (ctx && typeof ctx.getParameter == 'function') {
+              return true;
+            }
+          } catch (e) {}
+        }
+    }
+    return false;
+  };
+
+  // glVersion is actually assigned in detectWebGL().
+  var detectWebGLVersion = function() {
+    if(ctx) {
+      glVersion =  ctx.getParameter(ctx.VERSION).toLowerCase();
+      ctx = cs = null; //Delete after completing test
+      return glVersion;
+    }
+  };
+
+  // Test for WebVR
+  var detectWebVR = function() {
+    if ('getVRDevices' in navigator || 'mozGetVRDevices' in navigator) {
+      console.log('found getVRDevices in navigator');
+      return true;
+    } else if(window.HMDVRDevice) {
+      console.log('found window.HMDVRDevice');
+      return true;
+    }
+    else {
+      return false;
+    }
+  };
+
+  /*
+   * Device detection.
+   * use a combination of user-agents, plus versioning from WebGL
+   * to identify device hardware.
+   */
 
   // User agent.
   var ua = (navigator.userAgent || navigator.vendor || window.opera).toLowerCase();
 
-  /*
-   * for simple detects, use indexOf, which is MUCH faster than
-   * creating a large number of regexes.
-   */
+  // Use indexOf if possible, (MUCH faster than creating a large number of regexes).
 
   // OS detects
   var os = {};
@@ -102,7 +137,7 @@ var Detector = (function(paramList) {
     device.iphone = (ua.indexOf('iphone') >= 0);
     device.ipad = (ua.indexOf('ipad') >= 0);
     device.ipod = (ua.indexOf('ipod') >= 0);
-    //Feature-detect WebGL versions to classify iOS hardware
+    //Feature-detect webGL versions to classify iOS hardware
     //var SGX535 = /535/.test(glVersion); // iPhone 3GS, iPhone 4
     var SGX543 = glVersion.indexOf('543'); // iPhone 4s/5/5c, iPad 2/3, iPad mini
     var SGX554 = glVersion.indexOf('554'); // iPad 4
@@ -114,15 +149,15 @@ var Detector = (function(paramList) {
     // Screen size.
     var long     = Math.max(device.screenWidth, device.screenHeight);
     var short    = Math.min(device.screenWidth, device.screenHeight);
-    var longEdge = Math.max(long, short); // iPhone 4s: 480, iPhone 5: 568
+    var longest = Math.max(long, short); // iPhone 4s: 480, iPhone 5: 568
 
     // IOS hardware detect.
     if (device.iPhone) {
       !device.retina ? device.iPhone3Gs = true
-        : longEdge <= 480 ? (SGX543 || osVersion >= 8 ? device.iphone4s = true : device.iphone4 = true) // iPhone 4 stopped in iOS 7.
-        : longEdge <= 568 ? (A7 ? device.iphone5s = true : device.iphone5 = true) // iPhone 5 or iPhone 5c
-        : longEdge <= 667 ? (A9 ? device.iphone6s = true : device.iphone6 = true)
-        : longEdge <= 736 ? (A9 ? device.iphone6splus = true : device.iphone6plus = true) : device.iphoneunknown = true;
+        : longest <= 480 ? (SGX543 || osVersion >= 8 ? device.iphone4s = true : device.iphone4 = true) // iPhone 4 stopped in iOS 7.
+        : longest <= 568 ? (A7 ? device.iphone5s = true : device.iphone5 = true) // iPhone 5 or iPhone 5c
+        : longest <= 667 ? (A9 ? device.iphone6s = true : device.iphone6 = true)
+        : longest <= 736 ? (A9 ? device.iphone6splus = true : device.iphone6plus = true) : device.iphoneunknown = true;
     } else if (device.iPad) {
       !device.retina  ? device.ipad2 = true // iPad 1/2, iPad mini
         : SGX543 ? device.ipad3 = true
@@ -133,7 +168,7 @@ var Detector = (function(paramList) {
         : A9     ? device.ipadpro = true : device.ipadunknown = true;
     } else if (device.ipod) {
 
-      longEdge <= 480 ? (retina ? device.ipodtouch4 = true : device.ipodtouch3 = true)
+      longest <= 480 ? (retina ? device.ipodtouch4 = true : device.ipodtouch3 = true)
                       : (A8 ? device.ipodtouch6 = true : device.ipodtouch5 = true);
     }
   } //end of ios
@@ -141,24 +176,24 @@ var Detector = (function(paramList) {
   // Specific Browser detects by UA and features.
   var browser = {};
   browser.edge = (ua.indexOf('edge') >= 0);
-  browser.chrome = (ua.indexOf('chrome') >= 0);
   browser.amazon = (ua.indexOf('silk') >= 0);
   browser.opera = (ua.indexOf('opr/') >= 0); //new opera webkit
+  browser.chrome = (ua.indexOf('chrome') >= 0) && !browser.edge && !browser.amazon && !browser.opera;
   browser.firefox = (ua.indexOf('firefox') >= 0);
   browser.ie = (ua.indexOf('msie') >= 0 || ua.indexOf('trident') >= 0);
   browser.ie11 = (window.location.hash = !!window.MSInputMethodContext && !!document.documentMode);
   browser.safari = (ua.indexOf('safari') >= 0 && !browser.chrome && !browser.edge && !browser.amazon && !browser.opera && !browser.firefox && !browser.ie);
 
-  //browser.ie11 = /(trident).+rv[:\s]([\w\.]+).+like\sgecko/i.test(ua); //only version of IE supporting WebGL
+  //browser.ie11 = /(trident).+rv[:\s]([\w\.]+).+like\sgecko/i.test(ua); //only version of IE supporting webGL
   if (browser.ie) {
-    browser.ie8 = navigator.appVersion.indexOf('msie 8.') >= 0;
-    browser.ie9 = navigator.appVersion.indexOf('msie 9.') >= 0;;
-    browser.ie10 = navigator.appVersion.indexOf('msie 10.') >= 0;;
+    browser.ie8 = ua.indexOf('msie 8.') >= 0;
+    browser.ie9 = ua.indexOf('msie 9.') >= 0;;
+    browser.ie10 = ua.indexOf('msie 10.') >= 0;;
   } else if (browser.ie11) {
     browser.ie = true;
   }
 
-  // Object test, the same as _underscore JS.
+  // Object test (same as _underscores library).
   function isObject(obj) {
     return obj === Object(obj);
   };
@@ -238,13 +273,9 @@ var Detector = (function(paramList) {
     return getCurrentDetect(os, 'operating system');
   };
 
-  function isWebVRCapable() {
-
-  };
-
   // Allows objects to be replaced with a parameter list, which should be provided as a list of
   // sub-objects in a larger object. The function will use the object name and assign it to any
-  // detects listed 'true'.
+  // detects listed non-falsy.
   if (paramList) {
     for (var i in device) {
       if (device[i]) {
@@ -253,30 +284,42 @@ var Detector = (function(paramList) {
     }
   }
 
-  return {
-    typedArray: ('ArrayBuffer' in window),
-    canvas: canvas,
-    webgl: webgl,
-    glVersion: glVersion,
-    promise:('Promise' in this),
-    defineProperty: ('defineProperty' in Object),
-    defineProperties: ('defineProperties' in Object),
-    display:display,
-    formFactor:formFactor,
-    browser: browser,
-    device: device,
-    os:os,
-    getBrowserList: getBrowserList,
-    getCurrentBrowser: getCurrentBrowser,
-    getCurrentDevice: getCurrentDevice,
-    getCurrentFormFactor: getCurrentFormFactor,
-    getCurrentOS: getCurrentOS,
-    isWebVRCapable:isWebVRCapable
+  // Detect features. Export so we can re-detect after polyfill load.
+  var detect = function() {
+    return {
+      // Individual feature detects.
+      canvas: detectCanvas(),
+      webGL: detectWebGL(),
+      glVersion: detectWebGLVersion(),
+      webVR: detectWebVR(),
+      typedArray: ('ArrayBuffer' in window),
+      promise: ('Promise' in window),
+      requestAnimationFrame: (('requestAnimationFrame' in window) || ('mozRequestAnimationFrame' in window) || ('webkitRequestAnimationFrame' in window)),
+      addEventListener: ('addEventListener' in window),
+      defineProperty: ('defineProperty' in Object),
+      defineProperties: ('defineProperties' in Object),
+      // Objects.
+      display:display,
+      formFactor:formFactor,
+      browser: browser,
+      device: device,
+      os:os,
+      // Functions.
+      detect: detect,
+      getBrowserList: getBrowserList,
+      getCurrentBrowser: getCurrentBrowser,
+      getCurrentDevice: getCurrentDevice,
+      getCurrentFormFactor: getCurrentFormFactor,
+      getCurrentOS: getCurrentOS
+    };
   };
+
+  // Run our detector script (which returns an object).
+  return detect();
 
 })(params);
 
-// Parameters for devices.
+// Parameters for phones used in VR.
 var params = {
   iphone4: {
   name: 'iPhone 4',
