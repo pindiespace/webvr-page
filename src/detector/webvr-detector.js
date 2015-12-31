@@ -74,12 +74,21 @@ var WebVRDetector = (function(paramList) {
       glShaderVersion = ctx.getParameter(ctx.SHADING_LANGUAGE_VERSION).toLowerCase();
       return glShaderVersion;
     }
-  }
+  };
 
   var detectEventListener = function() {
     return ('addEventListener' in window);
-  }
+  };
 
+  var detectFullscreen = function() {
+    if (document.body.requestFullscreen ||
+      document.body.mozRequestFullScreen ||
+      document.body.webkitRequestFullscreen ||
+      document.body.msRequestFullscreen) {
+        return true;
+      }
+      return false;
+  }
   // Test for WebVR
   var detectWebVR = function() {
     if ('getVRDevices' in navigator || 'mozGetVRDevices' in navigator) {
@@ -100,6 +109,8 @@ var WebVRDetector = (function(paramList) {
    * to identify device hardware.
    * http://webglreport.com/?v=1
    * http://hgoebl.github.io/mobile-detect.js/doc/mobile-detect.js.html
+   * https://github.com/piwik/device-detector
+   * http://www.tera-wurfl.com/explore/search.php?action=browse
    */
 
   // User agent.
@@ -113,21 +124,23 @@ var WebVRDetector = (function(paramList) {
   os.crios = /(cros|crmo)/.test(ua);
   os.mac = !os.ios && (ua.indexOf('mac os x') >= 0);
   os.linux = (ua.indexOf('linux') >= 0);
+  os.windowsphone = (ua.indexOf('windows phone') >= 0);
   os.windows = (ua.indexOf('windows') >= 0);
   os.android = (ua.indexOf('android') >= 0);
   os.blackberry = /(blackberry|bb10|rim[0-9])/.test(ua);
-  os.firefoxOS = /mobile.*(firefox)/i.test(ua);
+  os.firefoxos = /mobile.*(firefox)/i.test(ua);
 
   // OS Versions (if needed)
   // Android - https://gist.github.com/srs81/2589680
 
   // Screen features.
   var display = {};
+  //TODO: display.headset
   display.touch = !!('ontouchstart in window');
   display.pixelRatio = window.devicePixelRatio || 1.0;
-  display.screenWidth = Math.max(window.screen.width, window.screen.height)  || 0;
-  display.screenHeight = Math.min(window.screen.width, window.screen.height) || 0;
-  display.pixelWidth = display.screenWidth * window.devicePixelRatio;
+  display.screenWidth = window.screen.width || 0;
+  display.screenHeight = window.screen.height || 0;
+  display.pixelWidth = display.screenWidth * window.devicePixelRatio || 1;
   display.pixelHeight = display.screenHeight * display.pixelRatio;
   display.retina = (display.pixelRatio >= 2);
 
@@ -135,8 +148,8 @@ var WebVRDetector = (function(paramList) {
   var formFactor = {};
   formFactor.mobile = os.ios || os.android || /mobi|ip(hone|od|ad)|touch|blackberry|bb10|windows phone|kindle|silk|htc|(hpw|web)os|opera mini|fxios/.test(ua);
   formFactor.tablet = /ipad|tablet|nexus[\s]+(7|9|10)|playbook|silk|ideapad|slate|touchpad|playbook|toshiba|xoom/.test(ua);
-  formFactor.console = /(nintendo|wiiu|3ds|playstation|xbox)/.test(ua);
-  formFactor.tv = /(google|apple|smart|hbb|opera|pov|net).*tv|(lg|aquos|inettv).*browser|(roku|kylo|aquos|viera|espial|boxee|dlnadoc|crkey|ce-html)/.test(ua);
+  formFactor.console = /(nintendo|wiiu|3ds|playstation|xbox|archos|ouya)/.test(ua);
+  formFactor.tv = !formFactor.mobile && !formFactor.tablet && !formFactor.console && /(google|apple|smart|hbb|opera|pov|net|videoweb).*tv|(lg|aquos|inettv).*browser|(roku|kylo|viera|humax|ikea|dmm|espial|sharp|boxee|dlnadoc|crkey|airties|altech uec|bangolufsen|changhong|ce-html)/.test(ua);
   formFactor.desktop = !formFactor.mobile && !formFactor.tablet && !formFactor.console && !formFactor.tv || (window.screenX != 0);
 
   // General device detects.
@@ -145,36 +158,9 @@ var WebVRDetector = (function(paramList) {
   // TODO: examine glVersion in android for hardware-specific features.
   // https://gist.github.com/srs81/2589680
   // https://github.com/faisalman/ua-parser-js/blob/master/src/ua-parser.js
-  if (os.android) {
 
-    // Version detect.
-    m = ua.match(/android (\d+(?:\.\d+)+)[;)]/);
-    if(m && m[0]) {
-      device.androidversion = parseFloat(m[0]);
-    }
+  var detectiOS = function() {
 
-    // Individual Android devices.
-    (ua.indexOf('samsung sm-n910c') >= 0) ? device.note4 = true
-      : (ua.indexOf('nexus 5 ') >= 0) ? device.nexus5 = true
-      : (ua.indexOf('nexus 5s') >= 0) ? device.nexus5s = true
-      : (ua.indexOf('nexus 6 ') >= 0) ? device.nexus6 = true
-      : (ua.indexOf('nexus 6p') >= 0) ? device.nexus6p = true
-      : (ua.indexOf('sm-g7102') >= 0) ? device.galaxygrand = true
-      : (ua.indexOf('sm-g530h') >= 0) ? device.galaxygrandprime = true
-      : (ua.indexOf('sm-g313hz') >= 0) ? device.galaxy5 = true
-      : (ua.indexOf('gt-i9300') >= 0) ? device.galaxys3 = true
-      : (ua.indexOf('gt-i9505') >= 0) ? device.galaxys4 = true
-      : (ua.indexOf('sm-g900') >= 0) ? device.galaxys4 = true
-      : (ua.indexOf('sm-g800f') >= 0) ? device.galaxys5mini = true
-      : (ua.indexOf('sm-g920') >= 0) ? device.galaxys6 = true
-      : device.androidunknown = true;
-  }
-
-  // Windows Phone.
-  device.windowsphone = (ua.indexOf('windows phone') >= 0);
-
-  // Specific iOS devices.
-  if (os.ios) {
     device.iphone = (ua.indexOf('iphone') >= 0);
     device.ipad = (ua.indexOf('ipad') >= 0);
     device.ipod = (ua.indexOf('ipod') >= 0);
@@ -182,7 +168,7 @@ var WebVRDetector = (function(paramList) {
     // Version detect.
     m = (ua).match(/os (\d+)_(\d+)_?(\d+)?/);
     if(m && m[1] && m[2]) {
-      device.iosversion = parseFloat(m[1] + '.' + m[2]);
+      os.version = parseFloat(m[1] + '.' + m[2]);
     }
 
     // Feature-detect webGL versions to classify iOS hardware.
@@ -196,17 +182,34 @@ var WebVRDetector = (function(paramList) {
     var A9     = glVersion.indexOf('a9');  // A9, A9X, iPhone 6s/6s+, iPad Pro
 
     // Screen size.
-    var long     = Math.max(device.screenWidth, device.screenHeight);
-    var short    = Math.min(device.screenWidth, device.screenHeight);
+    var long     = Math.max(display.screenWidth, display.screenHeight);
+    var short    = Math.min(display.screenWidth, display.screenHeight);
     var longest = Math.max(long, short); // iPhone 4s: 480, iPhone 5: 568
     // IOS hardware detect.
     if (device.iphone) {
-      os.osVersion = ua.match(/OS ((\d+_?){2,3})\s/);
-      !display.retina ? device.iphone3gs = true
-        : longest <= 480 ? (SGX543 || device.iosversion >= 8 ? device.iphone4s = true : device.iphone4 = true) // iPhone 4 stopped in iOS 7.
-        : longest <= 568 ? (A7 ? device.iphone5s = true : device.iphone5 = true) // iPhone 5 or iPhone 5c
-        : longest <= 667 ? (A9 ? device.iphone6s = true : device.iphone6 = true)
-        : longest <= 736 ? (A9 ? device.iphone6splus = true : device.iphone6plus = true) : device.iphoneunknown = true;
+      device.iphone3g = !display.retina;
+      if (longest <= 480) {
+        (SGX543 || os.version >= 8) ? device.iphone4s = true : device.iphone4 = true; // iPhone 4 stopped in iOS 7.
+      } else if (longest <= 568) {
+        device.iphone4 = device.iphone4s = false;
+        A7 ? device.iphone5s = true : device.iphone5 = true; // iPhone 5 or iPhone 5c
+      } else if (longest <= 667) {
+        device.iphone5 = device.iphone5s = false;
+        A9 ? device.iphone6s = true : device.iphone6 = true;
+      } else if (longest <= 736) {
+        device.iphone6 = device.iphone6s = false;
+        A9 ? device.iphone6splus = true : device.iphone6plus = true;
+      } else {
+        device.iphone6plus = device.iphone6splus = false;
+      }
+      /*
+      !display.retina ? device.iphone3g = true
+        : longest <= 480 ? (SGX543 || os.version >= 8 ? device.iphone4s = true; device.iphone4 = false : device.iphone4s = false; device.iphone4 = true) // iPhone 4 stopped in iOS 7.
+        : longest <= 568 ? (A7 ? device.iphone5s = true; device.iphone5 = false : device.iphone5 = true; device.iphone5s = false) // iPhone 5 or iPhone 5c
+        : longest <= 667 ? (A9 ? device.iphone6s = true; device.iphone6 = false : device.iphone6 = true; device.iphone6s = false)
+        : longest <= 736 ? (A9 ? device.iphone6splus = true; device.iphone6plus = false : device.iphone6plus = true; device.iphone6splus)
+        : device.iphoneunknown = true;
+        */
     } else if (device.ipad) {
       // Device list - https://support.apple.com/en-us/HT201471
       // https://51degrees.com/blog/ArtMID/1641/ArticleID/363/Device-Detection-for-Apple-iPhone-and-iPad
@@ -214,15 +217,17 @@ var WebVRDetector = (function(paramList) {
       // ipad1 doesn't have an accelerometer
       // https://developer.mozilla.org/en-US/docs/Web/API/DeviceMotionEvent
       device.ipad1 = true; // Negated if 'devicemotion' event is triggered.
+      device.ipad2 = false;
       function motionHandler(e) {
         device.ipad1 = false;
         if(display.retina) {
           SGX543 ? device.ipad3 = true
-          : SGX554 ? device.ipad4 = true
-          : A7     ? device.ipadmini2 = true // iPad mini 3, iPad Air
-          : A8X    ? device.ipadair2 = true
-          : A8     ? device.ipadmini4 = true
-          : A9     ? device.ipadpro = true : device.ipadunknown = true;
+          : device.ipad3 = false; SGX554 ? device.ipad4 = true
+          : device.ipad4 = false; A7 ? device.ipadmini2 = true // iPad mini 3, iPad Air
+          : device.ipadair2 = false; A8X ? device.ipadair2 = true
+          : device.ipaidair2 = false; A8 ? device.ipadmini4 = true
+          : device.ipadmini4 = false; A9 ? device.ipadpro = true
+          : device.ipadpro = false;
         } else {
             //console.log('e.acceleration found, ipad2')
             device.ipad2 = true; // iPad2 or iPad mini, Also uses SGX543
@@ -234,8 +239,72 @@ var WebVRDetector = (function(paramList) {
         longest <= 480 ? (retina ? device.ipodtouch4 = true : device.ipodtouch3 = true)
                         : (A8 ? device.ipodtouch6 = true : device.ipodtouch5 = true);
     }
-  } //end of ios
+  };
 
+  var detectAndroid = function() {
+    // Version detect.
+    m = ua.match(/android (\d+(?:\.\d+)+)[;)]/);
+    if(m && m[0]) {
+      os.version = parseFloat(m[0]);
+    }
+    // Individual Android devices.
+    device.android = true;
+    device.note4 = (ua.indexOf('samsung sm-n910c') >= 0);
+    device.nexus5 = (ua.indexOf('nexus 5 ') >= 0);
+    device.nexus5s = (ua.indexOf('nexus 5s') >= 0);
+    device.nexus6 = (ua.indexOf('nexus 6 ') >= 0);
+    device.nexus6p = (ua.indexOf('nexus 6p') >= 0);
+    device.galaxygrand = (ua.indexOf('sm-g7102') >= 0);
+    device.galaxygrandprime = (ua.indexOf('sm-g530h') >= 0);
+    device.galaxy5 = (ua.indexOf('sm-g313hz') >= 0);
+    device.galaxys3 = (ua.indexOf('gt-i9300') >= 0);
+    device.galaxys4 = (ua.indexOf('gt-i9505') >= 0);
+    device.galaxys4 = (ua.indexOf('sm-g900') >= 0);
+    device.galaxys5mini = (ua.indexOf('sm-g800f') >= 0);
+    device.galaxys6 = (ua.indexOf('sm-g920') >= 0);
+    device.htconemax = (ua.indexOf('htc 8088') >= 0);
+  };
+
+  // They definitely would work for webvr
+  // https://msopentech.com/blog/2014/10/10/creating-3d-scenes-on-windows-phone-8-1-with-webgl-and-cordova/#
+  var detectWindowsPhone = function() {
+    m = ua.match(/Windows Phone ([0-9]+\.[0-9]+)/);
+    if(m && m[1]) {
+      os.version = m[1];
+    }
+    device.windowsphone = (ua.indexOf('windows phone') >= 0);
+    device.lumina1520 = (ua.indexOf('lumina 1520') >= 0); // 6"
+    device.lumina950 = (ua.indexOf('lumina 950') >= 0); // Large Windows 10, 5.7"
+    device.lumina950xl = (ua.indexOf('lumina 950xl') >= 0); // XL phablet version
+    device.lumina930 = (ua.indexOf('lumia 930') >= 0); // 5-inch
+
+  }
+
+  var detectTV = function() {
+    // Specific TV models, not vary useful without an HMD.
+    // Detailed regexes at https://github.com/piwik/device-detector
+    if(formFactor.tv) {
+      device.tv = true;
+    }
+  };
+
+  var detectDesktop = function() {
+    // Specific desktops, not very useful.
+    if(formFactor.desktop) {
+      device.desktop = true;
+    }
+  };
+
+  // Conditional Android detects.
+  if (os.android) {
+    detectAndroid();
+  } else if (os.ios) {
+    detectiOS();
+  } else if (os.windowsphone) {
+    detectWindowsPhone();
+  } else if(!formFactor.mobile || formFactor.tablet && (os.windows || os.mac || os.linux)) {
+    detectDesktop();
+  }
   // Specific Browser detects by UA and features.
   var browser = {};
   browser.edge = (ua.indexOf('edge') >= 0);
@@ -246,7 +315,6 @@ var WebVRDetector = (function(paramList) {
   browser.ie = (ua.indexOf('msie') >= 0 || ua.indexOf('trident') >= 0);
   browser.ie11 = (window.location.hash = !!window.MSInputMethodContext && !!document.documentMode);
   browser.safari = (ua.indexOf('safari') >= 0 && !browser.chrome && !browser.edge && !browser.amazon && !browser.opera && !browser.firefox && !browser.ie);
-
   //browser.ie11 = /(trident).+rv[:\s]([\w\.]+).+like\sgecko/i.test(ua); //only version of IE supporting webGL
   if (browser.ie) {
     browser.ie8 = ua.indexOf('msie 8.') >= 0;
@@ -282,6 +350,10 @@ var WebVRDetector = (function(paramList) {
 
   // Get the list of devices.
   function getDeviceList() {
+    detectiOS();
+    detectAndroid();
+    detectWindowsPhone();
+    detectDesktop();
     return getDetectList(device);
   };
 
@@ -357,13 +429,16 @@ var WebVRDetector = (function(paramList) {
       glVersion: detectWebGLVersion(),
       glVendor: detectGLVendor(),
       glShader: detectShaderVersion(),
-      webVR: detectWebVR(),
-      typedArray: ('ArrayBuffer' in window),
-      promise: ('Promise' in window),
-      requestAnimationFrame: (('requestAnimationFrame' in window) || ('mozRequestAnimationFrame' in window) || ('webkitRequestAnimationFrame' in window)),
-      addEventListener: detectEventListener(),
       defineProperty: ('defineProperty' in Object),
       defineProperties: ('defineProperties' in Object),
+      typedArray: ('ArrayBuffer' in window),
+      promise: ('Promise' in window),
+      fullscreen: detectFullscreen(),
+      webVR: detectWebVR(),
+      requestAnimationFrame: (('requestAnimationFrame' in window) ||
+        ('mozRequestAnimationFrame' in window) ||
+        ('webkitRequestAnimationFrame' in window)),
+      addEventListener: detectEventListener(),
       // Objects.
       display:display,
       formFactor:formFactor,
@@ -373,6 +448,9 @@ var WebVRDetector = (function(paramList) {
       // Getter functions.
       detect: detect,
       getBrowserList: getBrowserList,
+      getDeviceList: getDeviceList,
+      getFormFactorList: getFormFactorList,
+      getOSList: getOSList,
       getCurrentBrowser: getCurrentBrowser,
       getCurrentDevice: getCurrentDevice,
       getCurrentFormFactor: getCurrentFormFactor,
