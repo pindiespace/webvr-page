@@ -74,12 +74,6 @@ THREE.VREffect = function ( renderer, onError ) {
 
 	};
 
-	//NOTE: added
-	this.setFOV = function(fovL, fovR) {
-		eyeFOVL = fovL;
-		eyeFOVR = fovR;
-	};
-
 	// fullscreen
 
 	var isFullscreen = false;
