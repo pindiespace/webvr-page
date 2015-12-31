@@ -69,9 +69,9 @@ WebVRPageConfig = {
 </script>
 
 <!--
-  Detector.js (from threejs examples) for HTML5 canvas and WebGL support.
+  webvr-detector.js (from threejs examples) for HTML5 canvas and WebGL support.
 -->
-<script src="js/lib/detector.js"></script>
+<script src="js/lib/webvr-detector.js"></script>
 
 <!--
   General polyfills.
@@ -134,11 +134,11 @@ https://github.com/inexorabletash/polyfill
 // Only enable it if you actually need to.
 document.addEventListener('DOMContentLoaded', function() {
 
-  window.dd = Detector.detect();
+  window.dd = WebVRDetector.detect();
 
-  // Feature-detect <canvas> support and WebGL API using THREE.js Detector.js (in examples).
+  // Feature-detect <canvas> support and WebGL API using THREE.js webvr-detector.js (in examples).
   // More sophsiticated tests at: https://github.com/facebookarchive/rng.io/blob/c96a962ec18beef5f456d04820d791cbda59c2bc/dist/tests.js
-  if(!Detector.canvas) {
+  if(!WebVRDetector.canvas) {
     //the <canvas> tags will display our error message (one reason for putting them into markup).
     return;
   }
@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Use an existing <canvas> in the markup.
 var canvas = document.getElementById('scene-cube');
 var renderer;
-if(Detector.webGL) { // 3D scenes ok.
+if(WebVRDetector.webGL) { // 3D scenes ok.
 
   renderer = new THREE.WebGLRenderer({
     antialias: true,
@@ -220,7 +220,7 @@ effect.setSize(w, h);
  */
 
 // Create a VR manager helper to enter and exit VR mode.
-window.manager = new WebVRPageManager(renderer, effect, camera, {hideButton: false, canvas: Detector.canvas, webgl: Detector.webGL});
+window.manager = new WebVRPageManager(renderer, effect, camera, {hideButton: false, canvas: WebVRDetector.canvas, webgl: WebVRDetector.webGL});
 
 // Reset the position sensor when 'z' pressed.
 function onKey(event) {
@@ -245,7 +245,7 @@ function animate(timestamp) {
 }
 
 // Kick off animation loop, or draw a still image one time.
-if(Detector.webGL) { // Render animated 3D scene.
+if(WebVRDetector.webGL) { // Render animated 3D scene.
   animate();
 } else { // Render exactly once to canvas, treat as image.
   manager.render(scene, camera);

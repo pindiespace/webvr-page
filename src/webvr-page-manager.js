@@ -62,8 +62,6 @@ function WebVRPageManager(renderer, effect, camera, params) {
     this.input = input;
   }.bind(this));
 
-  console.log("GOT THE DEVICES")
-
   // Set default size.
   var size = this.player.getSize();
   this.resize(size.width, size.height);
@@ -182,6 +180,7 @@ WebVRPageManager.prototype.adjustFOV_ = function(width, height) {
 }
 
 WebVRPageManager.prototype.listenMotion_ = function() {
+  /*
   window.addEventListener('devicemotion', function (evt) {
     console.log('devicemotion detected');
 			var current = evt.accelerationIncludingGravity,
@@ -192,6 +191,7 @@ WebVRPageManager.prototype.listenMotion_ = function() {
 				deltaZ = 0,
 				dist;
       });
+  */
 };
 
 // Start listening for fullscreen change and exit events.
