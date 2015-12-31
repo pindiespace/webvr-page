@@ -83,10 +83,10 @@ var WebVRDetector = (function(paramList) {
   // Test for WebVR
   var detectWebVR = function() {
     if ('getVRDevices' in navigator || 'mozGetVRDevices' in navigator) {
-      console.log('found getVRDevices() in navigator');
+      console.log('found getVRDevices in navigator');
       return true;
     } else if(window.HMDVRDevice) {
-      console.log('found window.HMDVRDevice in window');
+      console.log('found window.HMDVRDevice');
       return true;
     }
     else {
@@ -232,7 +232,7 @@ var WebVRDetector = (function(paramList) {
       addEventListener('devicemotion', motionHandler, false);
     } else if (device.ipod) {
         longest <= 480 ? (retina ? device.ipodtouch4 = true : device.ipodtouch3 = true)
-          : (A8 ? device.ipodtouch6 = true : device.ipodtouch5 = true);
+                        : (A8 ? device.ipodtouch6 = true : device.ipodtouch5 = true);
     }
   } //end of ios
 
