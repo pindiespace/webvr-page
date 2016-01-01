@@ -19,7 +19,8 @@
 
 var Emitter = require('./emitter.js');
 var Modes = require('./modes.js');
-//var DeviceInfo = require('./device-info.js');
+var DeviceInfo = require('./device-info.js');
+//var CardboardDistorter = require('./cardboard-distorter.js');
 var Util = require('./util.js');
 var WebVRPagePlayer = require('./webvr-page-player.js');
 
@@ -51,6 +52,13 @@ function WebVRPageManager(renderer, effect, camera, params) {
 
   // Create the Player.
   this.player = new WebVRPagePlayer(renderer, params);
+
+  // Get available device information.
+  this.deviceInfo = new DeviceInfo();
+  window.deviceInfo = this.deviceInfo;
+
+  // Get the Cardboard distorter.
+  //this.distorter = new CardboardDistorter(renderer, this.deviceInfo);
 
   // Get info for any HMD (head-mounted device).
   this.getDeviceByType_(HMDVRDevice).then(function(hmd) {
