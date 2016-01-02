@@ -28,14 +28,16 @@ var DeviceList = require('./device/device-list.js');
 
 function DeviceInfo() {
 
+  // Current device.
+  this.foundDevice = null;
+
   // User agent.
   this.ua = (navigator.userAgent || navigator.vendor || window.opera).toLowerCase();
 
-
-  // Detect the device.
+  // Load the device database.
   this.devList = new DeviceList();
 
-  // Run feature and user agent detects.
+  // Run feature and user agent detects on the browser.
   this.detectGL_();
   this.detectDisplay_();
   this.detectDevice_();
@@ -44,10 +46,17 @@ function DeviceInfo() {
   this.findDevice();
 };
 
+// Return the current device.
 DeviceInfo.prototype.getDevice = function() {
   return this.device;
 };
 
+// Return the names of all devices used for detection.
+DeviceInfo.prototype.getDeviceNames = function(whichList) {
+
+};
+
+// Check if WebGL is present and enabled.
 DeviceInfo.prototype.detectGL_ = function() {
   var cs, ctx, canvas, webGL, glVersion, glVendor, glShaderVersion;
   // Test for HTML5 canvas
@@ -75,12 +84,12 @@ DeviceInfo.prototype.detectGL_ = function() {
       this.glShaderVersion = ctx.getParameter(ctx.SHADING_LANGUAGE_VERSION).toLowerCase();
     }
 
-  // Null the context and <canvas> we created
+  // Null the context and <canvas> we created.
   cs = ctx = null;
 
 };
 
-// Reported screen parameters
+// Detect screen parameters reported by the browser.
 DeviceInfo.prototype.detectDisplay_ = function() {
   this.display = {
     touch: !!('ontouchstart in window'),
@@ -109,19 +118,18 @@ DeviceInfo.prototype.detectDevice_ = function() {
   this.os = {
       ios: /(iphone|ipad|ipod)/.test(ua),
       crios: /(cros|crmo)/.test(ua),
-      linux: ua.indexOf('linux') >= 0,
-      android: ua.indexOf('android') >= 0,
-      windowsphone: ua.indexOf('windows phone') >= 0,
-      blackberry: /(blackberry|bb10|rim[0-9])/.test(ua),
-      tizen: ua.indexOf('tizen') >= 0,
-      firefoxos: /mobile.*(firefox)/i.test(ua)
+      linux: (ua.indexOf('linux') >= 0),
+      windowsphone: (ua.indexOf('windows phone') >= 0),
+      blackberry: (/(blackberry|bb10|rim[0-9])/.test(ua)),
+      tizen: (ua.indexOf('tizen') >= 0),
+      firefoxos: (/mobile.*(firefox)/i.test(ua))
     };
-  this.os.mac = !this.os.ios && ua.indexOf('mac os x') >= 0;
-  this.os.windows = !this.os.windowsphone && ua.indexOf('windows') >= 0;
+  this.os.android = (!this.os.windowsphone && ua.indexOf('android') >= 0);
+  this.os.mac = (!this.os.ios && ua.indexOf('mac os x') >= 0);
+  this.os.windows = (!this.os.windowsphone && ua.indexOf('windows') >= 0);
 
-  // Get the version.
+  // Get the OS version, if needed for device confirmation.
   if (this.os.ios) {
-    // Version detect.
     m = (ua).match(/os (\d+)_(\d+)_?(\d+)?/);
     if(m && m[1] && m[2]) {
       this.os.version = parseFloat(m[1] + '.' + m[2]);
@@ -132,20 +140,24 @@ DeviceInfo.prototype.detectDevice_ = function() {
       this.os.version = parseFloat(m[0]);
     }
   } else if (this.os.windowsphone) {
-      m = ua.match(/Windows Phone ([0-9]+\.[0-9]+)/);
+      m = ua.match(/windows phone (\d+\.\d+)/);
       if(m && m[1]) {
         this.os.version = parseFloat(m[1]);
       }
     } else if (this.os.blackberry) {
       if(ua.indexOf('bb10') >= 0) { // only Blackberry 10 phones would work.
-        m = ua.match(/bb10.*version\/([0-9]{2}\.[0-9]{1})/);
+        m = ua.match(/bb10.*version\/(\d+\.\d+)?/);
         if(m && m[0]) {
-          this.os.version = parseFloat(m[0]);
+          this.os.version = parseFloat(m[1]);
         }
       }
     } else if (this.os.tizen) {
-        m = ua.match(/tizen.*[0-9]{2}\.[0-9]{1}/);
-    }else {
+        m = ua.match(/tizen.*(\d+\.\d+)/);
+    } else if (this.os.windows) {
+      // Not used.
+    } else if (this.os.mac) {
+      // Not used.
+    } else {
     this.os.version = 0;
   }
 
@@ -194,16 +206,13 @@ DeviceInfo.prototype.findDevice = function() {
   // Using the device list, run the tests.
   for (var i in devices) {
     if(devices[i].detect(this.ua, this.display, this.glVersion)) {
-      this.device = devices[i];
-      break;
+      console.log('i:' + i)
+      this.foundDevice = devices[i];
+      console.log('device found:' + this.device.name + '.');
+      return true;
     }
   }
-  if(this.device) {
-    //DO SOMETHING
-  } else {
-    //GENERIC RESULT
-  }
-
+  return false;
 }; // End of find device.
 
 module.exports = DeviceInfo;
