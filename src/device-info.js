@@ -28,6 +28,9 @@ var DeviceList = require('./device/device-list.js');
 
 function DeviceInfo() {
 
+  // Test results passed to detector functions
+  this.tests = {};
+
   // Current device.
   this.foundDevice = null;
 
@@ -109,6 +112,16 @@ DeviceInfo.prototype.detectDisplay_ = function() {
   this.display.longest = Math.max(long, short); // iPhone 4s: 480, iPhone 5: 568
 };
 
+DeviceInfo.prototype.detectEvents_ = function(elem, eventName) {
+  eventName = 'on' + eventName;
+  var isSupported = (eventName in elem);
+  if (!isSupported) { // Firefox.
+    el.setAttribute(eventName, 'return;');
+    isSupported = typeof elem[eventName] == 'function';
+  }
+  return isSupported;
+};
+
 // Use a combination of browser features and user-agent sniffing to detect the correct device.
 DeviceInfo.prototype.detectDevice_ = function() {
   var m;
@@ -128,7 +141,7 @@ DeviceInfo.prototype.detectDevice_ = function() {
   this.os.mac = (!this.os.ios && ua.indexOf('mac os x') >= 0);
   this.os.windows = (!this.os.windowsphone && ua.indexOf('windows') >= 0);
 
-  // Get the OS version, if needed for device confirmation.
+  // OS Version detects (mobile only).
   if (this.os.ios) {
     m = (ua).match(/os (\d+)_(\d+)_?(\d+)?/);
     if(m && m[1] && m[2]) {
@@ -161,7 +174,7 @@ DeviceInfo.prototype.detectDevice_ = function() {
     this.os.version = 0;
   }
 
-  // Form factor.
+  // Form factor detects.
   this.mobile = this.os.ios || this.os.android || /mobi|ip(hone|od|ad)|touch|blackberry|bb10|windows phone|kindle|silk|htc|(hpw|web)os|opera mini|fxios/.test(ua);
   this.tablet = /ipad|tablet|nexus[\s]+(7|9|10)|playbook|silk|ideapad|slate|touchpad|playbook|toshiba|xoom/.test(ua);
   this.gameConsole = /(nintendo|wiiu|3ds|playstation|xbox)/.test(ua);
@@ -176,13 +189,12 @@ DeviceInfo.prototype.findDevice = function() {
 
   // Broad device classification based on OS.
   this.device = {
-    iphone: ua.indexOf('iphone'),
-    ipad: ua.indexOf('ipad'),
-    ipod: ua.indexOf('ipod'),
-    windowsphone: ua.indexOf('windows phone'),
-    android: ua.indexOf('android')
+    iphone: (ua.indexOf('iphone') >= 0),
+    ipad: (ua.indexOf('ipad') >= 0),
+    ipod: (ua.indexOf('ipod') >= 0),
+    windowsphone: (ua.indexOf('windows phone') >= 0)
   };
-
+  this.device.android = (!this.device.windowsphone && ua.indexOf('android') >= 0);
   /*
    * Run searches in the most efficient way.
    * - iOS - checkfor the device first.
@@ -194,6 +206,7 @@ DeviceInfo.prototype.findDevice = function() {
   } else if(this.device.iphone) { // iOS 15% IN 2015.
     devices = this.devList.getList(this.devList.DEVICE_IPHONE);
   } else if(this.device.ipad) {
+    this.tests.devicemotion = this.detectEvents_(window, 'devicemotion');
     devices = this.devList.getList(this.devList.DEVICE_IPAD);
   } else if(this.device.ipod) {
     devices = this.devList.getList(this.devList.DEVICE_IPOD);

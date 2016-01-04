@@ -47,7 +47,7 @@ Util.hasClass = function(elem, className) {
   return false;
 };
 
-// Wrapper for checking if CSS class exists.
+// Wrapper for adding a CSS class to an element.
 Util.addClass = function(elem, className) {
   if (elem.classList) {
     elem.classList.add(className);
@@ -70,6 +70,7 @@ Util.removeClass = function(elem, className) {
   }
 };
 
+// Get immediate children of an element by element tag name.
 Util.getChildrenByTagName = function(elem, tagName) {
   var arr = [], c = elem.children, len = c.length;
   var t = tagName.toUpperCase();
@@ -85,22 +86,6 @@ Util.getChildrenByTagName = function(elem, tagName) {
 Util.parseText = function(str) {
   return str.replace(/[0-9]/g, '');
 };
-
-/**
- * This user-agent test is only for things NOT picked up in the feature-detection
- * part of the boilerplate.
- *
- * Drawn from several sources
- * https://github.com/faisalman/ua-parser-js/blob/master/src/ua-parser.js
- * http://detectmobilebrowsers.com/
- * https://github.com/hgoebl/mobile-detect.js/blob/master/mobile-detect.js
- * https://github.com/serbanghita/Mobile-Detect/blob/master/Mobile_Detect.php
- * https://mobiforge.com/research-analysis/webviews-and-user-agent-strings
- * http://stackoverflow.com/questions/14403766/how-to-detect-the-stock-android-browser
- * https://github.com/serbanghita/Mobile-Detect/blob/master/Mobile_Detect.php#L274
- * http://cpansearch.perl.org/src/MAMOD/HTTP-UA-Parser-0.005/lib/HTTP/UA/Parser/regexes.yaml
- * https://udger.com/resources/ua-list/device-detail?device=Smart%20TV
- */
 
 /**
  * Add recommended fullscreen styles.
@@ -148,6 +133,8 @@ Util.isFullScreen = function() {
 
 /**
  * normalize fullscreen API.
+ * This isn't a true polyfill since we alter behavior of the standard
+ * Fullscreen API in webkit browsers.
  * Adapted from:
  * @link https://github.com/ethanius/fullscreen-api
  */
@@ -171,7 +158,6 @@ Util.isFullScreen = function() {
           (function() {
             console.log('entering fullscreenEnabled polyfill function')
             var iframes = document.getElementsByTagName('iframe');
-            window.ifs = iframes;
             // All iframe elements must have .allowfullscreen attribute set.
             for (var i = 0; i < iframes.length; i++) {
               console.log('trying iframe number:' + i)
@@ -213,7 +199,7 @@ Util.isFullScreen = function() {
       console.log('IN REQUESTFULLSCREEN, fullscreen element set to:'+ ('fullscreenElement' in document) + ' and typeof:' + typeof document.fullscreenElement + ' and value:' + document.fullscreenElement)
 
       if (this.nodeName === 'IFRAME' && !this.allowfullscreen) {
-        console.log('invalid iframe, setting fullscreenElement to NULL');
+        console.Error('invalid iframe, setting fullscreenElement to NULL');
         document.fullscreenElement = null;
         return;
       }
@@ -244,10 +230,10 @@ Util.isFullScreen = function() {
     }; //end of requestFullscreen.
 
     /*
-     * this toggle variable is necessary to update document.fullscreenElement when it is triggered
-     * via pressing the escape key, in browsers using mozFullScreenElement,
-     * msFullscreenElement, or webkitFullscreenElement, which automatically implement
-     * the escape without providing a handler we can use.
+     * this toggle variable is necessary to update document.fullscreenElement
+     * when it is triggered via pressing the escape key. Most browsers
+     * automatically exit on escape keypress,  without providing
+     * a handler we can use.
      */
     var toFS = 'true';
 
@@ -256,10 +242,10 @@ Util.isFullScreen = function() {
      */
     var screenChange = function(e) {
       e.stopImmediatePropagation();
-      if (toFS === 'true') { //normal to fullscreen
+      if (toFS === 'true') { // Normal to fullscreen.
         document.fullscreenElement = e.target;
         toFS = 'false';
-      } else { //fullscreen to normal
+      } else { // Fullscreen to normal.
         toFS = 'true';
         document.fullscreenElement = null;
       }

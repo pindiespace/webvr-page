@@ -17,6 +17,9 @@ http://www.html5rocks.com/en/mobile/fullscreen/ -->
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <!--default styles-->
 <link rel="stylesheet" href="css/styles.css">
+
+<!--Detector script. Determine if polyfills needed-->
+<script src="js/lib/feature-detector.js"></script>
 </head>
 
 <body>
@@ -69,14 +72,10 @@ WebVRPageConfig = {
 </script>
 
 <!--
-  webvr-detector.js (from threejs examples) for HTML5 canvas and WebGL support.
+  ES5 and DOM menthod polyfills.
 -->
-<script src="js/lib/webvr-detector.js"></script>
-
-<!--
-  General polyfills.
--->
-<script src="js/lib/polyfills.js"></script>
+<script src="js/lib/dom.js"></script>
+<script src="js/lib/es5.js"></script>
 
 <!--
   Promise polyfill by taylorhakes
@@ -134,11 +133,9 @@ https://github.com/inexorabletash/polyfill
 // Only enable it if you actually need to.
 document.addEventListener('DOMContentLoaded', function() {
 
-  window.dd = WebVRDetector.detect();
-
   // Feature-detect <canvas> support and WebGL API using THREE.js webvr-detector.js (in examples).
   // More sophsiticated tests at: https://github.com/facebookarchive/rng.io/blob/c96a962ec18beef5f456d04820d791cbda59c2bc/dist/tests.js
-  if(!WebVRDetector.canvas) {
+  if(!FeatureDetector.canvas) {
     //the <canvas> tags will display our error message (one reason for putting them into markup).
     return;
   }
@@ -151,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Use an existing <canvas> in the markup.
 var canvas = document.getElementById('scene-cube');
 var renderer;
-if(WebVRDetector.webGL) { // 3D scenes ok.
+if(FeatureDetector.webGL) { // 3D scenes ok.
 
   renderer = new THREE.WebGLRenderer({
     antialias: true,
@@ -220,7 +217,7 @@ effect.setSize(w, h);
  */
 
 // Create a VR manager helper to enter and exit VR mode.
-window.manager = new WebVRPageManager(renderer, effect, camera, {hideButton: false, canvas: WebVRDetector.canvas, webgl: WebVRDetector.webGL});
+window.manager = new WebVRPageManager(renderer, effect, camera, {hideButton: false, canvas: FeatureDetector.canvas, webgl: FeatureDetector.webGL});
 
 // Reset the position sensor when 'z' pressed.
 function onKey(event) {
@@ -245,7 +242,7 @@ function animate(timestamp) {
 }
 
 // Kick off animation loop, or draw a still image one time.
-if(WebVRDetector.webGL) { // Render animated 3D scene.
+if(FeatureDetector.webGL) { // Render animated 3D scene.
   animate();
 } else { // Render exactly once to canvas, treat as image.
   manager.render(scene, camera);

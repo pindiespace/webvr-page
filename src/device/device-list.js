@@ -77,14 +77,23 @@
    * http://www.webapps-online.com/online-tools/user-agent-strings
    * http://support.blackberry.com/kb/articleDetail?articleNumber=000033531
    * http://www.zytrax.com/tech/web/browser_ids.htm
-   * UA specs http://developer.samsung.com/technical-doc/view.do?v=T000000203
+   * http://developer.samsung.com/technical-doc/view.do?v=T000000203
+   * http://detectmobilebrowsers.com/
+   * https://github.com/hgoebl/mobile-detect.js/blob/master/mobile-detect.js
+   * https://github.com/serbanghita/Mobile-Detect/blob/master/Mobile_Detect.php
+   * https://mobiforge.com/research-analysis/webviews-and-user-agent-strings
+   * http://stackoverflow.com/questions/14403766/how-to-detect-the-stock-android-browser
+   * https://github.com/serbanghita/Mobile-Detect/blob/master/Mobile_Detect.php#L274
+   * http://cpansearch.perl.org/src/MAMOD/HTTP-UA-Parser-0.005/lib/HTTP/UA/Parser/regexes.yaml
+   * https://udger.com/resources/ua-list/device-detail?device=Smart%20TV
+   * http://www.everymac.com/systems/apple/ipad/index-ipad-specs.html
    */
   this.list = {};
 
   this.list.iphone = {
   iphone3: { // iPhone 3GS, non-Retina.
     name: 'iPhone 3',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
         return (display.longest <= 480 && !display.retina && glVersion.indexOf('535') >= 0);
     },
     width: 360,
@@ -95,7 +104,7 @@
   },
   iphone4: { //4 and 4s
     name: 'iPhone 4',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return (display.longest <= 480 && display.retina && glVersion.indexOf('535') >=0);
     },
     width: 640,
@@ -106,7 +115,7 @@
   },
   iphone5: { // iPhone 5, 5c
     name: 'iPhone 5',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return (display.longest <= 568 && glVersion.indexOf('543'));
     },
     width: 640,
@@ -117,7 +126,7 @@
   },
   iphone5s: { // iPhone 5s
     name: 'iPhone 5s',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return (display.longest <= 568 && glVersion.indexOf('a7'));
     },
     width: 640,
@@ -128,7 +137,7 @@
   },
   iphone6: {
     name: 'iPhone 6',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return (display.longest <= 736 && glVersion.indexof('a8'));
     },
     width: 750,
@@ -139,7 +148,7 @@
   },
   iphone6plus: {
     name: 'iPhone 6 Plus',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return (display.longest <= 736 && glVersion.indexOf('a8'));
     },
     width: 1242,
@@ -150,7 +159,7 @@
   },
   iphone6s: {
     name: 'iPhone 6s',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return (display.longest <= 736 && glVersion.indexOf('a9'));
     },
     width: 750,
@@ -161,11 +170,172 @@
   }
 };
 
-  // iPads are unlikely VR systems, have similar hardware.
-  this.list.ipad = {};
+  // iPads.
+  this.list.ipad = { // iPad 1, 9.7", 132ppi.
+    ipad1: {
+      name: 'ipad1',
+      detect: function(ua, display, glVersion, tests) {
+        if(display.retina && !tests.devicemotion) { //no accelerometer.
+          return false;
+        }
+        return true;
+      },
+      width: 1024,
+      height: 768,
+      widthMeters: 0.1924,
+      heightMeters: 0.1477,
+      bevelMeters: 0
+    },
+    ipad2: { // iPad 1, 9.7", 132ppi, has accelerometer.
+      name: 'iPad 2',
+      detect: function(ua, display, glVersion, tests) {
+        if(display.retina && display.longest <= 1024 && /543/.test(glVersion)) {
+          return false;
+        }
+      },
+      width: 1024,
+      height: 768,
+      widthMeters: 0.1924,
+      heightMeters: 0.1477,
+      bevelMeters: 0
+    },
+    ipad3: { // 264ppi.
+      name: 'iPad 3',
+      detect: function(ua, display, glVersion, tests) {
+        return (display.retina && display.longest <= 2048 && /543/.test(glVersion, tests));
+      },
+      width: 2048,
+      height: 1536,
+      widthMeters: 0.1970,
+      heightMeters: 0.1478,
+      bevelMeters: 0
+    },
+    ipad4: { // 264ppi.
+      name: 'iPad 4',
+      detect: function(ua, display, glVersion, tests) {
+        return (display.retina && display.longest <= 2048 && /554/.test(glVersion, tests));
+      },
+      width: 2048,
+      height: 1536,
+      widthMeters: 0.1970,
+      heightMeters: 0.1478,
+      bevelMeters: 0
+    },
+    ipadair: { // 264ppi, TODO: can't differentiate this from iPad Mini 2, 3
+      name: 'iPad Air',
+      detect: function(ua, display, glVersion, tests) {
+        return (display.retina && display.longest <= 2048 && /A7/.test(glVersion, tests)); // iPad Mini 2, 3, iPad Air
+      },
+      width: 2048,
+      height: 1536,
+      widthMeters: 0.1970,
+      heightMeters: 0.1478,
+      bevelMeters: 0
+    },
+    ipadair2: { // 264ppi.
+      name: 'iPad Air 2',
+      detect: function(ua, display, glVersion, tests) {
+        return (display.retina && display.longest <= 2048 && /A8X/.test(glVersion, tests));
+      },
+      width: 2048,
+      height: 1536,
+      widthMeters: 0.1970,
+      heightMeters: 0.1478,
+      bevelMeters: 0
+    },
+    ipadpro: { // 264ppi, larger screen.
+      name: 'iPad Pro',
+      detect: function(ua, display, glVersion, tests) {
+        return (display.retina && display.longest <= 2732 && /A9/.test(glVersion, tests)); // iPhone 6, iPad Pro
+      },
+      width: 2732,
+      height: 2048,
+      widthMeters: 0.2628,
+      heightMeters: 0.1970,
+      bevelMeters: 0
+    },
+    ipadmini: { // iPad Mini 1.
+      name: 'iPad Mini',
+      detect: function(ua, display, glVersion, tests) {
+        return (!display.retina && /A7/.test(glVersion, tests)); // iPad Mini 2, 3, iPad Air.
+      },
+      width: 1024,
+      height: 768,
+      widthMeters: 0.1595,
+      heightMeters: 0.1197,
+      bevelMeters: 0
+    },
+    ipadmini3: { // TODO: does not differentiate iPad mini 2,3, iPad Air.
+      name: 'iPad Mini 2 and 3',
+      detect: function(ua, display, glVersion, tests) {
+        return (display.retina && display.longest <= 2048 && /A7/.test(glVersion, tests)); // iPad Mini 2, 3, iPad Air.
+      },
+      width: 2048,
+      height: 1536,
+      widthMeters: 0.1596,
+      heightMeters: 0.12,
+      bevelMeters: 0
+    },
+    ipadmini4: {
+      name: 'iPad Mini 4',
+      detect: function(ua, display, glVersion, tests) {
+        return (display.retina && /A8/.test(glVersion, tests)); // iPad Mini 4
+      },
+      width: 2048,
+      height: 1536,
+      widthMeters: 0.1596,
+      heightMeters: 0.12,
+      bevelMeters: 0
+    }
+  };
 
-  // iPods are problably too small, but share hardware.
-  this.list.ipod = {};
+  // Recent iPods.
+  this.list.ipod = {
+    ipodtouch3: { // 3", 163ppi
+      name: 'iPod Touch 3',
+      detect: function(ua, display, glVersion, tests) {
+        return (!display.retina && display.longest <= 480);
+      },
+      width: 480,
+      height: 320,
+      widthMeters: 0.0748,
+      heightMeters: 0.0498,
+      bevelMeters: 0
+    },
+    ipodtouch4: { // 3.5", 326ppi
+      name: 'iPod Touch 4',
+      detect: function(ua, display, glVersion, tests) {
+        return (display.retina && display.longest <= 480);
+      },
+      width: 960,
+      height: 640,
+      widthMeters: 0.0748,
+      heightMeters: 0.0498,
+      bevelMeters: 0
+    },
+    ipodtouch5: { // 4", 326ppi
+      name: 'iPod Touch 5',
+      detect: function(ua, display, glVersion, tests) {
+        return(display.retina && display.longest > 480 && !/A8/.test(glVersion, tests) );
+      },
+      width: 1136,
+      height: 640,
+      widthMeters: 0.0885,
+      heightMeters: 0.0498,
+      bevelMeters: 0
+    },
+    ipodtouch6: { // 4", 326 ppi
+      name: 'iPod Touch 6',
+      detect: function(ua, display, glVersion, tests) {
+        return(display.retina && display.longest > 480 && /A8/.test(glVersion, tests));
+      },
+      width: 1136,
+      height: 640,
+      widthMeters: 0.0885,
+      heightMeters: 0.0498,
+      bevelMeters: 0
+    }
+  };
 
   /*
    * Android devices are accessed as a group.
@@ -173,7 +343,7 @@
   this.list.android = {
   note4: {
     name: 'Note 4',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
         return ua.indexOf('sm-n910c') >= 0;
     },
     width: 2560,
@@ -184,7 +354,7 @@
   },
   note5: {
     name: 'Note 5',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
         return ua.indexOf('sm-a920') >=0;
     },
     width: 2560,
@@ -195,7 +365,7 @@
   },
   nexus5: {
     name: 'Nexus 5',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return ua.indexOf('nexus 5 ') >= 0;
     },
     width:1920,
@@ -206,7 +376,7 @@
   },
   nexus6: { // Nexus 6, 6p
     name: 'Nexus 6',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return ua.indexOf('nexus 6') >= 0;
     },
     width:2560,
@@ -217,7 +387,7 @@
   },
   nexus6p: {
     name: 'Nexus 6P',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return ua.indexOf('nexus 6p') >= 0;
     },
     width:2560,
@@ -228,7 +398,7 @@
   },
   galaxygrand: { // Old phone, less likely
     name: 'Galaxy Grand',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return ua.indexOf('sm-g7102') >= 0;
     },
     width:800,
@@ -239,7 +409,7 @@
   },
   galaxygrandprime: {
     name: 'Galaxy Grand Prime',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return ua.indexOf('sm-g530h') >= 0;
     },
     width:960,
@@ -250,7 +420,7 @@
   },
   galaxys3: {
     name: 'Galaxy S3',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return ua.indexOf('gt-i9300') >= 0;
     },
     width: 0,
@@ -261,7 +431,7 @@
   },
   galaxys4: {
     name: 'Galaxy S4',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return ua.indexOf('gt-i9505') >= 0;
     },
     width: 1920,
@@ -272,7 +442,7 @@
   },
   galaxys5: {
     name: 'Galaxy S5',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return /(sm-g900|scl23|sc04f)/.test(ua);
     },
     width: 0,
@@ -283,7 +453,7 @@
   },
   galaxys5mini: {
     name: 'Galaxy S5 Mini',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return ua.indexOf('sm-g800f') >= 0;
     },
     width: 1280,
@@ -294,7 +464,7 @@
   },
   galaxys6: { // S6, S6 edge
     name: 'Galaxy S6',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return ua.indexOf('sm-g920') >= 0;
       return /(sm-g950|sm-g925)/.test(ua);
     },
@@ -306,7 +476,7 @@
   },
   galaxya3: { // 4.7"
     name: 'Galaxy A3',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return ua.indexOf('sm-a300') >= 0;
     },
     width: 1280,
@@ -317,7 +487,7 @@
   },
   galaxya5: { // 6"
     name: 'Galaxy A5',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return /sm-(a500|a510)/.test(ua);
     },
     width:1920,
@@ -328,7 +498,7 @@
   },
   galaxya7: { // 5.5"
     name: 'Galaxy A7',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return ua.indexOf('sm-a700') >= 0;
     },
     width:1920,
@@ -339,7 +509,7 @@
   },
   galaxya9: { // 6"
     name: 'Galaxy A9',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return ua.indexOf('sm-a900') >= 0;
     },
     width:1920,
@@ -350,7 +520,7 @@
   },
   htcone: { // HTC One, One Max
     name: 'HTC One',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return /htc.*one/.test(ua);
     },
     width: 1920,
@@ -361,7 +531,7 @@
   },
   zenfone6: { // 6"
     name: 'ASUS ZenFone 6',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return ua.indexOf('asus_t00g') >= 0;
     },
     width: 1280,
@@ -377,7 +547,7 @@
 
   lumina1520: { // 6" size
     name: 'Lumina 1520',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return (ua.indexOf('lumina 1520') >= 0);
     },
     width: 1920,
@@ -388,7 +558,7 @@
   },
   lumina950: { // 950, 950XL, Large Windows 10, 5.7"
     name: 'Lumina 950',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return (ua.indexOf('lumina 950') >= 0);
     },
     width: 2560,
@@ -399,7 +569,7 @@
   },
   lumina930: { // 4.7"
     name: 'Lumina 930',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return (ua.indexOf('lumina 930') >= 0);
     },
     width: 1920,
@@ -410,13 +580,35 @@
   },
   lumina550: { // 5"
     name: 'Lumina 550',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return (ua.indexOf('lumina 550') >= 0);
     },
     width: 1280,
     height: 720,
     widthMeters: 0.1032,
     heightMeters: 0.058,
+    bevelMeters: 0
+  },
+  lumina530: { // 4" and 245ppi.
+    name: 'Lumina 530',
+    detect: function(ua, display, glVersion, tests) {
+      return (ua.indexOf('lumina 530') >= 0);
+    },
+    width: 854,
+    height: 480,
+    widthMeters: 0.0885,
+    heightMeters: 0.0498,
+    bevelMeters: 0
+  },
+  lumina520: { // 4" 233ppi, but put here so MS Edge windowsphone emulation is detected.
+    name: 'Lumina 520',
+    detect: function(ua, display, glVersion, tests) {
+      return (ua.indexOf('lumina 520') >= 0);
+    },
+    width: 800,
+    height: 480,
+    widthMeters: 0.0872,
+    heightMeters: 0.0523,
     bevelMeters: 0
   }
 
@@ -426,7 +618,7 @@ this.list.blackberry = {
   //z3, z10 is too small
   blackberryleap: { // 5"
     name: 'Blackberry Leap',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return ua.indexOf('str100') >= 0;
     },
     width: 1280,
@@ -438,7 +630,7 @@ this.list.blackberry = {
 
   blackberrypriv: { // 5.4" high-definition
     name: 'Blackberry Priv',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return ua.indexOf('stv100-3') >= 0;
     },
     width: 2560,
@@ -452,7 +644,7 @@ this.list.blackberry = {
 this.list.tizen = {
   samsungz: { // 4.8"
     name: 'Samsung Z',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return ua.indexOf('sm-910f') >= 0;
     },
     width: 1280,
@@ -463,7 +655,7 @@ this.list.tizen = {
   },
   samsungz3: { // 5", Z1 and Z2 too small.
     name: 'Samsung Z3',
-    detect: function(ua, display, glVersion) {
+    detect: function(ua, display, glVersion, tests) {
       return ua.indexOf('sm-z300') >= 0;
     },
     width: 1280,
