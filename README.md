@@ -68,7 +68,9 @@ type the following command:
 
 If this fails, run the scripts under "preinstall" in the package.json file manually.
 
-Alternately, you can use the sudo command to go to Administrator (you'll need the password).
+
+
+Alternately, if an install fails on your mac, you may need to use the sudo command to go to Administrator (you'll need the password for your mac).
 
 ### Installation on Windows:
 1. Make sure you've installed Node (from http://nodejs.org)
@@ -79,6 +81,8 @@ Alternately, you can use the sudo command to go to Administrator (you'll need th
 >`npm install`
 6. After this runs, type the following command:
 >`npm run buildall`
+
+If you are running GitHub Desktop on Windows, you may need to use the GitHub shell (Windows PowerShell) instead of the NodeJS shell or basic command prompt to ensure git is in your path.
 
 -------------------------------------
 ## Editing the Boilerplate:

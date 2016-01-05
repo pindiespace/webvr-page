@@ -14,22 +14,16 @@ THREE.VRControls = function ( object, onError ) {
 		// Exclude Cardboard position sensor if Oculus exists.
 
 		var oculusDevices = devices.filter( function ( device ) {
-			if(device.deviceName) {
-				return device.deviceName.toLowerCase().indexOf( 'oculus' ) !== - 1;
-			} else {
-				return [];
-			}
+
+			return device.deviceName.toLowerCase().indexOf( 'oculus' ) !== - 1;
 
 		} );
 
 		if ( oculusDevices.length >= 1 ) {
 
 			return devices.filter( function ( device ) {
-				if(device.deviceName) {
-					return device.deviceName.toLowerCase().indexOf( 'cardboard' ) === - 1;
-				} else {
-					return [];
-				}
+
+				return device.deviceName.toLowerCase().indexOf( 'cardboard' ) === - 1;
 
 			} );
 

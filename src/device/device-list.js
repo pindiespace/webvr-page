@@ -52,8 +52,28 @@
         return this.list.windowsphone;
         break;
       default:
+        return {};
         break;
       }
+  };
+
+  // Create a default device.
+  // PPI values http://dpi.lv/
+  // https://github.com/LeaVerou/dpi
+  // https://github.com/LeaVerou/dpi/blob/gh-pages/screens.json
+  this.getDefault = function(display) {
+    var ppi = 96 * display.pixelRatio; // 96 is standard browser..
+    return { // TODO: 1.16 assume 250ppi.
+      name: 'generic device',
+      detect: function(ua, display, glVersion, tests) {
+          return false;
+      },
+      width: display.screenWidth,
+      height: display.screenHeight,
+      widthMeters: (display.screenWidth / ppi) * 0.0254,
+      heightMeters: (display.screenHeight / ppi) * 0.0254,
+      bevelMeters: 0
+    };
   };
 
    /*
@@ -135,7 +155,7 @@
     heightMeters: 0.05127,
     bevelMeters: 0.00343
   },
-  iphone6: {
+  iphone6: { // TODO: 1.16 http://info.localytics.com/blog/research-shows-the-iphone-6-is-the-most-adopted-iphone-model-with-the-highest-user-engagement
     name: 'iPhone 6',
     detect: function(ua, display, glVersion, tests) {
       return (display.longest <= 736 && glVersion.indexof('a8'));
@@ -187,6 +207,7 @@
       bevelMeters: 0
     },
     ipad2: { // iPad 1, 9.7", 132ppi, has accelerometer.
+      // TODO: 1.16 http://info.localytics.com/blog/ipad-market-share-analysis-will-the-ipad-pro-dethrone-the-ipad-2
       name: 'iPad 2',
       detect: function(ua, display, glVersion, tests) {
         if(display.retina && display.longest <= 1024 && /543/.test(glVersion)) {
@@ -325,6 +346,7 @@
       bevelMeters: 0
     },
     ipodtouch6: { // 4", 326 ppi
+      // TODO: 1.16 Most recent version.
       name: 'iPod Touch 6',
       detect: function(ua, display, glVersion, tests) {
         return(display.retina && display.longest > 480 && /A8/.test(glVersion, tests));

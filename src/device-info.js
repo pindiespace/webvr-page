@@ -147,7 +147,11 @@ DeviceInfo.prototype.detectDevice_ = function() {
     if(m && m[1] && m[2]) {
       this.os.version = parseFloat(m[1] + '.' + m[2]);
     }
-  } else if (this.os.android) {
+  } else if (this.os.crios) {
+    // TODO: CriOS detects here.
+  } else if (this.os.linux) {
+    // TODO: Linux detects here.
+  }else if (this.os.android) {
     m = ua.match(/android (\d+(?:\.\d+)+)[;)]/);
     if(m && m[0]) {
       this.os.version = parseFloat(m[0]);
@@ -225,7 +229,7 @@ DeviceInfo.prototype.findDevice = function() {
       return true;
     }
   }
-  return false;
+  return this.devList.getDefault(this.display);
 }; // End of find device.
 
 module.exports = DeviceInfo;

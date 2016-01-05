@@ -10,7 +10,7 @@
     "build-polyfill": "copyfiles -f src/feature-detector.js node_modules/webvr-polyfill/build/webvr-polyfill.js node_modules/promise-polyfill/Promise.min.js node_modules/js-polyfills/es5.js node_modules/js-polyfills/dom.js node_modules/js-polyfills/typedarray.js js/lib",
     "build-app": "browserify src/main.js | uglifyjs > js/webvr-page.js",
     "build": "npm run build-app && copyfiles -f src/feature-detector.js js/lib",
-    "buildall": "npm run install && npm run install-polyfill && npm run build-polyfill && npm run install-three && npm run build-three && npm run build-app",
+    "buildall": "npm install && npm run install-polyfill && npm run build-polyfill && npm run install-three && npm run build-three && npm run build-app",
     "lint": "cat src/*.js | jscs",
     "test": "mocha test",
     "start": "node server.js",
