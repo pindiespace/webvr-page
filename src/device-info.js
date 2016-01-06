@@ -60,6 +60,7 @@ DeviceInfo.prototype.getDeviceNames = function(whichList) {
 };
 
 // Check if WebGL is present and enabled.
+// https://www.browserleaks.com/webgl#howto-detect-webgl
 DeviceInfo.prototype.detectGL_ = function() {
   var cs, ctx, canvas, webGL, glVersion, glVendor, glShaderVersion;
   // Test for HTML5 canvas
@@ -70,7 +71,7 @@ DeviceInfo.prototype.detectGL_ = function() {
     this.webGL = false;
     cs = document.createElement('canvas');
     var names = ['3d', 'webgl', 'experimental-webgl', 'experimental-webgl2', 'moz-webgl'];
-    for(i in names) {
+    for (i in names) {
       try {
         ctx = cs.getContext(names[i]);
         if (ctx && typeof ctx.getParameter == 'function') {
@@ -81,10 +82,11 @@ DeviceInfo.prototype.detectGL_ = function() {
   }
 
   // Get WebGL information for better feature detection.
-  if(ctx) {
-      this.glVersion =  ctx.getParameter(ctx.VERSION).toLowerCase();
-      this.glVendor = ctx.getParameter(ctx.VENDOR).toLowerCase();
-      this.glShaderVersion = ctx.getParameter(ctx.SHADING_LANGUAGE_VERSION).toLowerCase();
+  if (ctx) {
+      this.tests.glVersion =  ctx.getParameter(ctx.VERSION).toLowerCase();
+      this.tests.glVendor = ctx.getParameter(ctx.VENDOR).toLowerCase();
+      this.tests.glShaderVersion = ctx.getParameter(ctx.SHADING_LANGUAGE_VERSION).toLowerCase();
+      ths.tests.glRenderer = ctx.getParameter(ctx.RENDERER).toLowerCase();
     }
 
   // Null the context and <canvas> we created.
@@ -93,10 +95,14 @@ DeviceInfo.prototype.detectGL_ = function() {
 };
 
 // Detect screen parameters reported by the browser.
+// https://github.com/LeaVerou/dpi/blob/gh-pages/dpi.js
 DeviceInfo.prototype.detectDisplay_ = function() {
+
   this.display = {
     touch: !!('ontouchstart in window'),
-    pixelRatio: (window.devicePixelRatio || 1.0),
+    pixelRatio: (window.devicePixelRatio ||
+      (window.matchMedia && window.matchMedia('(min-resolution: 2dppx), (-webkit-min-device-pixel-ratio: 1.5),(-moz-min-device-pixel-ratio: 1.5),(min-device-pixel-ratio: 1.5)').matches? 2 : 1) ||
+      1.0),
     screenWidth: (Math.max(window.screen.width, window.screen.height)  || 0),
     screenHeight: (Math.min(window.screen.width, window.screen.height) || 0)
   };
@@ -112,6 +118,7 @@ DeviceInfo.prototype.detectDisplay_ = function() {
   this.display.longest = Math.max(long, short); // iPhone 4s: 480, iPhone 5: 568
 };
 
+// See if an event type is supported on the device.
 DeviceInfo.prototype.detectEvents_ = function(elem, eventName) {
   eventName = 'on' + eventName;
   var isSupported = (eventName in elem);
@@ -144,7 +151,7 @@ DeviceInfo.prototype.detectDevice_ = function() {
   // OS Version detects (mobile only).
   if (this.os.ios) {
     m = (ua).match(/os (\d+)_(\d+)_?(\d+)?/);
-    if(m && m[1] && m[2]) {
+    if (m && m[1] && m[2]) {
       this.os.version = parseFloat(m[1] + '.' + m[2]);
     }
   } else if (this.os.crios) {
@@ -153,18 +160,18 @@ DeviceInfo.prototype.detectDevice_ = function() {
     // TODO: Linux detects here.
   }else if (this.os.android) {
     m = ua.match(/android (\d+(?:\.\d+)+)[;)]/);
-    if(m && m[0]) {
+    if (m && m[0]) {
       this.os.version = parseFloat(m[0]);
     }
   } else if (this.os.windowsphone) {
       m = ua.match(/windows phone (\d+\.\d+)/);
-      if(m && m[1]) {
+      if (m && m[1]) {
         this.os.version = parseFloat(m[1]);
       }
     } else if (this.os.blackberry) {
-      if(ua.indexOf('bb10') >= 0) { // only Blackberry 10 phones would work.
+      if (ua.indexOf('bb10') >= 0) { // only Blackberry 10 phones would work.
         m = ua.match(/bb10.*version\/(\d+\.\d+)?/);
-        if(m && m[0]) {
+        if (m && m[0]) {
           this.os.version = parseFloat(m[1]);
         }
       }
@@ -191,7 +198,7 @@ DeviceInfo.prototype.findDevice = function() {
   var ua = this.ua;
   var devices = {};
 
-  // Broad device classification based on OS.
+  // Broad device classification based on OS used to load data.
   this.device = {
     iphone: (ua.indexOf('iphone') >= 0),
     ipad: (ua.indexOf('ipad') >= 0),
@@ -205,31 +212,41 @@ DeviceInfo.prototype.findDevice = function() {
    * - Windows Phone - check for the OS first.
    * - Android - check for the OS first
    */
-  if(this.device.android) { // 80% in 2015.
+  if (this.device.android) { // 80% in 2015.
     devices = this.devList.getList(this.devList.DEVICE_ANDROID);
-  } else if(this.device.iphone) { // iOS 15% IN 2015.
+  } else if (this.device.iphone) { // iOS 15% IN 2015.
     devices = this.devList.getList(this.devList.DEVICE_IPHONE);
-  } else if(this.device.ipad) {
+  } else if (this.device.ipad) {
     this.tests.devicemotion = this.detectEvents_(window, 'devicemotion');
     devices = this.devList.getList(this.devList.DEVICE_IPAD);
-  } else if(this.device.ipod) {
+  } else if (this.device.ipod) {
     devices = this.devList.getList(this.devList.DEVICE_IPOD);
-  } else if(this.device.windowsphone) { // 3% IN 2015.
+  } else if (this.device.windowsphone) { // 3% IN 2015.
     devices = this.devList.getList(this.devList.DEVICE_WINDOWS_PHONE);
-  } else { // 2%, Blackberry, Synbian, Series 40, 60 Firefox OS, others.
+  } else if (this.device.blackberry) {
+    devices = this.devList.getList(this.devList.DEVICE_BLACKBERRY);
+  } else if (this.os.tizen) {
+    devices = this.devList.getList(this.devList.DEVICE_TIZEN);
+  } else if (this.os.windows) {
+        // Not used.
+  } else if (this.os.mac) {
+        // Not used.
+  } else { // 2%, Symbian, Series 40, 60 Firefox OS, others.
     //TBD
   }
 
   // Using the device list, run the tests.
   for (var i in devices) {
-    if(devices[i].detect(this.ua, this.display, this.glVersion)) {
+    if (devices[i].detect(this.ua, this.display, this.tests)) {
       console.log('i:' + i)
       this.foundDevice = devices[i];
       console.log('device found:' + this.device.name + '.');
       return true;
     }
   }
-  return this.devList.getDefault(this.display);
+  console.warn('using generic device');
+  this.foundDevice = this.devList.getDefault(this.display);
+  return this.foundDevice;
 }; // End of find device.
 
 module.exports = DeviceInfo;
