@@ -42,7 +42,9 @@
      }
      switch(whichList) {
        case this.DEVICE_ALL:
-        return this.merge(this.list.iphone, this.list.android, this.list.windowsphone);
+        return this.merge(this.list.iphone, this.list.ipad, this.list.ipod,
+          this.list.android, this.list.windowsphone, this.list.blackberry, this.list.tizen,
+        this.list.gameconsole, this.list.tv);
         break;
       case this.DEVICE_IPHONE:
         return this.list.iphone;
@@ -96,7 +98,7 @@
     var w = display.screenWidth;
     var h = display.screenHeight;
     return {
-      name: 'generic device',
+      label: 'Default Device (by feature detect)',
       detect: function(ua, display, tests) {
           return false;
       },
@@ -153,7 +155,7 @@
 
   this.list.iphone = {
   iphone3: { // iPhone 1, 2, iPhone 3GS, non-Retina.
-    name: 'iPhone 1, 2, 3',
+    label: 'iPhone 1, 2, 3',
     detect: function(ua, display, tests) {
         return (display.longest <= 480 && !display.retina && (tests.glVersion.indexOf('535') >= 0));
     },
@@ -167,7 +169,7 @@
     bevelMeters: 0
   },
   iphone4: { //4 and 4s
-    name: 'iPhone 4, 4s',
+    label: 'iPhone 4, 4s',
     detect: function(ua, display, tests) {
       return (display.longest <= 480 && display.retina && (tests.glVersion.indexOf('535') >=0));
     },
@@ -181,7 +183,7 @@
     bevelMeters: 0.004
   },
   iphone5: { // iPhone 5 5c
-    name: 'iPhone 5, 5c',
+    label: 'iPhone 5, 5c',
     detect: function(ua, display, tests) {
       return (display.longest <= 568 && (tests.glVersion.indexOf('543') >= 0));
     },
@@ -195,7 +197,7 @@
     bevelMeters: 0.00343
   },
   iphone5s: { // iPhone 5s
-    name: 'iPhone 5s',
+    label: 'iPhone 5s',
     detect: function(ua, display, tests) {
       return (display.longest <= 568 && (tests.glVersion.indexOf('a7') >= 0));
     },
@@ -209,7 +211,7 @@
     bevelMeters: 0.00343
   },
   iphone6: { // TODO: 1.16 http://info.localytics.com/blog/research-shows-the-iphone-6-is-the-most-adopted-iphone-model-with-the-highest-user-engagement
-    name: 'iPhone 6',
+    label: 'iPhone 6',
     detect: function(ua, display, tests) {
       return (display.longest <= 736 && (tests.glVersion.indexOf('a8') >= 0));
     },
@@ -223,7 +225,7 @@
     bevelMeters: 0.004
   },
   iphone6s: {
-    name: 'iPhone 6s',
+    label: 'iPhone 6s',
     detect: function(ua, display, tests) {
       return (display.longest <= 736 && (tests.glVersion.indexOf('a9') >= 0));
     },
@@ -237,7 +239,7 @@
     bevelMeters: 0.004
   },
   iphone6plus: {
-    name: 'iPhone 6 Plus',
+    label: 'iPhone 6 Plus',
     detect: function(ua, display, tests) {
       return (display.longest <= 736 && (tests.glVersion.indexOf('a8') >= 0));
     },
@@ -255,7 +257,7 @@
   // iPads.
   this.list.ipad = {
     ipad1: {
-      name: 'ipad1',
+      label: 'ipad1',
       detect: function(ua, display, tests) {
         if(display.retina && !tests.devicemotion) { //no accelerometer.
           return false;
@@ -272,7 +274,7 @@
       bevelMeters: 0
     },
     ipad2: { // has accelerometer.
-      name: 'iPad 2',
+      label: 'iPad 2',
       detect: function(ua, display, tests) {
         if(display.retina && display.longest <= 1024 && /543/.test(tests.glVersion)) {
           return false;
@@ -288,7 +290,7 @@
       bevelMeters: 0
     },
     ipad3: {
-      name: 'iPad 3',
+      label: 'iPad 3',
       detect: function(ua, display, tests) {
         return (display.retina && display.longest <= 2048 && /543/.test(tests.glVersion));
       },
@@ -302,7 +304,7 @@
       bevelMeters: 0
     },
     ipad4: {
-      name: 'iPad 4',
+      label: 'iPad 4',
       detect: function(ua, display, tests) {
         return (display.retina && display.longest <= 2048 && /554/.test(tests.glVersion));
       },
@@ -316,7 +318,7 @@
       bevelMeters: 0
     },
     ipadair: { // TODO: can't differentiate this from iPad Mini 2, 3
-      name: 'iPad Air',
+      label: 'iPad Air',
       detect: function(ua, display, tests) {
         return (display.retina && display.longest <= 2048 && /A7/.test(tests.glVersion)); // iPad Mini 2, 3, iPad Air
       },
@@ -330,7 +332,7 @@
       bevelMeters: 0
     },
     ipadair2: { // 264ppi , chip 2x faster.
-      name: 'iPad Air 2',
+      label: 'iPad Air 2',
       detect: function(ua, display, tests) {
         return (display.retina && display.longest <= 2048 && /A8X/.test(tests.glVersion));
       },
@@ -344,7 +346,7 @@
       bevelMeters: 0
     },
     ipadpro: { // A9 chip = 5x faster, 264ppi, larger screen.
-      name: 'iPad Pro',
+      label: 'iPad Pro',
       detect: function(ua, display, tests) {
         return (display.retina && display.longest <= 2732 && /A9/.test(tests.glVersion)); // iPhone 6, iPad Pro
       },
@@ -358,7 +360,7 @@
       bevelMeters: 0
     },
     ipadmini: { // iPad Mini 1.
-      name: 'iPad Mini',
+      label: 'iPad Mini',
       detect: function(ua, display, tests) {
         return (!display.retina && /A7/.test(tests.glVersion)); // iPad Mini 2, 3, iPad Air.
       },
@@ -372,7 +374,7 @@
       bevelMeters: 0
     },
     ipadmini3: { // TODO: does not differentiate iPad mini 2,3, iPad Air.
-      name: 'iPad Mini Retina 2 and 3',
+      label: 'iPad Mini Retina 2 and 3',
       detect: function(ua, display, tests) {
         return (display.retina && display.longest <= 2048 && /A7/.test(tests.glVersion)); // iPad Mini 2, 3, iPad Air.
       },
@@ -386,7 +388,7 @@
       bevelMeters: 0
     },
     ipadmini4: { // Graphics 1.6x faster
-      name: 'iPad Mini 4',
+      label: 'iPad Mini 4',
       detect: function(ua, display, tests) {
         return (display.retina && /A8/.test(tests.glVersion)); // iPad Mini 4
       },
@@ -404,7 +406,7 @@
   // Recent iPods.
   this.list.ipod = {
     ipodtouch3: {
-      name: 'iPod Touch 3',
+      label: 'iPod Touch 3',
       detect: function(ua, display, tests) {
         return (!display.retina && display.longest <= 480);
       },
@@ -418,7 +420,7 @@
       bevelMeters: 0
     },
     ipodtouch4: {
-      name: 'iPod Touch 4',
+      label: 'iPod Touch 4',
       detect: function(ua, display, tests) {
         return (display.retina && display.longest <= 480);
       },
@@ -432,7 +434,7 @@
       bevelMeters: 0
     },
     ipodtouch5: {
-      name: 'iPod Touch 5',
+      label: 'iPod Touch 5',
       detect: function(ua, display, tests) {
         return(display.retina && display.longest > 480 && !/A8/.test(tests.glVersion));
       },
@@ -446,7 +448,7 @@
       bevelMeters: 0
     },
     ipodtouch6: {
-      name: 'iPod Touch 6',
+      label: 'iPod Touch 6',
       detect: function(ua, display, tests) {
         return(display.retina && display.longest > 480 && /A8/.test(tests.glVersion));
       },
@@ -466,7 +468,7 @@
    */
   this.list.android = {
   note4: {
-    name: 'Note 4',
+    label: 'Note 4',
     detect: function(ua, display, tests) {
         return (ua.indexOf('sm-n910c') >= 0);
     },
@@ -480,7 +482,7 @@
     bevelMeters: 0
   },
   note5: {
-    name: 'Note 5',
+    label: 'Note 5',
     detect: function(ua, display, tests) {
         return (ua.indexOf('sm-a920') >= 0);
     },
@@ -493,7 +495,7 @@
     bevelMeters: 0
   },
   nexus5: {
-    name: 'Nexus 5',
+    label: 'Nexus 5',
     detect: function(ua, display, tests) {
       return (ua.indexOf('nexus 5 ') >= 0);
     },
@@ -506,7 +508,7 @@
     bevelMeters: 0.004
   },
   nexus6: {
-    name: 'Nexus 6',
+    label: 'Nexus 6',
     detect: function(ua, display, tests) {
       return (ua.indexOf('nexus 6') >= 0);
     },
@@ -519,7 +521,7 @@
     bevelMeters: 0.004
   },
   nexus6p: {
-    name: 'Nexus 6p',
+    label: 'Nexus 6p',
     detect: function(ua, display, tests) {
       return (ua.indexOf('nexus 6p') >= 0);
     },
@@ -532,7 +534,7 @@
     bevelMeters: 0.004
   },
   galaxygrand: { // Old phone, less likely
-    name: 'Galaxy Grand',
+    label: 'Galaxy Grand',
     detect: function(ua, display, tests) {
       return (ua.indexOf('sm-g7102') >= 0);
     },
@@ -545,7 +547,7 @@
     bevelMeters: 0.004
   },
   galaxygrandprime: {
-    name: 'Galaxy Grand Prime',
+    label: 'Galaxy Grand Prime',
     detect: function(ua, display, tests) {
       return (ua.indexOf('sm-g530h') >= 0);
     },
@@ -558,7 +560,7 @@
     bevelMeters: 0
   },
   galaxys3: {
-    name: 'Galaxy S3',
+    label: 'Galaxy S3',
     detect: function(ua, display, tests) {
       return (ua.indexOf('gt-i9300') >= 0);
     },
@@ -572,7 +574,7 @@
     bevelMeters: 0.005
   },
   galaxys4: {
-    name: 'Galaxy S4',
+    label: 'Galaxy S4',
     detect: function(ua, display, tests) {
       return (ua.indexOf('gt-i9505') >= 0);
     },
@@ -586,7 +588,7 @@
     bevelMeters: 0.004
   },
   galaxys5: {
-    name: 'Galaxy S5',
+    label: 'Galaxy S5',
     detect: function(ua, display, tests) {
       return /(sm-g900|scl23|sc04f)/.test(ua);
     },
@@ -600,7 +602,7 @@
     bevelMeters: 0.005
   },
   galaxys5mini: {
-    name: 'Galaxy S5 Mini',
+    label: 'Galaxy S5 Mini',
     detect: function(ua, display, tests) {
       return (ua.indexOf('sm-g800f') >= 0);
     },
@@ -614,7 +616,7 @@
     bevelMeters: 0
   },
   galaxys6: { // S6, S6 edge
-    name: 'Galaxy S6',
+    label: 'Galaxy S6',
     detect: function(ua, display, tests) {
       return (ua.indexOf('sm-g920') >= 0);
       return /(sm-g950|sm-g925)/.test(ua);
@@ -629,7 +631,7 @@
     bevelMeters: 0.0035
   },
   galaxya3: { // 4.7"
-    name: 'Galaxy A3',
+    label: 'Galaxy A3',
     detect: function(ua, display, tests) {
       return (ua.indexOf('sm-a300') >= 0);
     },
@@ -642,7 +644,7 @@
     bevelMeters: 0
   },
   galaxya5: { // 2016 model
-    name: 'Galaxy A5',
+    label: 'Galaxy A5',
     detect: function(ua, display, tests) {
       return /sm-(a500|a510)/.test(ua);
     },
@@ -655,7 +657,7 @@
     bevelMeters: 0
   },
   galaxya7: {
-    name: 'Galaxy A7',
+    label: 'Galaxy A7',
     detect: function(ua, display, tests) {
       return (ua.indexOf('sm-a700') >= 0);
     },
@@ -668,7 +670,7 @@
     bevelMeters: 0
   },
   galaxya9: {
-    name: 'Galaxy A9',
+    label: 'Galaxy A9',
     detect: function(ua, display, tests) {
       return (ua.indexOf('sm-a900') >= 0);
     },
@@ -681,7 +683,7 @@
     bevelMeters: 0
   },
   htcone: {
-    name: 'HTC One',
+    label: 'HTC One',
     detect: function(ua, display, tests) {
       return ((!ua.indexOf('max') >= 0) && /htc.*one/.test(ua));
     },
@@ -695,7 +697,7 @@
     bevelMeters: 0
   },
   htconemax: {
-    name: 'HTC One Max',
+    label: 'HTC One Max',
     detect: function(ua, display, tests) {
       return /htc.*one.*max/.test(ua);
     },
@@ -708,7 +710,7 @@
     bevelMeters: 0
   },
   lgg2: {
-		name: 'LG G2',
+		label: 'LG G2',
     detect: function(ua, display, tests) {
       return (ua.indexOf('lg-d802 ') >= 0);
     },
@@ -721,7 +723,7 @@
     bevelMeters: 0
 	},
 	lgg3: {
-		"name": 'LG G3',
+		label: 'LG G3',
     detect: function(ua, display, tests) {
       return /lg-d(850|851)/.test(ua);
     },
@@ -734,7 +736,7 @@
     bevelMeters: 0
 	},
 	lgg4: {
-		"name": 'LG G4',
+		label: 'LG G4',
     detect: function(ua, display, tests) {
       return (indexOf('lg-h815') >= 0);
     },
@@ -747,7 +749,7 @@
     bevelMeters: 0
 	},
   oneplusone: {
-    name: 'OnePlus One',
+    label: 'OnePlus One',
     detect: function(ua, display, tests) {
       return (indexOf('mi-oneplus') >= 0);
     },
@@ -760,7 +762,7 @@
     bevelMeters: 0
   },
   zenfone6: { // 6"
-    name: 'ASUS ZenFone 6',
+    label: 'ASUS ZenFone 6',
     detect: function(ua, display, tests) {
       return /'(?:asus_)?(?:t00g|z002)/.test(ua);
     },
@@ -773,7 +775,7 @@
     bevelMeters: 0
   },
   kindlehdx7: { // 7"
-    name: 'Kindle Fire HDX 7"',
+    label: 'Kindle Fire HDX 7"',
     detect: function(ua, display, tests) {
       return (ua.indexOf('kfthwi') >= 0);
     },
@@ -787,7 +789,7 @@
     bevelMeters: 0
   },
   kindlehdx89: {
-    name: 'Kindle Fire HDX 8.9"',
+    label: 'Kindle Fire HDX 8.9"',
     detect: function(ua, display, tests) {
       return (ua.indexOf('kfapwi') >= 0);
     },
@@ -806,7 +808,7 @@
   this.list.windowsphone = {
 
   lumina1520: { // 6" size
-    name: 'Lumina 1520',
+    label: 'Lumina 1520',
     detect: function(ua, display, tests) {
       return ((ua.indexOf('lumina 1520') >= 0));
     },
@@ -819,7 +821,7 @@
     bevelMeters: 0
   },
   lumina950: { // 950, 950XL, Large Windows 10, 5.7"
-    name: 'Lumina 950',
+    label: 'Lumina 950',
     detect: function(ua, display, tests) {
       return ((ua.indexOf('lumina 950') >= 0));
     },
@@ -832,7 +834,7 @@
     bevelMeters: 0
   },
   lumina930: { // 4.7"
-    name: 'Lumina 930',
+    label: 'Lumina 930',
     detect: function(ua, display, tests) {
       return ((ua.indexOf('lumina 930') >= 0));
     },
@@ -846,7 +848,7 @@
     bevelMeters: 0
   },
   lumina550: { // 5"
-    name: 'Lumina 550',
+    label: 'Lumina 550',
     detect: function(ua, display, tests) {
       return ((ua.indexOf('lumina 550') >= 0));
     },
@@ -857,7 +859,7 @@
     bevelMeters: 0
   },
   lumina530: { // 4" and 245ppi.
-    name: 'Lumina 530',
+    label: 'Lumina 530',
     detect: function(ua, display, tests) {
       return ((ua.indexOf('lumina 530') >= 0));
     },
@@ -870,7 +872,7 @@
     bevelMeters: 0
   },
   lumina520: { // 4" 233ppi, but put here so MS Edge windowsphone emulation is detected.
-    name: 'Lumina 520',
+    label: 'Lumina 520',
     detect: function(ua, display, tests) {
       return ((ua.indexOf('lumina 520') >= 0));
     },
@@ -889,7 +891,7 @@
 this.list.blackberry = {
   //z3, z10 is too small
   blackberryleap: { // 5"
-    name: 'Blackberry Leap',
+    label: 'Blackberry Leap',
     detect: function(ua, display, tests) {
       return (ua.indexOf('str100') >= 0);
     },
@@ -904,7 +906,7 @@ this.list.blackberry = {
   },
 
   blackberrypriv: { // 5.4" high-definition
-    name: 'Blackberry Priv',
+    label: 'Blackberry Priv',
     detect: function(ua, display, tests) {
       return (ua.indexOf('stv100-3') >= 0);
     },
@@ -920,7 +922,7 @@ this.list.blackberry = {
 
 this.list.tizen = {
   samsungz: { // 4.8"
-    name: 'Samsung Z',
+    label: 'Samsung Z',
     detect: function(ua, display, tests) {
       return (ua.indexOf('sm-910f') >= 0);
     },
@@ -933,7 +935,7 @@ this.list.tizen = {
     bevelMeters: 0
   },
   samsungz3: { // 5", Z1 and Z2 too small.
-    name: 'Samsung Z3',
+    label: 'Samsung Z3',
     detect: function(ua, display, tests) {
       return (ua.indexOf('sm-z300') >= 0);
     },
