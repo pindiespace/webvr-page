@@ -54,13 +54,10 @@ function WebVRPageManager(renderer, effect, camera, params) {
   // Create the Player.
   this.player = new WebVRPagePlayer(renderer, params);
 
-  // Get available device information.
-  this.deviceInfo = new DeviceInfo();
-  window.deviceInfo = this.deviceInfo; //TODO: remove....
+  // Get available device information, along with viewer params.
+  this.deviceInfo = new DeviceInfo(params);
 
-  // Get available viewer (not HMD) information.
-  this.viewerInfo = new ViewerInfo();
-  window.viewerInfo = this.viewerInfo; //TODO: remove...
+  window.deviceInfo = this.deviceInfo; //TODO: remove....
 
   // Get the Cardboard distorter.
   //this.distorter = new CardboardDistorter(renderer, this.deviceInfo);

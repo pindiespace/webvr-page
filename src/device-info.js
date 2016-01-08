@@ -23,15 +23,26 @@
  */
 
 var Util = require('./util.js');
+var Distortion = require('./distortion/distortion.js');
+var ViewerInfo = require('./viewer-info.js');
 var DeviceList = require('./device/device-list.js');
 
-function DeviceInfo() {
+function DeviceInfo(params) {
 
   var DEFAULT_LEFT_CENTER = {x: 0.5, y: 0.5};
   var DEFAULT_RIGHT_CENTER = {x: 0.5, y: 0.5};
 
-  // Test results passed to detector functions
+  this.detected = false;
+
+  // Feature detect results, passed to detector functions
   this.tests = {};
+
+  // Assign a specific Viewer, or get a default one.
+  if(params) {
+    this.viewer = new ViewerInfo(params);
+  } else {
+    this.viewer = new ViewerInfo();
+  }
 
   // Current device.
   this.foundDevice = null;
@@ -42,13 +53,18 @@ function DeviceInfo() {
   // Load the device database.
   this.devList = new DeviceList();
 
-  // Run feature and user agent detects on the browser.
-  this.detectGL_();
-  this.detectDisplay_();
-  this.detectDevice_();
+  if(params.deviceName) {
+    this.setDevice(deviceName);
+  } else {
+    // Run feature and user agent detects on the browser.
+    this.detectGL_();
+    this.detectDisplay_();
+    this.detectDevice_();
 
-  // Find the device in our database.
-  this.findDevice();
+    // Find the device in our database.
+    this.findDevice();
+  }
+
 };
 
 // Get the found device.
@@ -57,12 +73,26 @@ DeviceInfo.prototype.getDevice = function() {
     this.findDevice_();
   }
   return this.foundDevice;
-}
+};
+
+DeviceInfo.prototype.setDevice = function(deviceName) {
+  var list = this.devList.getList(deviceList);
+  var dev = list[deviceName];
+  if(dev) {
+    if(dev != this.foundDevice) {
+      this.detected = false;
+    }
+    this.foundDevice = dev;
+    return this.foundDevice;
+  }
+  console.error('device ' + deviceName + ' not found in deviceList');
+  return {};
+};
 
 // Return the names of all devices used for detection.
-DeviceInfo.prototype.getDeviceNames = function(whichList) {
+DeviceInfo.prototype.getDeviceNames = function(deviceList) {
   var names = [];
-  var list = this.devList.getList(whichList);
+  var list = this.devList.getList(deviceList);
   for (var i in list) {
     names.push(i);
   }
@@ -70,12 +100,12 @@ DeviceInfo.prototype.getDeviceNames = function(whichList) {
   return names;
 };
 
-DeviceInfo.prototype.getDeviceLabels = function(whichList) {
+DeviceInfo.prototype.getDeviceLabels = function(deviceList) {
   var labels = [];
-  if(!whichList) {
-    whichList = this.DEVICE_ALL;
+  if(!deviceList) {
+    deviceList = this.DEVICE_ALL;
   }
-  var list = this.devList.getList(whichList);
+  var list = this.devList.getList(deviceList);
   for (var i in list) {
     labels.push(list[i].label);
   }
@@ -83,9 +113,14 @@ DeviceInfo.prototype.getDeviceLabels = function(whichList) {
   return labels;
 };
 
-// Scan for a list of devices matching keywords, return the device(s) in an array.
-DeviceInfo.prototype.searchDevice = function(keywords) {
-  //TODO: write a progressive search funciton
+DeviceInfo.prototype.getDeviceFromList = function(deviceName) {
+  var list = this.deviceList.getList(this.deviceList.DEVICE_ALL);
+  var dev = list[deviceName];
+  if(dev) {
+    return dev;
+  }
+  console.error('Device ' + deviceName + ' not found in lists');
+  return {};
 };
 
 DeviceInfo.prototype.findDevice = function() {
@@ -140,6 +175,11 @@ DeviceInfo.prototype.findDevice = function() {
   }
   console.warn('using generic device');
   this.foundDevice = this.devList.getDefault(this.display);
+
+  // If we defaulted to desktop, consider this a detect.
+  if(this.desktop == true) {
+    this.detected = true;
+  }
   return this.foundDevice;
 }; // End of find device.
 
@@ -276,6 +316,11 @@ DeviceInfo.prototype.detectDevice_ = function() {
   this.tv = /(google|apple|smart|hbb|opera|pov|net).*tv|(lg|aquos|inettv).*browser|(roku|kylo|aquos|viera|espial|boxee|dlnadoc|crkey|ce-html)/.test(ua);
   this.desktop = !this.mobile && !this.tablet && !this.gameConsole && !this.tv || (window.screenX != 0);
 
-}; // End of ua detect function.
+}; // End of detect function.
+
+// Scan for a list of devices matching keywords, return the device(s) in an array.
+DeviceInfo.prototype.searchDevice = function(keywords) {
+  //TODO: write a progressive search funciton
+}; // End of searchDevice_ function.
 
 module.exports = DeviceInfo;

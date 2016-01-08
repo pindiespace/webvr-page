@@ -20,33 +20,45 @@
 /*
  * This object loads VR viewer descriptions.
  */
- var Distortion = require('./distortion/distortion.js');
  var Util = require('./util.js');
  var ViewerList = require('./viewer/viewer-list.js');
 
-function ViewerInfo(whichViewer) {
+function ViewerInfo(params) {
   this.foundViewer = null;
 
   // Get the viewer database.
   this.viewerList = new ViewerList();
 
   // Get a viewer by default.
-  this.getViewer(whichViewer);
+  if(params.viewerName) {
+      this.setViewer(params.viewerName);
+  } else {
+    this.getViewer(); // Default.
+  }
+
 };
 
 // Get a named viewer.
-ViewerInfo.prototype.getViewer = function(whichViewer) {
+ViewerInfo.prototype.getViewer = function() {
   if(!this.foundViewer) {
-    this.findViewer_(whichViewer);
+    this.findViewer_();
   }
   return this.foundViewer;
 };
 
+ViewerInfo.prototype.setViewer = function(viewerName) {
+  if(viewerName) {
+    return this.findViewer_(viewerName);
+  }
+  console.error('ViewerInfo.setViewer(), no viewer name set');
+  return {};
+};
+
 // Get a list of viewer names
-ViewerInfo.prototype.getViewerNames = function(whichList) {
+ViewerInfo.prototype.getViewerNames = function(viewerList) {
   var names = [];
 
-  var list = this.viewerList.getList(whichList);
+  var list = this.viewerList.getList(viewerList);
   for (var i in list) {
     names.push(i);
   }
@@ -54,12 +66,12 @@ ViewerInfo.prototype.getViewerNames = function(whichList) {
   return names;
 };
 
-ViewerInfo.prototype.getViewerLabels = function(whichList) {
+ViewerInfo.prototype.getViewerLabels = function(viewerList) {
   var labels = [];
-  if(!whichList) {
-    whichList = this.VIEWER_ALL;
+  if(!viewerList) {
+    viewerList = this.viewerList.VIEWER_ALL;
   }
-  var list = this.viewerList.getList(whichList);
+  var list = this.viewerList.getList(viewerList);
   for (var i in list) {
     labels.push(list[i].label);
   }
@@ -67,14 +79,19 @@ ViewerInfo.prototype.getViewerLabels = function(whichList) {
   return labels;
 };
 
-// Scan for a list of devices matching keywords
-ViewerInfo.prototype.searchViewer = function(keywords) {
-  //TODO: write a progressive search funciton
+ViewerInfo.prototype.getViewerFromList = function(viewerName) {
+  var list = this.viewerList.getList(this.viewerList.VIEWER_ALL);
+  var viewer = list[viewerName];
+  if(viewer) {
+    return viewer;
+  }
+  console.error('Viewer ' + viewerName + ' not found in lists');
+  return {};
 };
 
-ViewerInfo.prototype.findViewer_ = function(whichViewer) {
-  if(whichViewer) {
-      this.foundViewer = this.viewerList[whichViewer];
+ViewerInfo.prototype.findViewer_ = function(viewerName) {
+  if(viewerName) {
+      this.foundViewer = this.viewerList[viewerName];
       if(this.foundViewer) {
         return this.foundViewer;
       }
@@ -82,6 +99,11 @@ ViewerInfo.prototype.findViewer_ = function(whichViewer) {
   console.warn('using generic viewer');
   this.foundViewer = this.viewerList.getDefault();
   return this.foundViewer;
+};
+
+// Scan for a list of devices matching keywords
+ViewerInfo.prototype.searchViewer = function(keywords) {
+  //TODO: write a progressive search funciton
 };
 
 ViewerInfo.prototype.getLeftFOV_ = function() {
