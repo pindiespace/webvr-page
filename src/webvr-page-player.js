@@ -81,9 +81,9 @@ WebVRPagePlayer.prototype = new Emitter();
 // Overwrite the <canvas> with errors if we can't run.
 WebVRPagePlayer.prototype.errorMsgIfNeeded_ = function() {
   if(!this.params.canvas) {
-
+    //TODO: message
   } else if(!this.params.webgl) {
-
+    //TODO: message
   }
 };
 
@@ -111,6 +111,9 @@ WebVRPagePlayer.prototype.initFigure_ = function() {
     d.id = this.uid;
   }
   Util.addClass(d, prefix + this.playerClasses.player);
+
+  // Must use relative positioning for child elements.
+  d.style.position = 'relative';
 
   // Set the Player canvas id and standard class
   if (!c.id) {
@@ -152,7 +155,7 @@ WebVRPagePlayer.prototype.initCaption_ = function() {
 };
 
 WebVRPagePlayer.prototype.initButtons_ = function() {
-    this.buttons = new WebVRPageButtons(this.params);
+    this.buttons = new WebVRPageButtons(this.dom, this.params);
 };
 
 // Respond to events.

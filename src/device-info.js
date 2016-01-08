@@ -39,9 +39,9 @@ function DeviceInfo(params) {
 
   // Assign a specific Viewer, or get a default one.
   if(params) {
-    this.viewer = new ViewerInfo(params);
+    this.viewerInfo = new ViewerInfo(params);
   } else {
-    this.viewer = new ViewerInfo();
+    this.viewerInfo = new ViewerInfo();
   }
 
   // Current device.
@@ -53,6 +53,7 @@ function DeviceInfo(params) {
   // Load the device database.
   this.devList = new DeviceList();
 
+  // If a device name was supplied, set it. Otherwise, detect the device.
   if(params.deviceName) {
     this.setDevice(deviceName);
   } else {
@@ -62,7 +63,7 @@ function DeviceInfo(params) {
     this.detectDevice_();
 
     // Find the device in our database.
-    this.findDevice();
+    this.detectDevice();
   }
 
 };
@@ -70,7 +71,7 @@ function DeviceInfo(params) {
 // Get the found device.
 DeviceInfo.prototype.getDevice = function() {
   if(!this.foundDevice) {
-    this.findDevice_();
+    this.detectDevice_();
   }
   return this.foundDevice;
 };
@@ -113,7 +114,7 @@ DeviceInfo.prototype.getDeviceLabels = function(deviceList) {
   return labels;
 };
 
-DeviceInfo.prototype.getDeviceFromList = function(deviceName) {
+DeviceInfo.prototype.getDeviceByName = function(deviceName) {
   var list = this.deviceList.getList(this.deviceList.DEVICE_ALL);
   var dev = list[deviceName];
   if(dev) {
@@ -123,7 +124,13 @@ DeviceInfo.prototype.getDeviceFromList = function(deviceName) {
   return {};
 };
 
-DeviceInfo.prototype.findDevice = function() {
+// Scan for a list of devices matching keywords, return the device(s) in an array.
+DeviceInfo.prototype.searchDevice = function(keywords) {
+  //TODO: write a progressive search funciton
+}; // End of searchDevice_ function.
+
+// Detect device.
+DeviceInfo.prototype.detectDevice = function() {
   var ua = this.ua;
   var devices = {};
 
@@ -317,10 +324,5 @@ DeviceInfo.prototype.detectDevice_ = function() {
   this.desktop = !this.mobile && !this.tablet && !this.gameConsole && !this.tv || (window.screenX != 0);
 
 }; // End of detect function.
-
-// Scan for a list of devices matching keywords, return the device(s) in an array.
-DeviceInfo.prototype.searchDevice = function(keywords) {
-  //TODO: write a progressive search funciton
-}; // End of searchDevice_ function.
 
 module.exports = DeviceInfo;

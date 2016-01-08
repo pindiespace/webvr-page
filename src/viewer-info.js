@@ -41,14 +41,14 @@ function ViewerInfo(params) {
 // Get a named viewer.
 ViewerInfo.prototype.getViewer = function() {
   if(!this.foundViewer) {
-    this.findViewer_();
+    this.detectViewer_();
   }
   return this.foundViewer;
 };
 
 ViewerInfo.prototype.setViewer = function(viewerName) {
   if(viewerName) {
-    return this.findViewer_(viewerName);
+    return this.detectViewer_(viewerName);
   }
   console.error('ViewerInfo.setViewer(), no viewer name set');
   return {};
@@ -79,7 +79,7 @@ ViewerInfo.prototype.getViewerLabels = function(viewerList) {
   return labels;
 };
 
-ViewerInfo.prototype.getViewerFromList = function(viewerName) {
+ViewerInfo.prototype.getViewerByName = function(viewerName) {
   var list = this.viewerList.getList(this.viewerList.VIEWER_ALL);
   var viewer = list[viewerName];
   if(viewer) {
@@ -89,16 +89,15 @@ ViewerInfo.prototype.getViewerFromList = function(viewerName) {
   return {};
 };
 
-ViewerInfo.prototype.findViewer_ = function(viewerName) {
-  if(viewerName) {
-      this.foundViewer = this.viewerList[viewerName];
-      if(this.foundViewer) {
-        return this.foundViewer;
-      }
-  }
+// Detect a Viewer, if it can be detected.
+ViewerInfo.prototype.detectViewer_ = function() {
+  //TODO: write a detection script..
+
+  // Otherwise, get the default viewer.
   console.warn('using generic viewer');
   this.foundViewer = this.viewerList.getDefault();
   return this.foundViewer;
+  return {};
 };
 
 // Scan for a list of devices matching keywords
