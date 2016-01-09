@@ -44,6 +44,7 @@ function WebVRPageManager(renderer, effect, camera, params) {
   this.prefix = 'webvr';
   this.uid = Util.getUniqueId(this.prefix);
   if (params) {
+    params.prefix = this.prefix;
     params.uid = this.uid;
   }
 
@@ -51,6 +52,13 @@ function WebVRPageManager(renderer, effect, camera, params) {
   this.renderer = renderer;
   this.effect = effect;
   this.camera = camera;
+
+  /*
+   * Whether or not the FOV should be distorted or un-distorted. By default, it
+   * should be distorted, but in the case of vertex shader based distortion,
+   * ensure that we use undistorted parameters.
+   */
+  this.isUndistorted = !!this.params.isUndistorted;
 
   // Create the Player.
   this.player = new WebVRPagePlayer(renderer, params);

@@ -156,6 +156,9 @@ WebVRPagePlayer.prototype.initCaption_ = function() {
 
 WebVRPagePlayer.prototype.initButtons_ = function() {
     this.buttons = new WebVRPageButtons(this.dom, this.params);
+
+    // Create a fullscreen button and display it.
+    this.buttons.createButton(this.buttons.BUTTON_FULLSCREEN, true);
 };
 
 // Respond to events.

@@ -82,11 +82,31 @@ Util.getChildrenByTagName = function(elem, tagName) {
   return arr;
 };
 
-// Removes numbers from string (use for building Ids and classes)
-Util.parseText = function(str) {
-  return str.replace(/[0-9]/g, '');
+Util.getElementWidth = function(elem) {
+  var w;
+  if (elem.style.clip) {
+    w = elem.style.clip.width;
+  } else if (elem.style.pixelWidth) {
+      w = elem.style.pixelWidth;
+  } else {
+    w = elem.offsetWidth;
+  }
+  return parseFloat(w);
 };
 
+Util.getElementHeight = function(elem) {
+  var h;
+  if (elem.style.clip) {
+    h = elem.style.clip.height;
+  } else if (elem.style.pixelHeight) {
+    h = elem.style.pixelHeight;
+  } else {
+    h = elem.offsetHeight;
+  }
+  return parseFloat(h);
+};
+
+// Math function wrapper.
 Util.radToDeg = function(rads) {
   if(THREE && THREE.Math) {
       return THREE.Math.radToDeg(rads);
@@ -308,6 +328,11 @@ Util.isFullScreen = function() {
     document.addEventListener('mozfullscreenerror', screenError, false);
     document.addEventListener('MSFullscreenError', screenError, false);
 })();
+
+// Removes numbers from string (use for building Ids and classes)
+Util.parseText = function(str) {
+  return str.replace(/[0-9]/g, '');
+};
 
 // From http://goo.gl/4WX3tg
 Util.getQueryParameter = function(name) {
