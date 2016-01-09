@@ -24,7 +24,7 @@
  var ViewerList = require('./viewer/viewer-list.js');
 
 function ViewerInfo(params) {
-  this.foundViewer = null;
+  this.viewer = null;
 
   // Get the viewer database.
   this.viewerList = new ViewerList();
@@ -40,10 +40,10 @@ function ViewerInfo(params) {
 
 // Get a named viewer.
 ViewerInfo.prototype.getViewer = function() {
-  if(!this.foundViewer) {
+  if(!this.viewer) {
     this.detectViewer_();
   }
-  return this.foundViewer;
+  return this.viewer;
 };
 
 ViewerInfo.prototype.setViewer = function(viewerName) {
@@ -95,38 +95,14 @@ ViewerInfo.prototype.detectViewer_ = function() {
 
   // Otherwise, get the default viewer.
   console.warn('using generic viewer');
-  this.foundViewer = this.viewerList.getDefault();
-  return this.foundViewer;
+  this.viewer = this.viewerList.getDefault();
+  return this.viewer;
   return {};
 };
 
 // Scan for a list of devices matching keywords
 ViewerInfo.prototype.searchViewer = function(keywords) {
   //TODO: write a progressive search funciton
-};
-
-ViewerInfo.prototype.getLeftFOV_ = function() {
-
-};
-
-ViewerInfo.prototype.getRightFOV_ = function() {
-
-};
-
-ViewerInfo.prototype.getDistortedLeftFOV_ = function() {
-
-};
-
-ViewerInfo.prototype.getProjectionMatrixLeft_ = function() {
-
-};
-
-ViewerInfo.prototype.getUndistortedViewportLeft_ = function() {
-
-};
-
-ViewerInfo.prototype.getUndistortedFieldOfViewLeft_ = function() {
-
 };
 
 module.exports = ViewerInfo;

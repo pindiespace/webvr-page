@@ -111,9 +111,60 @@ https://github.com/inexorabletash/polyfill
 <script src="js/lib/VREffect.js"></script>
 
 <!--
+  Add a function for setting the FOV dynamically. Used to support VR scene correct scaling even if the device orientation changes.
+-->
+<script>
+  THREE.VREffect.prototype.setFOV = function(FOVL, FOVR) {
+    eyeFOVL = FOVL;
+  	eyeFOVR = FOVR;
+  };
+</script>
+
+<!--
   VRControls.js acquires positional information from connected VR devices and applies the transformations to a three.js camera object.
    -->
 <script src="js/lib/VRControls.js"></script>
+
+<!--
+  Fix the filter function so it returns values if .deviceName isn't defined.
+-->
+<script>
+if(!THREE.VRControls.filterInvalidDevices) {
+THREE.VRControls.filterInvalidDevices = function( devices ) {
+
+  // Exclude Cardboard position sensor if Oculus exists.
+
+  var oculusDevices = devices.filter( function ( device ) {
+
+    if (device && device.deviceName) {
+
+      return device.deviceName.toLowerCase().indexOf( 'oculus' ) !== - 1;
+
+    }
+
+  } );
+
+  if ( oculusDevices.length >= 1 ) {
+
+    return devices.filter( function ( device ) {
+
+      if(device && device.deviceName) {
+
+        return device.deviceName.toLowerCase().indexOf( 'cardboard' ) === - 1;
+
+      }
+
+    } );
+
+  } else {
+
+    return devices;
+
+  }
+
+} //end of function.
+} // end of test.
+</script>
 
 <!--
   A polyfill for WebVR using the Device{Motion,Orientation}Event API.
@@ -148,14 +199,14 @@ document.addEventListener('DOMContentLoaded', function() {
 // Use an existing <canvas> in the markup.
 var canvas = document.getElementById('scene-cube');
 var renderer;
-if(FeatureDetector.webGL) { // 3D scenes ok.
-
+if(FeatureDetector.webgl) { // 3D scenes ok.
   renderer = new THREE.WebGLRenderer({
     antialias: true,
     canvas: canvas
   });
   renderer.setPixelRatio(window.devicePixelRatio);
 } else { // Can't do 3d, just draw the scene once and use as a fallback image.
+  console.warn('no webgl, fallback to canvas still image rendering of scene');
   renderer = new THREE.CanvasRenderer({
     antialias: true,
     canvas: canvas
@@ -212,12 +263,12 @@ effect.setSize(w, h);
 
 /*
  * Params for the Manager.
- * hidebutton - if true, don't show buttons
- * webgl - if true, we can run and animate 3D scenes
+ * hidebutton: if true, don't show buttons
+ * detector: if present, we can used the feature detections later.
  */
 
-// Create a VR manager helper to enter and exit VR mode.
-window.manager = new WebVRPageManager(renderer, effect, camera, {hideButton: false, canvas: FeatureDetector.canvas, webgl: FeatureDetector.webGL});
+// Create a Manager.
+window.manager = new WebVRPageManager(renderer, effect, camera, {hideButton: false, detector: (FeatureDetector || THREE.Detector)});
 
 // Reset the position sensor when 'z' pressed.
 function onKey(event) {
@@ -242,7 +293,7 @@ function animate(timestamp) {
 }
 
 // Kick off animation loop, or draw a still image one time.
-if(FeatureDetector.webGL) { // Render animated 3D scene.
+if(FeatureDetector.webgl) { // Render animated 3D scene.
   animate();
 } else { // Render exactly once to canvas, treat as image.
   manager.render(scene, camera);

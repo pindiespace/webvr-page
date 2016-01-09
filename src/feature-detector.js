@@ -15,7 +15,8 @@
  */
 
 /*
- * Detects devices and features, loads polyfills as needed.
+ * Detects devices and features, interface matches THREE Detector.js object, but
+ * with additional feature detects (e.g. Promise).
  * Polyfills:
  * https://github.com/inexorabletash/polyfill/tree/5c070ddef1b7ecf741567a37ffd3ac5658dd9683
  */
@@ -58,6 +59,17 @@ var FeatureDetector = (function() {
     }
     return false;
   };
+
+  /*
+   * Detect support for WebWorkers.
+   */
+   var detectWorkers_ = function() {
+     return !!window.Worker;
+   };
+
+   var detectFileAPI_ = function() {
+     return (window.File && window.FileReader && window.FileList && window.Blob);
+   };
 
   /*
    * Detect support for addEventListener.
@@ -150,12 +162,14 @@ var FeatureDetector = (function() {
       addEventListener: detectEventListener_(),
       canvas: detectCanvas_(),
       typedArray: detectTypedArray_(),
-      webGL: detectWebGL_(),
-      defineProperty: detectDefineProperty_(),
-      defineProperties: detectDefineProperties_(),
+      webgl: detectWebGL_(),
+      workers: detectWorkers_(),
+      fileapi: detectFileAPI_(),
+      defineproperty: detectDefineProperty_(),
+      defineproperties: detectDefineProperties_(),
       promise: detectPromise_(),
       fullscreen: detectFullscreen_(),
-      deviceMotion: detectEventSupport_(window, 'devicemotion'),
+      devicemotion: detectEventSupport_(window, 'devicemotion'),
       webVR: detectWebVR_(),
       requestAnimationFrame: detectRequestAnimationFrame_()
     };

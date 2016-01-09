@@ -87,6 +87,22 @@ Util.parseText = function(str) {
   return str.replace(/[0-9]/g, '');
 };
 
+Util.radToDeg = function(rads) {
+  if(THREE && THREE.Math) {
+      return THREE.Math.radToDeg(rads);
+  }
+  console.error('radToDeg not supported by your 3d library');
+  return 0;
+};
+
+Util.degToRad = function(degs) {
+  if(THREE && THREE.Math) {
+    return THREE.Math.degToRad(degs);
+  }
+  console.error('degToRad not supported by your 3d library');
+  return 0;
+};
+
 /**
  * Add recommended fullscreen styles.
  * https://wiki.mozilla.org/Gecko%3aFullScreenAPI#onfullscreenchange_attribute

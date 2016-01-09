@@ -43,9 +43,10 @@ function DeviceInfo(params) {
   } else {
     this.viewerInfo = new ViewerInfo();
   }
+  this.viewer = this.viewerInfo.getViewer();
 
   // Current device.
-  this.foundDevice = null;
+  this.device = null;
 
   // User agent.
   this.ua = (navigator.userAgent || navigator.vendor || window.opera).toLowerCase();
@@ -70,21 +71,21 @@ function DeviceInfo(params) {
 
 // Get the found device.
 DeviceInfo.prototype.getDevice = function() {
-  if(!this.foundDevice) {
+  if(!this.device) {
     this.detectDevice_();
   }
-  return this.foundDevice;
+  return this.device;
 };
 
 DeviceInfo.prototype.setDevice = function(deviceName) {
   var list = this.devList.getList(deviceList);
   var dev = list[deviceName];
   if(dev) {
-    if(dev != this.foundDevice) {
+    if(dev != this.device) {
       this.detected = false;
     }
-    this.foundDevice = dev;
-    return this.foundDevice;
+    this.device = dev;
+    return this.device;
   }
   console.error('device ' + deviceName + ' not found in deviceList');
   return {};
@@ -104,7 +105,7 @@ DeviceInfo.prototype.getDeviceNames = function(deviceList) {
 DeviceInfo.prototype.getDeviceLabels = function(deviceList) {
   var labels = [];
   if(!deviceList) {
-    deviceList = this.DEVICE_ALL;
+    deviceList = this.deviceGroup_ALL;
   }
   var list = this.devList.getList(deviceList);
   for (var i in list) {
@@ -135,31 +136,31 @@ DeviceInfo.prototype.detectDevice = function() {
   var devices = {};
 
   // Broad device classification based on OS used to load data.
-  this.device = {
+  this.deviceGroup = {
     iphone: (ua.indexOf('iphone') >= 0),
     ipad: (ua.indexOf('ipad') >= 0),
     ipod: (ua.indexOf('ipod') >= 0),
     windowsphone: (ua.indexOf('windows phone') >= 0)
   };
-  this.device.android = (!this.device.windowsphone && ua.indexOf('android') >= 0);
+  this.deviceGroup.android = (!this.deviceGroup.windowsphone && ua.indexOf('android') >= 0);
   /*
    * Run searches in the most efficient way.
    * - iOS - checkfor the device first.
    * - Windows Phone - check for the OS first.
    * - Android - check for the OS first
    */
-  if (this.device.android) { // 80% in 2015.
+  if (this.deviceGroup.android) { // 80% in 2015.
     devices = this.devList.getList(this.devList.DEVICE_ANDROID);
-  } else if (this.device.iphone) { // iOS 15% IN 2015.
+  } else if (this.deviceGroup.iphone) { // iOS 15% IN 2015.
     devices = this.devList.getList(this.devList.DEVICE_IPHONE);
-  } else if (this.device.ipad) {
+  } else if (this.deviceGroup.ipad) {
     this.tests.devicemotion = this.detectEvents_(window, 'devicemotion');
     devices = this.devList.getList(this.devList.DEVICE_IPAD);
-  } else if (this.device.ipod) {
+  } else if (this.deviceGroup.ipod) {
     devices = this.devList.getList(this.devList.DEVICE_IPOD);
-  } else if (this.device.windowsphone) { // 3% IN 2015.
+  } else if (this.deviceGroup.windowsphone) { // 3% IN 2015.
     devices = this.devList.getList(this.devList.DEVICE_WINDOWS_PHONE);
-  } else if (this.device.blackberry) {
+  } else if (this.deviceGroup.blackberry) {
     devices = this.devList.getList(this.devList.DEVICE_BLACKBERRY);
   } else if (this.os.tizen) {
     devices = this.devList.getList(this.devList.DEVICE_TIZEN);
@@ -175,19 +176,19 @@ DeviceInfo.prototype.detectDevice = function() {
   for (var i in devices) {
     if (devices[i].detect(this.ua, this.display, this.tests)) {
       console.log('i:' + i)
-      this.foundDevice = devices[i];
-      console.log('device found:' + this.device.label + '.');
+      this.device = devices[i];
+      console.log('device found:' + this.deviceGroup.label + '.');
       return true;
     }
   }
   console.warn('using generic device');
-  this.foundDevice = this.devList.getDefault(this.display);
+  this.device = this.devList.getDefault(this.display);
 
   // If we defaulted to desktop, consider this a detect.
   if(this.desktop == true) {
     this.detected = true;
   }
-  return this.foundDevice;
+  return this.device;
 }; // End of find device.
 
 // Check if WebGL is present and enabled.
@@ -201,12 +202,13 @@ DeviceInfo.prototype.detectGL_ = function() {
   if (this.tests.canvas) {
     this.tests.webGL = false;
     cs = document.createElement('canvas');
-    var names = ['3d', 'webgl', 'experimental-webgl', 'experimental-webgl2', 'moz-webgl'];
+    var names = ['webgl', 'webgl2', 'experimental-webgl', 'experimental-webgl2', 'moz-webgl', '3d', 'webkit-3d'];
     for (i in names) {
       try {
         ctx = cs.getContext(names[i]);
-        if (ctx && typeof ctx.getParameter == 'function') {
+        if (ctx && ctx instanceof 'WebGLRenderingContext') {
           this.tests.webGL = true;
+          this.tests.webGLCtxName = names[i];
         }
       } catch (e) {}
     }
@@ -217,11 +219,11 @@ DeviceInfo.prototype.detectGL_ = function() {
       this.tests.glVersion =  ctx.getParameter(ctx.VERSION).toLowerCase();
       this.tests.glVendor = ctx.getParameter(ctx.VENDOR).toLowerCase();
       this.tests.glShaderVersion = ctx.getParameter(ctx.SHADING_LANGUAGE_VERSION).toLowerCase();
-      ths.tests.glRenderer = ctx.getParameter(ctx.RENDERER).toLowerCase();
+      this.tests.glRenderer = ctx.getParameter(ctx.RENDERER).toLowerCase();
     }
 
-  // Null the context and <canvas> we created.
-  cs = ctx = null;
+  // Undefine the context and <canvas> we created.
+  cs = ctx = undefined;
 
 };
 
@@ -289,7 +291,7 @@ DeviceInfo.prototype.detectDevice_ = function() {
     // TODO: CriOS detects here.
   } else if (this.os.linux) {
     // TODO: Linux detects here.
-  }else if (this.os.android) {
+  } else if (this.os.android) {
     m = ua.match(/android (\d+(?:\.\d+)+)[;)]/);
     if (m && m[0]) {
       this.os.version = parseFloat(m[0]);
@@ -300,7 +302,7 @@ DeviceInfo.prototype.detectDevice_ = function() {
         this.os.version = parseFloat(m[1]);
       }
     } else if (this.os.blackberry) {
-      if (ua.indexOf('bb10') >= 0) { // only Blackberry 10 phones would work.
+      if (ua.indexOf('bb10') >= 0) { // only Blackberry 10 phones would work (also support WebGL).
         m = ua.match(/bb10.*version\/(\d+\.\d+)?/);
         if (m && m[0]) {
           this.os.version = parseFloat(m[1]);
@@ -324,5 +326,141 @@ DeviceInfo.prototype.detectDevice_ = function() {
   this.desktop = !this.mobile && !this.tablet && !this.gameConsole && !this.tv || (window.screenX != 0);
 
 }; // End of detect function.
+
+/**
+ * Calculates field of view for the left eye.
+ */
+DeviceInfo.prototype.getDistortedFieldOfViewLeftEye = function() {
+  var viewer = this.viewer;
+  var device = this.device;
+
+  var distortion = new Distortion(viewer.distortionCoefficients);
+
+  // Device.height and device.width for device in portrait mode, so transpose.
+  var eyeToScreenDistance = viewer.screenLensDistance;
+
+  var outerDist = (device.widthMeters - viewer.interLensDistance) / 2;
+  var innerDist = viewer.interLensDistance / 2;
+  var bottomDist = viewer.baselineLensDistance - device.bevelMeters;
+  var topDist = device.heightMeters - bottomDist;
+
+  var outerAngle = Util.radToDeg(Math.atan(
+      distortion.distort(outerDist / eyeToScreenDistance)));
+  var innerAngle = Util.radToDeg(Math.atan(
+      distortion.distort(innerDist / eyeToScreenDistance)));
+  var bottomAngle = Util.radToDeg(Math.atan(
+      distortion.distort(bottomDist / eyeToScreenDistance)));
+  var topAngle = Util.radToDeg(Math.atan(
+      distortion.distort(topDist / eyeToScreenDistance)));
+
+  return {
+    leftDegrees: Math.min(outerAngle, viewer.fov),
+    rightDegrees: Math.min(innerAngle, viewer.fov),
+    downDegrees: Math.min(bottomAngle, viewer.fov),
+    upDegrees: Math.min(topAngle, viewer.fov)
+  }
+};
+
+DeviceInfo.prototype.getFieldOfViewLeftEye = function(opt_isUndistorted) {
+  return opt_isUndistorted ? this.getUndistortedFieldOfViewLeftEye() :
+      this.getDistortedFieldOfViewLeftEye();
+};
+
+DeviceInfo.prototype.getFieldOfViewRightEye = function(opt_isUndistorted) {
+  var fov = this.getFieldOfViewLeftEye(opt_isUndistorted);
+  return {
+    leftDegrees: fov.rightDegrees,
+    rightDegrees: fov.leftDegrees,
+    upDegrees: fov.upDegrees,
+    downDegrees: fov.downDegrees
+  };
+};
+
+/**
+ * Calculates a projection matrix for the left eye.
+ */
+DeviceInfo.prototype.getProjectionMatrixLeftEye = function(opt_isUndistorted) {
+  var fov = this.getFieldOfViewLeftEye(opt_isUndistorted);
+
+  var projectionMatrix = new THREE.Matrix4();
+  var near = 0.1;
+  var far = 1000;
+  var left = Math.tan(Util.degToRad(fov.leftDegrees)) * near;
+  var right = Math.tan(Util.degToRad(fov.rightDegrees)) * near;
+  var bottom = Math.tan(Util.degToRad(fov.downDegrees)) * near;
+  var top = Math.tan(Util.degToRad(fov.upDegrees)) * near;
+
+  // makeFrustum expects units in tan-angle space.
+  projectionMatrix.makeFrustum(-left, right, -bottom, top, near, far);
+
+  return projectionMatrix;
+};
+
+
+DeviceInfo.prototype.getUndistortedViewportLeftEye = function() {
+  var p = this.getUndistortedParams_();
+  var viewer = this.viewer;
+  var device = this.device;
+
+  var eyeToScreenDistance = viewer.screenLensDistance;
+  var screenWidth = device.widthMeters / eyeToScreenDistance;
+  var screenHeight = device.heightMeters / eyeToScreenDistance;
+  var xPxPerTanAngle = device.width / screenWidth;
+  var yPxPerTanAngle = device.height / screenHeight;
+
+  var x = Math.round((p.eyePosX - p.outerDist) * xPxPerTanAngle);
+  var y = Math.round((p.eyePosY - p.bottomDist) * yPxPerTanAngle);
+  return {
+    x: x,
+    y: y,
+    width: Math.round((p.eyePosX + p.innerDist) * xPxPerTanAngle) - x,
+    height: Math.round((p.eyePosY + p.topDist) * yPxPerTanAngle) - y
+  };
+};
+
+/**
+ * Calculates undistorted field of view for the left eye.
+ */
+DeviceInfo.prototype.getUndistortedFieldOfViewLeftEye = function() {
+  var p = this.getUndistortedParams_();
+
+  return {
+    leftDegrees: Util.radToDeg(Math.atan(p.outerDist)),
+    rightDegrees: Util.radToDeg(Math.atan(p.innerDist)),
+    downDegrees: Util.radToDeg(Math.atan(p.bottomDist)),
+    upDegrees: Util.radToDeg(Math.atan(p.topDist))
+  };
+};
+
+DeviceInfo.prototype.getUndistortedParams_ = function() {
+  var viewer = this.viewer;
+  var device = this.device;
+  var distortion = new Distortion(viewer.distortionCoefficients);
+
+  // Most of these variables in tan-angle units.
+  var eyeToScreenDistance = viewer.screenLensDistance;
+  var halfLensDistance = viewer.interLensDistance / 2 / eyeToScreenDistance;
+  var screenWidth = device.widthMeters / eyeToScreenDistance;
+  var screenHeight = device.heightMeters / eyeToScreenDistance;
+
+  var eyePosX = screenWidth / 2 - halfLensDistance;
+  var eyePosY = (viewer.baselineLensDistance - device.bevelMeters) / eyeToScreenDistance;
+
+  var maxFov = viewer.fov;
+  var viewerMax = distortion.distortInverse(Math.tan(Util.degToRad(maxFov)));
+  var outerDist = Math.min(eyePosX, viewerMax);
+  var innerDist = Math.min(halfLensDistance, viewerMax);
+  var bottomDist = Math.min(eyePosY, viewerMax);
+  var topDist = Math.min(screenHeight - eyePosY, viewerMax);
+
+  return {
+    outerDist: outerDist,
+    innerDist: innerDist,
+    topDist: topDist,
+    bottomDist: bottomDist,
+    eyePosX: eyePosX,
+    eyePosY: eyePosY
+  };
+};
 
 module.exports = DeviceInfo;
