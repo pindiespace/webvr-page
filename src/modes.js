@@ -17,11 +17,11 @@ var Modes = {
   // Who knows, Highlander?
   UNKNOWN: 0,
   // Not fullscreen, may be in DOM.
-  NORMAL: 1,
+  DOM: 1,
   // Magic window fullscreen immersive mode.
-  MAGIC_WINDOW: 2,
+  FULLSCREEN: 2,
   // Full screen split screen VR mode.
-  VR: 3,
+  VR: 3
 };
 
 module.exports = Modes;

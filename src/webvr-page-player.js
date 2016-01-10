@@ -32,17 +32,21 @@ var WebVRPageButtons = require('./webvr-page-buttons.js');
  */
 function WebVRPagePlayer(renderer, params) {
 
+  // CSS classes.
   this.playerClasses = {
     player: 'player',    //player suffix
     caption: '-caption', //<figcaption> suffix
     canvas: 'canvas',   //canvas suffix
   };
 
+  this.dom = null;
+  this.buttons = [];
+
   // Save params.
-  this.params = params || {};
+  this.params = params || {uid: Util.getUniqueId()};
 
   // Assign base uid for Player elements.
-  this.uid = params.uid + '-' + this.playerClasses.player;
+  this.uid = (params.uid || Util.getUniqueId()) + '-' + this.playerClasses.player;
 
   // Create default text for <figcaption> element.
   this.captionDefault = 'WebVR Page Player Scene #' + parseInt(params.uid);
@@ -83,7 +87,7 @@ WebVRPagePlayer.prototype.errorMsgIfNeeded_ = function() {
   if(!this.params.canvas) {
     //TODO: message
   } else if(!this.params.webgl) {
-    //TODO: message
+    //TODO: call dialog manager with message
   }
 };
 
@@ -123,26 +127,20 @@ WebVRPagePlayer.prototype.initFigure_ = function() {
 
   // Set the ARIA attribute for figure caption.
   d.setAttribute('aria-describedby', this.uid + this.playerClasses.caption);
-
 };
 
 // Create control buttons.
 WebVRPagePlayer.prototype.initButtons_ = function() {
 
-  // Create a button manager.
-  this.modeButtons = new WebVRPageButtons(this.dom, this.params);
-
-  // Default is BOTTOM_RIGHT
-  //this.buttons.setPanelPosition(this.buttons.panelPositions.BOTTOM_RIGHT);
-
-  // Create a fullscreen button and display it.
-  this.modeButtons.createButton(this.modeButtons.BUTTON_FULLSCREEN, true);
-  this.modeButtons.createButton(this.modeButtons.BUTTON_CARDBOARD, true);
+  // Create VR and fullscreen buttons.
+  var modeButtons = new WebVRPageButtons(this.dom, this.params);
+  this.buttons.push(modeButtons.createButton(modeButtons.BUTTON_FULLSCREEN, true));
+  this.buttons.push(modeButtons.createButton(modeButtons.BUTTON_CARDBOARD, true));
 
   // Create a back button, visible only in fullscreen.
-  this.backButton = new WebVRPageButtons(this.dom, this.params);
-  this.backButton.setPanelPosition(this.backButton.domPositions.TOP_LEFT);
-  this.backButton.createButton(this.backButton.BUTTON_BACK, true);
+  var backButton = new WebVRPageButtons(this.dom, this.params);
+  backButton.setPanelPosition(backButton.domPositions.TOP_LEFT);
+  this.buttons.push(backButton.createButton(backButton.BUTTON_BACK, true));
 };
 
 // Set up the Player caption element.

@@ -19,7 +19,6 @@
 var Emitter = require('./emitter.js');
 var Modes = require('./modes.js');
 var Util = require('./util.js');
-var WebVRPageDialogs = require('./webvr-page-dialogs.js');
 
  /**
   * Everything having to do with the WebVR button.
@@ -27,6 +26,7 @@ var WebVRPageDialogs = require('./webvr-page-dialogs.js');
   */
 function WebVRPageButtons(container, params) {
 
+  // Button constants.
   this.BUTTON_CARDBOARD = 'cardboard';
   this.BUTTON_FULLSCREEN = 'fullscreen';
   this.BUTTON_EXIT_FULLSCREEN = 'exitfullscreen';
@@ -34,6 +34,7 @@ function WebVRPageButtons(container, params) {
   this.BUTTON_SETTINGS = 'settings';
   this.BUTTONS_PANEL = 'panel';
 
+  // CSS classes.
   this.buttonClasses = {
     button: '-button',      //prefix
     cardboard: '-' + this.BUTTON_CARDBOARD,
@@ -57,15 +58,17 @@ function WebVRPageButtons(container, params) {
 
   this.dom = null; // DOME object for Panel enclosing all buttons.
   this.buttons = []; // Link to individual button DOM objects.
+  this.container = container; // Container DOM element for buttons.
 
+  // Save params.
+  this.params = params || {};
+
+  // Assign base uid for Player elements.
+  this.uid = (this.params.uid || Util.getUniqueId()) + this.buttonClasses.panel;
+
+  // Button defaults.
   this.buttonScale = 0.05; //5% of screen width (may vary).
   this.buttonPadding = '12';
-
-  this.container = container; // Container DOM element for buttons.
-  this.params = params;
-
-  // Set a UID.
-  this.uid = this.params.uid;
 
   // Set up the button panel.
   this.initPanel_();
@@ -76,21 +79,6 @@ function WebVRPageButtons(container, params) {
 };
 
 WebVRPageButtons.prototype = new Emitter();
-
-//TODO: move panel position setting to Player (also center-center)
-/*
-var w = $(this).width();
-
-    //get div dimensions
-    var div_h =$('#imgContainer').height();
-    var div_w =$('#imgContainer').width();
-
-    //set img position
-    this.style.top = Math.round((div_h - h) / 2) + 'px';
-    this.style.left = '50%';
-    this.style.marginLeft = Math.round(w/2) + 'px';
-
-*/
 
 // Each WebVRPageButtons object is a panel to which buttons may be added or removed.
 WebVRPageButtons.prototype.initPanel_ = function(panelPosition) {
@@ -117,7 +105,11 @@ WebVRPageButtons.prototype.initPanel_ = function(panelPosition) {
   // set Panel position in the Player.
   this.setPanelPosition(this.dom.quadrant);
 
-  // Style button on hover.
+  // Manage clicks in panel via delegation.
+  var that = this;
+  this.dom.addEventListener('click', this.createClickHandler_(), true);
+
+  // Style button on hover via delegation.
   this.dom.addEventListener('mouseenter', function(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -139,6 +131,15 @@ WebVRPageButtons.prototype.initPanel_ = function(panelPosition) {
   this.container.appendChild(this.dom);
 };
 
+WebVRPageButtons.prototype.createClickHandler_ = function(e) {
+  return function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    console.log("*****************ABOUT TO EMIT:" + e.target.id);
+    this.emit(e.target.id);
+  }.bind(this);
+};
+
 // Create a button of a specific type
 WebVRPageButtons.prototype.createButton = function(buttonType, display) {
   // Use <img> element as button.
@@ -147,8 +148,11 @@ WebVRPageButtons.prototype.createButton = function(buttonType, display) {
   // Give button a unique Id.
   button.id = this.uid + this.buttonClasses[buttonType];
 
-  // Add button classes.
+  // Add generic button classes.
   Util.addClass(button, this.params.prefix + this.buttonClasses.button);
+
+  // Add class specific to this kind of button.
+  Util.addClass(button, this.params.prefix + this.buttonClasses.button + '-' + buttonType);
 
   // get the local style.
   var s = button.style;
@@ -177,9 +181,6 @@ WebVRPageButtons.prototype.createButton = function(buttonType, display) {
     s.display = 'none';
   }
 
-  // Position absolutely inside container.
-  //s.position = 'absolute';
-
   //set the button position in the container
   switch(this.dom.quadrant) {
     case this.domPositions.TOP_LEFT:
@@ -206,7 +207,7 @@ WebVRPageButtons.prototype.createButton = function(buttonType, display) {
   // Add the button to the DOM container.
   this.dom.appendChild(button);
 
-  // return the button for further manipulation
+  // Return the button for further manipulation.
   return button;
 };
 
@@ -263,16 +264,6 @@ WebVRPageButtons.prototype.calcButtonSize_ = function() {
 // Set the visiblity of a button, based on program mode.
 WebVRPageButtons.prototype.setVisibility = function(mode) {
   //TODO: give all buttons a ruleset for determing if they should be visible.
-};
-
-// Use Emmier click binding, instead of DOM event listener.
-WebVRPageButtons.prototype.createClickHandler_ = function(eventName) {
-  return function(e) {
-    e.stopPropagation();
-    e.preventDefault();
-    console.log("*****************ABOUT TO EMIT:" + eventName + '-' + this.params.uid)
-    this.emit(eventName + '-' + this.params.uid);
-  }.bind(this);
 };
 
  WebVRPageButtons.prototype.loadIcons_ = function() {

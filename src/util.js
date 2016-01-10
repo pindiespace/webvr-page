@@ -163,10 +163,14 @@ Util.fullscreenClass = (function(fullscreenClass) {
 
 // Check if program is in fullscreen mode (document.fullscreenElement polyfilled below).
 Util.isFullScreen = function() {
-  if (document.fullscreenElement === null) {
-    return false;
+  if(document.fullscreenElement || window.navigator.standalone) {
+    return true;
   }
-  return true;
+  return false;
+};
+
+Util.isAppMode = function() {
+  return !!window.navigator.standalone;
 };
 
 /**

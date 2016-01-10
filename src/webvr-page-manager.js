@@ -22,7 +22,6 @@ var Modes = require('./modes.js');
 var CardboardDistorter = require('./cardboard-distorter.js');
 var DeviceInfo = require('./device-info.js');
 var ViewerInfo = require('./viewer-info.js');
-//var CardboardDistorter = require('./cardboard-distorter.js');
 var Util = require('./util.js');
 var WebVRPagePlayer = require('./webvr-page-player.js');
 
@@ -87,6 +86,11 @@ function WebVRPageManager(renderer, effect, camera, params) {
   var size = this.player.getSize();
   this.resize(size.width, size.height);
 
+  // Bind player buttons.
+  // TODO: put definitions in Player, not buttons
+  // TODO: explore Player definitions in function.
+  //var fullScreenButton = this.player.getButton(this.player.buttons.BUTTON_FULLSCREEN);
+
   this.listenMotion_();
 
   // Begin listening for resize events.
@@ -106,7 +110,7 @@ function WebVRPageManager(renderer, effect, camera, params) {
 
 WebVRPageManager.prototype = new Emitter();
 
-// Make these modules visible outside manager.
+// Make these modules visible statically from their class.
 WebVRPageManager.Modes = Modes;
 WebVRPageManager.Util = Util;
 
@@ -282,7 +286,7 @@ WebVRPageManager.prototype.onFullscreenChange_ = function(e) {
 // Take action when exiting a fullscreen. Triggered by custom event 'exitfullscreen'.
 WebVRPageManager.prototype.onExitFullscreen_ = function(e) {
   console.log('Manager onExitFullscreen_ custom event, object is:' + e);
-  console.log('ABOUT TO RESET FOV')
+  console.log('ABOUT TO RESET FOV');
   var fov = this.getFOV_();
   window.fov =fov;
   this.effect.setFOV(fov.eyeFOVL, fov.eyeFOVR);
@@ -295,9 +299,9 @@ WebVRPageManager.prototype.onErrorFullscreen_ = function(e) {
 
 // Trigger a fullscreen event.
 WebVRPageManager.prototype.requestFullscreen = function() {
-  // Trigger fullscreen only if we support 3D.
-  if (this.params.webgl) {
-    console.log('Manager USER entering fullscreen');
+  // Trigger fullscreen only if we support it.
+  if (this.params.detector.webgl) {
+    console.log('Manager entering fullscreen');
 
   // Adjust the scene to the screen dimensions.
     this.adjustFOV_(screen.width, screen.height);

@@ -68,7 +68,7 @@ var FeatureDetector = (function() {
    };
 
    var detectFileAPI_ = function() {
-     return (window.File && window.FileReader && window.FileList && window.Blob);
+     return !!(window.File && window.FileReader && window.FileList && window.Blob);
    };
 
   /*
@@ -123,11 +123,11 @@ var FeatureDetector = (function() {
   };
 
   /*
-   * Detect support for W3C Fullscreen API, assigning a standard.
-   * Polyfills available, but may not work on all mobile devices.
+   * Detect support for W3C Fullscreen API. Browsers with
+   * vendor prefixes need to be polyfilled.
    */
   var detectFullscreen_ = function() {
-    return (document.documentElement.requestFullscreen == 'function');
+    return !!(document.documentElement.requestFullscreen);
   };
 
   /*
