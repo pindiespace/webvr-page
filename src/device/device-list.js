@@ -514,10 +514,12 @@
     },
     width:2560,
     height:1440,
-    diag: 6,
+    diag: 5.93,
     ppi: 493,
-    widthMeters: 0.1593,
-    heightMeters: 0.083,
+    width:2560,
+    height:1440,
+    widthMeters: 0.1320,
+    heightMeters: 0.074,
     bevelMeters: 0.004
   },
   nexus6p: {

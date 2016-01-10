@@ -154,7 +154,7 @@ DeviceInfo.prototype.detectDevice = function() {
   } else if (this.deviceGroup.iphone) { // iOS 15% IN 2015.
     devices = this.devList.getList(this.devList.DEVICE_IPHONE);
   } else if (this.deviceGroup.ipad) {
-    this.tests.devicemotion = this.detectEvents_(window, 'devicemotion');
+    this.tests.devicemotion = this.detectEvents_(window, 'devicemotion'); // window.DeviceOrientationEvent INCORRECTLY returns true for ipad 1
     devices = this.devList.getList(this.devList.DEVICE_IPAD);
   } else if (this.deviceGroup.ipod) {
     devices = this.devList.getList(this.devList.DEVICE_IPOD);
@@ -175,9 +175,9 @@ DeviceInfo.prototype.detectDevice = function() {
   // Using the device list, run the tests.
   for (var i in devices) {
     if (devices[i].detect(this.ua, this.display, this.tests)) {
-      console.log('i:' + i)
+      //console.log('i:' + i)
       this.device = devices[i];
-      console.log('device found:' + this.deviceGroup.label + '.');
+      console.log('device found:' + this.device.label + '.');
       return true;
     }
   }
@@ -232,7 +232,7 @@ DeviceInfo.prototype.detectGL_ = function() {
 DeviceInfo.prototype.detectDisplay_ = function() {
 
   this.display = {
-    touch: !!('ontouchstart in window'),
+    touch: !!(('ontouchstart' in window) || window.DocumentTouch && document instanceof DocumentTouch),
     pixelRatio: (window.devicePixelRatio ||
       (window.matchMedia && window.matchMedia('(min-resolution: 2dppx), (-webkit-min-device-pixel-ratio: 1.5),(-moz-min-device-pixel-ratio: 1.5),(min-device-pixel-ratio: 1.5)').matches? 2 : 1) ||
       1.0),

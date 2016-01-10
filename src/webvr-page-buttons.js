@@ -92,41 +92,9 @@ var w = $(this).width();
 
 */
 
-WebVRPageButtons.prototype.setPanelPosition = function(quadrant) {
-  this.dom.quadrant = quadrant;
-  var s = this.dom.style;
-  var dist = '0px';
-  switch(quadrant) {
-    case this.domPositions.TOP_LEFT:
-      s.top = dist;
-      s.left = dist;
-      break;
-    case this.domPositions.TOP_RIGHT:
-      s.top = dist;
-      s.right = dist;
-      break;
-    case this.domPositions.BOTTOM_RIGHT:
-      s.bottom = dist;
-      s.right = dist;
-      break;
-    case this.domPositions.BOTTOM_LEFT:
-      s.bottom = dist;
-      s.left = dist;
-      break;
-    case this.domPositions.CENTER_TOP:
-    //TODO:
-      break;
-    case this.domPositions.CENTER_BOTTOM:
-    //TODO:
-      break;
-    default:
-      break;
-  }
-};
-
 // Each WebVRPageButtons object is a panel to which buttons may be added or removed.
 WebVRPageButtons.prototype.initPanel_ = function(panelPosition) {
-  this.dom = document.createElement('div');
+  this.dom = document.createElement('nav');
 
   // Set the id and class.
   this.dom.id = this.uid + this.buttonClasses.panel;
@@ -148,6 +116,24 @@ WebVRPageButtons.prototype.initPanel_ = function(panelPosition) {
 
   // set Panel position in the Player.
   this.setPanelPosition(this.dom.quadrant);
+
+  // Style button on hover.
+  this.dom.addEventListener('mouseenter', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.target.tagName === 'IMG') {
+      var s = e.target.style;
+      s.filter = s.webkitFilter = 'drop-shadow(0 0 5px rgba(255,255,255,1))';
+    }
+  }, true);
+  this.dom.addEventListener('mouseleave', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.target.tagName === 'IMG') {
+      var s = e.target.style;
+      s.filter = s.webkitFilter = '';
+    }
+  }, true);
 
   // Add the button panel to the Player.
   this.container.appendChild(this.dom);
@@ -179,11 +165,9 @@ WebVRPageButtons.prototype.createButton = function(buttonType, display) {
   s.backgroundSize = 'cover';
   s.backgroundColor = 'transparent';
   s.border = 0;
-  s.userSelect = 'none';
-  s.webkitUserSelect = 'none';
-  s.MozUserSelect = 'none';
   s.cursor = 'pointer';
-  s.padding = '12px';
+  s.padding = this.buttonPadding + 'px';
+  s.marginLeft = s.padding;
   s.zIndex = 100000;
 
   // Set display
@@ -216,16 +200,6 @@ WebVRPageButtons.prototype.createButton = function(buttonType, display) {
       break;
   }
 
-  // Style button on hover.
-  button.addEventListener('mouseenter', function(e) {
-    var s = e.target.style;
-    s.filter = s.webkitFilter = 'drop-shadow(0 0 5px rgba(255,255,255,1))';
-  });
-  button.addEventListener('mouseleave', function(e) {
-    var s = e.target.style;
-    s.filter = s.webkitFilter = '';
-  });
-
   // Store a reference to the button
   this.buttons.push(button);
 
@@ -236,13 +210,53 @@ WebVRPageButtons.prototype.createButton = function(buttonType, display) {
   return button;
 };
 
-// Compute button size based on container size. Scale up for mobile.
-WebVRPageButtons.prototype.calcButtonSize_ = function() {
-  //TODO: write scaling function.
+WebVRPageButtons.prototype.setPanelPosition = function(quadrant) {
+  this.dom.quadrant = quadrant;
+  var s = this.dom.style;
+  var dist = '0px';
+  switch(quadrant) {
+    case this.domPositions.TOP_LEFT:
+      s.top = dist;
+      s.left = dist;
+      break;
+    case this.domPositions.TOP_RIGHT:
+      s.top = dist;
+      s.right = dist;
+      break;
+    case this.domPositions.BOTTOM_RIGHT:
+      s.bottom = dist;
+      s.right = dist;
+      break;
+    case this.domPositions.BOTTOM_LEFT:
+      s.bottom = dist;
+      s.left = dist;
+      break;
+    case this.domPositions.CENTER_TOP:
+    //TODO:
+      break;
+    case this.domPositions.CENTER_BOTTOM:
+    //TODO:
+      break;
+    case this.domPositions.CENTER_CENTER:
+      break;
+    default:
+      break;
+  }
+};
 
+// Compute button size (CSS pixels) based on container size. Scale up for mobile.
+WebVRPageButtons.prototype.calcButtonSize_ = function() {
+  var w = parseInt(this.buttonScale * Util.getElementWidth(this.container));
+  var h = parseInt(this.buttonScale * Util.getElementHeight(this.container));
+  // Size accd. to Windows Guidelines, 34 px cutoff (Apple seems a bit large).
+  // https://www.smashingmagazine.com/2012/02/finger-friendly-design-ideal-mobile-touchscreen-target-sizes/
+  if (h < 34) {
+    w = h = 34;
+    this.buttonPadding = parseInt(0.1 * h);
+  }
   return {
-    width: parseInt(this.buttonScale * parseFloat(Util.getElementWidth(this.container))),
-    height: parseInt(this.buttonScale * parseFloat(Util.getElementHeight(this.container)))
+    width: w,
+    height: h,
   };
 };
 

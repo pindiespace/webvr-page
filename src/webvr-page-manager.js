@@ -200,19 +200,18 @@ WebVRPageManager.prototype.adjustFOV_ = function(width, height) {
   }
 }
 
+// Start listening for motion events.
 WebVRPageManager.prototype.listenMotion_ = function() {
   /*
-  window.addEventListener('devicemotion', function (evt) {
-    console.log('devicemotion detected');
-			var current = evt.accelerationIncludingGravity,
-				time,
-				diff,
-				deltaX = 0,
-				deltaY = 0,
-				deltaZ = 0,
-				dist;
-      });
-  */
+  window.addEventListener('devicemotion',
+    this.onMotionChange_.bind(this));
+    */
+};
+
+// Start listening for orientation events.
+WebVRPageManager.prototype.listenOrientation_ = function() {
+  window.addEventListener('orientationchange',
+      this.onOrientationChange_.bind(this));
 };
 
 // Start listening for fullscreen change and exit events.
@@ -225,18 +224,30 @@ WebVRPageManager.prototype.listenFullscreen_ = function() {
     this.onExitFullscreen_.bind(this));
 };
 
-// Start listening for orientation events.
-WebVRPageManager.prototype.listenOrientation_ = function() {
-  window.addEventListener('orientationchange',
-      this.onOrientationChange_.bind(this));
-};
-
 // Start listening for window resize events.
 WebVRPageManager.prototype.listenResize_ = function() {
   this.view = window;
   this.view.addEventListener('resize', function(e) {
     this.onResize_(e);
   }.bind(this), false);
+};
+
+// Callback for device motion changes.
+WebVRPageManager.prototype.onMotionChange_ = function(e) {
+  console.log('devicemotion detected');
+  window.evt = e;
+  var current = e.accelerationIncludingGravity,
+    time,
+    diff,
+    deltaX = 0,
+    deltaY = 0,
+    deltaZ = 0,
+    dist;
+};
+
+// Callback for screen orientation changes.
+WebVRPageManager.prototype.onOrientationChange_ = function(e) {
+  console.log('Manager orientation change event, object is:' + e);
 };
 
 // Callback for window resize events.
@@ -252,11 +263,6 @@ WebVRPageManager.prototype.resize = function(width, height) {
   this.camera.updateProjectionMatrix();
   this.renderer.setSize(width, height);
   this.effect.setSize(width, height);
-};
-
-// Take action when screen orientation changes.
-WebVRPageManager.prototype.onOrientationChange_ = function(e) {
-  console.log('Manager orientation change event, object is:' + e);
 };
 
 // Take action when screen toggles between normal and fullscreen.

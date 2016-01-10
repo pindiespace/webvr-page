@@ -82,6 +82,7 @@ Util.getChildrenByTagName = function(elem, tagName) {
   return arr;
 };
 
+// Get element width in CSS pixels, as a number.
 Util.getElementWidth = function(elem) {
   var w;
   if (elem.style.clip) {
@@ -94,6 +95,7 @@ Util.getElementWidth = function(elem) {
   return parseFloat(w);
 };
 
+// Get element height in CSS pixels, as a number.
 Util.getElementHeight = function(elem) {
   var h;
   if (elem.style.clip) {

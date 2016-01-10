@@ -131,6 +131,13 @@ var FeatureDetector = (function() {
   };
 
   /*
+   * Detect touch support (useful for changing the Ui if touch is used).
+   */
+  var detectTouchSupport_ = function() {
+    return !!(('ontouchstart' in window) || (window.DocumentTouch && document instanceof DocumentTouch));
+  };
+
+  /*
    * Detect native support for requestAnimationFrame
    * Polyfills available.
    */
@@ -169,7 +176,9 @@ var FeatureDetector = (function() {
       defineproperties: detectDefineProperties_(),
       promise: detectPromise_(),
       fullscreen: detectFullscreen_(),
-      devicemotion: detectEventSupport_(window, 'devicemotion'),
+      orientation: detectEventSupport_(window, 'deviceorientation'), //detectOrientationSupport_(),
+      devicemotion: detectEventSupport_(window, 'devicemotion'), //detectMotionSupport_(),
+      touch: detectTouchSupport_(),
       webVR: detectWebVR_(),
       requestAnimationFrame: detectRequestAnimationFrame_()
     };
