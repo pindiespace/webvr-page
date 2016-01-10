@@ -65,11 +65,11 @@ function WebVRPagePlayer(renderer, params) {
   // Display error messages if we can't support WebGL or other features.
   this.errorMsgIfNeeded_();
 
-  // Find the <figcaption> element, or create one.
-  this.initCaption_();
-
   // Add control buttons to screen, as necessary.
   this.initButtons_();
+
+  // Find the <figcaption> element, or create one.
+  this.initCaption_();
 
   // Always resize the player to the initial aspect ratio (unless manually changed).
   this.aspect = this.getCurrentWidth() / this.getCurrentHeight();
@@ -112,7 +112,7 @@ WebVRPagePlayer.prototype.initFigure_ = function() {
   }
   Util.addClass(d, prefix + this.playerClasses.player);
 
-  // Must use relative positioning for child elements.
+  // Must use relative positioning for Player child elements to be absolutely positioned.
   d.style.position = 'relative';
 
   // Set the Player canvas id and standard class
@@ -126,10 +126,28 @@ WebVRPagePlayer.prototype.initFigure_ = function() {
 
 };
 
+// Create control buttons.
+WebVRPagePlayer.prototype.initButtons_ = function() {
+
+  // Create a button manager.
+  this.modeButtons = new WebVRPageButtons(this.dom, this.params);
+
+  // Default is BOTTOM_RIGHT
+  //this.buttons.setPanelPosition(this.buttons.panelPositions.BOTTOM_RIGHT);
+
+  // Create a fullscreen button and display it.
+  this.modeButtons.createButton(this.modeButtons.BUTTON_FULLSCREEN, true);
+  this.modeButtons.createButton(this.modeButtons.BUTTON_CARDBOARD, true);
+
+  // Create a back button, visible only in fullscreen.
+  this.backButton = new WebVRPageButtons(this.dom, this.params);
+  this.backButton.setPanelPosition(this.backButton.domPositions.TOP_LEFT);
+  this.backButton.createButton(this.backButton.BUTTON_BACK, true);
+};
+
 // Set up the Player caption element.
 WebVRPagePlayer.prototype.initCaption_ = function() {
   var figCaption = Util.getChildrenByTagName(this.dom, 'figcaption');
-  window.fig = figCaption;
     if (figCaption[0]) {
       figCaption = figCaption[0];
     } else {
@@ -152,13 +170,9 @@ WebVRPagePlayer.prototype.initCaption_ = function() {
         figCaption.textContent = this.captionDefault;
       }
     }
-};
 
-WebVRPagePlayer.prototype.initButtons_ = function() {
-    this.buttons = new WebVRPageButtons(this.dom, this.params);
+    // Caption style, typically near the bottom and centered.
 
-    // Create a fullscreen button and display it.
-    this.buttons.createButton(this.buttons.BUTTON_FULLSCREEN, true);
 };
 
 // Respond to events.

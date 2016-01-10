@@ -30,7 +30,6 @@ function WebVRPageButtons(container, params) {
   this.BUTTON_CARDBOARD = 'cardboard';
   this.BUTTON_FULLSCREEN = 'fullscreen';
   this.BUTTON_EXIT_FULLSCREEN = 'exitfullscreen';
-  this.BUTTON_VR = 'vr';
   this.BUTTON_BACK = 'back';
   this.BUTTON_SETTINGS = 'settings';
   this.BUTTONS_PANEL = 'panel';
@@ -39,32 +38,34 @@ function WebVRPageButtons(container, params) {
     button: '-button',      //prefix
     cardboard: '-' + this.BUTTON_CARDBOARD,
     back: '-' + this.BUTTON_BACK,          //back button
-    fs: '-' + this.BUTTON_FULLSCREEN,      //fullscreen mode butto,n
-    efs: '-' + this.BUTTON_EXIT_FULLSCREEN,
-    vr: '-' + this.BUTTON_VR,              //vr mode button
+    fullscreen: '-' + this.BUTTON_FULLSCREEN,      //fullscreen mode butto,n
+    exitfullscreen: '-' + this.BUTTON_EXIT_FULLSCREEN,
     settings: '-' + this.BUTTON_SETTINGS,  //settings panel
     panel: '-' + this.BUTTONS_PANEL        //panel class
   };
 
   // Constants for setting the corner of the button display.
-   this.buttonPositions = {
+   this.domPositions = {
     TOP_LEFT:0,
     TOP_RIGHT:1,
     BOTTOM_RIGHT:2,
     BOTTOM_LEFT:3,
     CENTER_TOP:4,
-    CENTER_BOTTOM:5
+    CENTER_BOTTOM:5,
+    CENTER_CENTER:6
   };
 
-  this.buttons = [];
+  this.dom = null; // DOME object for Panel enclosing all buttons.
+  this.buttons = []; // Link to individual button DOM objects.
 
   this.buttonScale = 0.05; //5% of screen width (may vary).
+  this.buttonPadding = '12';
 
   this.container = container; // Container DOM element for buttons.
   this.params = params;
 
   // Set a UID.
-  this.uid = this.params.uid + this.buttonClasses.panel;
+  this.uid = this.params.uid;
 
   // Set up the button panel.
   this.initPanel_();
@@ -76,62 +77,90 @@ function WebVRPageButtons(container, params) {
 
 WebVRPageButtons.prototype = new Emitter();
 
-// Compute button size based on container size. Scale up for mobile.
-WebVRPageButtons.prototype.calcButtonSize_ = function() {
-  //TODO: write scaling function.
+//TODO: move panel position setting to Player (also center-center)
+/*
+var w = $(this).width();
 
-  return {
-    width: parseInt(this.buttonScale * parseFloat(Util.getElementWidth(this.container))),
-    height: parseInt(this.buttonScale * parseFloat(Util.getElementHeight(this.container)))
-  };
-};
+    //get div dimensions
+    var div_h =$('#imgContainer').height();
+    var div_w =$('#imgContainer').width();
 
-// Each WebVRPageButtons object is a panel to which buttons may be added or removed.
-WebVRPageButtons.prototype.initPanel_ = function(panelPosition) {
-  this.panel = document.createElement('div');
-  this.panel.className = this.uid;
-  if(this.params.panelPosition) {
-    this.panel.quadrant = this.params.panelPosition;
-  } else {
-    this.panel.quadrant = this.buttonPositions.BOTTOM_RIGHT;
-  }
-  var s = this.panel.style;
-  s.width = '100%';
-  s.position = 'absolute';
+    //set img position
+    this.style.top = Math.round((div_h - h) / 2) + 'px';
+    this.style.left = '50%';
+    this.style.marginLeft = Math.round(w/2) + 'px';
+
+*/
+
+WebVRPageButtons.prototype.setPanelPosition = function(quadrant) {
+  this.dom.quadrant = quadrant;
+  var s = this.dom.style;
   var dist = '0px';
-  switch(this.panel.quadrant) {
-    case this.buttonPositions.TOP_LEFT:
+  switch(quadrant) {
+    case this.domPositions.TOP_LEFT:
       s.top = dist;
       s.left = dist;
       break;
-    case this.buttonPositions.TOP_RIGHT:
+    case this.domPositions.TOP_RIGHT:
       s.top = dist;
       s.right = dist;
       break;
-    case this.buttonPositions.BOTTOM_RIGHT:
+    case this.domPositions.BOTTOM_RIGHT:
       s.bottom = dist;
       s.right = dist;
       break;
-    case this.buttonPositions.BOTTOM_LEFT:
+    case this.domPositions.BOTTOM_LEFT:
       s.bottom = dist;
       s.left = dist;
       break;
-    case this.buttonPositions.CENTER_TOP:
+    case this.domPositions.CENTER_TOP:
     //TODO:
       break;
-    case this.buttonPositions.CENTER_BOTTOM:
+    case this.domPositions.CENTER_BOTTOM:
     //TODO:
       break;
     default:
       break;
   }
-  this.container.appendChild(this.panel);
+};
+
+// Each WebVRPageButtons object is a panel to which buttons may be added or removed.
+WebVRPageButtons.prototype.initPanel_ = function(panelPosition) {
+  this.dom = document.createElement('div');
+
+  // Set the id and class.
+  this.dom.id = this.uid + this.buttonClasses.panel;
+  Util.addClass(this.dom, this.params.prefix + this.buttonClasses.panel);
+
+  // Default panel position in Player.
+  if(this.params.panelPosition) {
+    this.dom.quadrant = this.params.panelPosition;
+  } else {
+    this.dom.quadrant = this.domPositions.BOTTOM_RIGHT;
+  }
+
+  // Set CSS styles.
+  var s = this.dom.style;
+  //s.border = '1px solid orange';
+  s.width = '100%';
+  s.height = (this.calcButtonSize_().height + (this.buttonPadding * 2)) + 'px';
+  s.position = 'absolute';
+
+  // set Panel position in the Player.
+  this.setPanelPosition(this.dom.quadrant);
+
+  // Add the button panel to the Player.
+  this.container.appendChild(this.dom);
 };
 
 // Create a button of a specific type
 WebVRPageButtons.prototype.createButton = function(buttonType, display) {
   // Use <img> element as button.
   var button = document.createElement('img');
+
+  // Give button a unique Id.
+  button.id = this.uid + this.buttonClasses[buttonType];
+
   // Add button classes.
   Util.addClass(button, this.params.prefix + this.buttonClasses.button);
 
@@ -165,36 +194,56 @@ WebVRPageButtons.prototype.createButton = function(buttonType, display) {
   }
 
   // Position absolutely inside container.
-  s.position = 'absolute';
+  //s.position = 'absolute';
 
   //set the button position in the container
-  switch(this.panel.quadrant) {
-    case this.buttonPositions.TOP_LEFT:
-    case this.buttonPositions.BOTTOM_LEFT:
+  switch(this.dom.quadrant) {
+    case this.domPositions.TOP_LEFT:
+    case this.domPositions.BOTTOM_LEFT:
       s.float = 'left';
       break;
-    case this.buttonPositions.TOP_RIGHT:
-    case this.buttonPositions.BOTTOM_RIGHT:
+    case this.domPositions.TOP_RIGHT:
+    case this.domPositions.BOTTOM_RIGHT:
       s.float = 'right';
       break;
-    case this.buttonPositions.CENTER_TOP:
+    case this.domPositions.CENTER_TOP:
       //TODO:
       break;
-    case this.buttonPositions.CENTER_BOTTOM:
+    case this.domPositions.CENTER_BOTTOM:
       //TODO:
       break;
     default:
       break;
   }
 
+  // Style button on hover.
+  button.addEventListener('mouseenter', function(e) {
+    var s = e.target.style;
+    s.filter = s.webkitFilter = 'drop-shadow(0 0 5px rgba(255,255,255,1))';
+  });
+  button.addEventListener('mouseleave', function(e) {
+    var s = e.target.style;
+    s.filter = s.webkitFilter = '';
+  });
+
   // Store a reference to the button
   this.buttons.push(button);
 
   // Add the button to the DOM container.
-  this.panel.appendChild(button);
+  this.dom.appendChild(button);
 
   // return the button for further manipulation
   return button;
+};
+
+// Compute button size based on container size. Scale up for mobile.
+WebVRPageButtons.prototype.calcButtonSize_ = function() {
+  //TODO: write scaling function.
+
+  return {
+    width: parseInt(this.buttonScale * parseFloat(Util.getElementWidth(this.container))),
+    height: parseInt(this.buttonScale * parseFloat(Util.getElementHeight(this.container)))
+  };
 };
 
 // Set the visiblity of a button, based on program mode.
