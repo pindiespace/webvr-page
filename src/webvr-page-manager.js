@@ -58,9 +58,12 @@ function WebVRPageManager(renderer, effect, camera, params) {
    * ensure that we use undistorted parameters.
    */
   this.isUndistorted = !!this.params.isUndistorted;
-
-  // Create the Player.
-  this.player = new WebVRPagePlayer(renderer, params);
+  window.mm = Modes.FULLSCREEN;
+  // Create the Player and define its buttons.
+  this.player = new WebVRPagePlayer(renderer, params, [
+    {},
+    {}
+  ]);
 
   // Get available device information, along with viewer params.
   this.deviceInfo = new DeviceInfo(params);
@@ -85,11 +88,6 @@ function WebVRPageManager(renderer, effect, camera, params) {
   // Set default size.
   var size = this.player.getSize();
   this.resize(size.width, size.height);
-
-  // Bind player buttons.
-  // TODO: put definitions in Player, not buttons
-  // TODO: explore Player definitions in function.
-  //var fullScreenButton = this.player.getButton(this.player.buttons.BUTTON_FULLSCREEN);
 
   this.listenMotion_();
 

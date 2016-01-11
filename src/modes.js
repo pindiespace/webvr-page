@@ -15,13 +15,27 @@
 
 var Modes = {
   // Who knows, Highlander?
-  UNKNOWN: 0,
+  UNKNOWN: 'unknown',
   // Not fullscreen, may be in DOM.
-  DOM: 1,
+  DOM: 'dom',
   // Magic window fullscreen immersive mode.
-  FULLSCREEN: 2,
+  FULLSCREEN: 'fullscreen',
   // Full screen split screen VR mode.
-  VR: 3
+  EXIT_FULLSCREEN: 'exitfullscreen',
+  // VR mode.
+  VR: 'vr',
+  // Back button.
+  BACK: 'back',
+  // Settings dialog.
+  SETTINGS: 'settings',
+  // Menu select dialog.
+  MENU: 'menu',
+  // Information dialog.
+  INFO: 'info',
+  //position top left
+  //position top right
+  //position bottom right
+  //position bottom left
 };
 
 module.exports = Modes;

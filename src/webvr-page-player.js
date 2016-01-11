@@ -30,7 +30,7 @@ var WebVRPageButtons = require('./webvr-page-buttons.js');
  *
  * Note: Renderer must have a canvas element to use.
  */
-function WebVRPagePlayer(renderer, params) {
+function WebVRPagePlayer(renderer, params, buttonTypes) {
 
   // CSS classes.
   this.playerClasses = {
@@ -70,7 +70,7 @@ function WebVRPagePlayer(renderer, params) {
   this.errorMsgIfNeeded_();
 
   // Add control buttons to screen, as necessary.
-  this.initButtons_();
+  this.initButtons_(buttonTypes);
 
   // Find the <figcaption> element, or create one.
   this.initCaption_();
@@ -130,7 +130,7 @@ WebVRPagePlayer.prototype.initFigure_ = function() {
 };
 
 // Create control buttons.
-WebVRPagePlayer.prototype.initButtons_ = function() {
+WebVRPagePlayer.prototype.initButtons_ = function(buttonTypes) {
 
   // Create VR and fullscreen buttons.
   var modeButtons = new WebVRPageButtons(this.dom, this.params);
