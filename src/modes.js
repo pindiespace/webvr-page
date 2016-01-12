@@ -18,24 +18,50 @@ var Modes = {
   UNKNOWN: 'unknown',
   // Not fullscreen, may be in DOM.
   DOM: 'dom',
+  // Request fullscreen in progress.
+  REQUEST_FULLSCREEN: 'requestfullscreen',
   // Magic window fullscreen immersive mode.
   FULLSCREEN: 'fullscreen',
-  // Full screen split screen VR mode.
+  // Exiting fullscreen.
   EXIT_FULLSCREEN: 'exitfullscreen',
-  // VR mode.
+  // VR mode (always in fullscreen).
   VR: 'vr',
   // Back button.
   BACK: 'back',
-  // Settings dialog.
-  SETTINGS: 'settings',
-  // Menu select dialog.
-  MENU: 'menu',
   // Information dialog.
   INFO: 'info',
-  //position top left
-  //position top right
-  //position bottom right
-  //position bottom left
 };
 
-module.exports = Modes;
+var DialogTypes = {
+  ALERT: 'alert',
+  DEVICE_SELECT: 'device-select',
+  HMD_SELECT: 'hmd-select'
+};
+
+var PanelTypes = {
+  // Panel name: state
+  PANEL_STATE: 'panel-state',
+  // Panel name: back
+  PANEL_BACK: 'panel-back',
+  TOP_LEFT: 'topleft',
+  TOP_RIGHT: 'topright',
+  BOTTOM_LEFT: 'bottomleft',
+  BOTTOM_RIGHT: 'bottomright',
+};
+
+var ButtonTypes = {
+  CARDBOARD: 'cardboard',
+  HMD: 'hmd',
+  FULLSCREEN: 'fullscreen',
+  EXIT_FULLSCREEN: 'exitfullscreen',
+  BACK: 'back',
+  SETTINGS: 'settings',
+  DEVICE: 'device'
+};
+
+
+
+module.exports.Modes = Modes;
+module.exports.DialogTypes = DialogTypes;
+module.exports.PanelTypes = PanelTypes;
+module.exports.ButtonTypes = ButtonTypes;

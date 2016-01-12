@@ -148,6 +148,9 @@ WebVRPageButtons.prototype.createButton = function(buttonType, display) {
   // Give button a unique Id.
   button.id = this.uid + this.buttonClasses[buttonType];
 
+  // Save the type.
+  button.type = buttonType;
+
   // Add generic button classes.
   Util.addClass(button, this.params.prefix + this.buttonClasses.button);
 

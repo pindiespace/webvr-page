@@ -58,12 +58,12 @@ function WebVRPageManager(renderer, effect, camera, params) {
    * ensure that we use undistorted parameters.
    */
   this.isUndistorted = !!this.params.isUndistorted;
-  window.mm = Modes.FULLSCREEN;
+
   // Create the Player and define its buttons.
-  this.player = new WebVRPagePlayer(renderer, params, [
-    {},
-    {}
-  ]);
+  this.player = new WebVRPagePlayer(renderer, params);
+
+  // Init the state buttons in the state panel.
+  this.buttons = this.player.getButtons();
 
   // Get available device information, along with viewer params.
   this.deviceInfo = new DeviceInfo(params);
@@ -319,6 +319,16 @@ WebVRPageManager.prototype.exitFullscreen = function() {
   console.log('exiting exitFullscreen');
   this.player.exitFullscreen();
   document.exitFullscreen();
+};
+
+// Jump to VR (stereo) rendering mode. Also jumps to fullscreen.
+WebVRPageManager.prototype.requestVR = function() {
+
+};
+
+// Exit VR (stereo) rendering mode. Exits fullscreen to DOM.
+WebVRPageManager.prototype.exitVR = function() {
+
 };
 
 module.exports = WebVRPageManager;

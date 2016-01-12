@@ -143,6 +143,10 @@ WebVRPagePlayer.prototype.initButtons_ = function(buttonTypes) {
   this.buttons.push(backButton.createButton(backButton.BUTTON_BACK, true));
 };
 
+WebVRPagePlayer.prototype.getButtons = function() {
+  return this.buttons;
+};
+
 // Set up the Player caption element.
 WebVRPagePlayer.prototype.initCaption_ = function() {
   var figCaption = Util.getChildrenByTagName(this.dom, 'figcaption');
