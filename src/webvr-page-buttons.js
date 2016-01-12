@@ -24,37 +24,20 @@ var Util = require('./util.js');
   * Everything having to do with the WebVR button.
   * Emits a 'click' event when it's clicked.
   */
-function WebVRPageButtons(container, params) {
-
-  // Button constants.
-  this.BUTTON_CARDBOARD = 'cardboard';
-  this.BUTTON_FULLSCREEN = 'fullscreen';
-  this.BUTTON_EXIT_FULLSCREEN = 'exitfullscreen';
-  this.BUTTON_BACK = 'back';
-  this.BUTTON_SETTINGS = 'settings';
-  this.BUTTONS_PANEL = 'panel';
+function WebVRPageButtons(type, position, container, params) {
 
   // CSS classes.
   this.buttonClasses = {
     button: '-button',      //prefix
-    cardboard: '-' + this.BUTTON_CARDBOARD,
-    back: '-' + this.BUTTON_BACK,          //back button
-    fullscreen: '-' + this.BUTTON_FULLSCREEN,      //fullscreen mode butto,n
-    exitfullscreen: '-' + this.BUTTON_EXIT_FULLSCREEN,
-    settings: '-' + this.BUTTON_SETTINGS,  //settings panel
-    panel: '-' + this.BUTTONS_PANEL        //panel class
+    cardboard: '-' + Modes.ButtonTypes.BUTTON_CARDBOARD,
+    back: '-' + Modes.ButtonTypes.BUTTON_BACK, //back button
+    fullscreen: '-' + Modes.ButtonTypes.BUTTON_FULLSCREEN,  //fullscreen mode butto,n
+    exitfullscreen: '-' + Modes.ButtonTypes.BUTTON_EXIT_FULLSCREEN,
+    settings: '-' + Modes.ButtonTypes.BUTTON_SETTINGS,  //settings panel
+    panel: '-' + Modes.PanelTypes.PANEL //panel class
   };
 
-  // Constants for setting the corner of the button display.
-   this.domPositions = {
-    TOP_LEFT:0,
-    TOP_RIGHT:1,
-    BOTTOM_RIGHT:2,
-    BOTTOM_LEFT:3,
-    CENTER_TOP:4,
-    CENTER_BOTTOM:5,
-    CENTER_CENTER:6
-  };
+  window.butclass = this.buttonClasses;
 
   this.dom = null; // DOME object for Panel enclosing all buttons.
   this.buttons = []; // Link to individual button DOM objects.
@@ -64,14 +47,14 @@ function WebVRPageButtons(container, params) {
   this.params = params || {};
 
   // Assign base uid for Player elements.
-  this.uid = (this.params.uid || Util.getUniqueId()) + this.buttonClasses.panel;
+  this.uid = (this.params.uid || Util.getUniqueId());
 
   // Button defaults.
   this.buttonScale = 0.05; //5% of screen width (may vary).
   this.buttonPadding = '12';
 
   // Set up the button panel.
-  this.initPanel_();
+  this.initPanel_(type, position);
 
   // Load images associated with the buttons.
   this.loadIcons_();
@@ -81,19 +64,16 @@ function WebVRPageButtons(container, params) {
 WebVRPageButtons.prototype = new Emitter();
 
 // Each WebVRPageButtons object is a panel to which buttons may be added or removed.
-WebVRPageButtons.prototype.initPanel_ = function(panelPosition) {
+WebVRPageButtons.prototype.initPanel_ = function(type, panelPosition) {
   this.dom = document.createElement('nav');
 
   // Set the id and class.
-  this.dom.id = this.uid + this.buttonClasses.panel;
-  Util.addClass(this.dom, this.params.prefix + this.buttonClasses.panel);
+  this.dom.id = this.uid + '-' + type;
+  Util.addClass(this.dom, this.params.prefix + type);
+  this.type = type;
 
   // Default panel position in Player.
-  if(this.params.panelPosition) {
-    this.dom.quadrant = this.params.panelPosition;
-  } else {
-    this.dom.quadrant = this.domPositions.BOTTOM_RIGHT;
-  }
+  this.dom.quadrant = panelPosition;
 
   // Set CSS styles.
   var s = this.dom.style;
@@ -146,7 +126,7 @@ WebVRPageButtons.prototype.createButton = function(buttonType, display) {
   var button = document.createElement('img');
 
   // Give button a unique Id.
-  button.id = this.uid + this.buttonClasses[buttonType];
+  button.id = this.uid + this.buttonClasses.button + this.buttonClasses[buttonType];
 
   // Save the type.
   button.type = buttonType;
@@ -186,18 +166,18 @@ WebVRPageButtons.prototype.createButton = function(buttonType, display) {
 
   //set the button position in the container
   switch(this.dom.quadrant) {
-    case this.domPositions.TOP_LEFT:
-    case this.domPositions.BOTTOM_LEFT:
+    case Modes.PanelTypes.TOP_LEFT:
+    case Modes.PanelTypes.BOTTOM_LEFT:
       s.float = 'left';
       break;
-    case this.domPositions.TOP_RIGHT:
-    case this.domPositions.BOTTOM_RIGHT:
+    case Modes.PanelTypes.TOP_RIGHT:
+    case Modes.PanelTypes.BOTTOM_RIGHT:
       s.float = 'right';
       break;
-    case this.domPositions.CENTER_TOP:
+    case Modes.PanelTypes.CENTER_TOP:
       //TODO:
       break;
-    case this.domPositions.CENTER_BOTTOM:
+    case Modes.PanelTypes.CENTER_BOTTOM:
       //TODO:
       break;
     default:
@@ -219,29 +199,29 @@ WebVRPageButtons.prototype.setPanelPosition = function(quadrant) {
   var s = this.dom.style;
   var dist = '0px';
   switch(quadrant) {
-    case this.domPositions.TOP_LEFT:
+    case Modes.PanelTypes.TOP_LEFT:
       s.top = dist;
       s.left = dist;
       break;
-    case this.domPositions.TOP_RIGHT:
+    case Modes.PanelTypes.TOP_RIGHT:
       s.top = dist;
       s.right = dist;
       break;
-    case this.domPositions.BOTTOM_RIGHT:
+    case Modes.PanelTypes.BOTTOM_RIGHT:
       s.bottom = dist;
       s.right = dist;
       break;
-    case this.domPositions.BOTTOM_LEFT:
+    case Modes.PanelTypes.BOTTOM_LEFT:
       s.bottom = dist;
       s.left = dist;
       break;
-    case this.domPositions.CENTER_TOP:
+    case Modes.PanelTypes.CENTER_TOP:
     //TODO:
       break;
-    case this.domPositions.CENTER_BOTTOM:
+    case Modes.PanelTypes.CENTER_BOTTOM:
     //TODO:
       break;
-    case this.domPositions.CENTER_CENTER:
+    case Modes.PanelTypes.CENTER_CENTER:
       break;
     default:
       break;
@@ -272,11 +252,11 @@ WebVRPageButtons.prototype.setVisibility = function(mode) {
  WebVRPageButtons.prototype.loadIcons_ = function() {
    // Preload some hard-coded SVG.
    this.icons = [];
-   this.icons[this.BUTTON_CARDBOARD] = Util.base64('image/svg+xml', 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNHB4IiBoZWlnaHQ9IjI0cHgiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI0ZGRkZGRiI+CiAgICA8cGF0aCBkPSJNMjAuNzQgNkgzLjIxQzIuNTUgNiAyIDYuNTcgMiA3LjI4djEwLjQ0YzAgLjcuNTUgMS4yOCAxLjIzIDEuMjhoNC43OWMuNTIgMCAuOTYtLjMzIDEuMTQtLjc5bDEuNC0zLjQ4Yy4yMy0uNTkuNzktMS4wMSAxLjQ0LTEuMDFzMS4yMS40MiAxLjQ1IDEuMDFsMS4zOSAzLjQ4Yy4xOS40Ni42My43OSAxLjExLjc5aDQuNzljLjcxIDAgMS4yNi0uNTcgMS4yNi0xLjI4VjcuMjhjMC0uNy0uNTUtMS4yOC0xLjI2LTEuMjh6TTcuNSAxNC42MmMtMS4xNyAwLTIuMTMtLjk1LTIuMTMtMi4xMiAwLTEuMTcuOTYtMi4xMyAyLjEzLTIuMTMgMS4xOCAwIDIuMTIuOTYgMi4xMiAyLjEzcy0uOTUgMi4xMi0yLjEyIDIuMTJ6bTkgMGMtMS4xNyAwLTIuMTMtLjk1LTIuMTMtMi4xMiAwLTEuMTcuOTYtMi4xMyAyLjEzLTIuMTNzMi4xMi45NiAyLjEyIDIuMTMtLjk1IDIuMTItMi4xMiAyLjEyeiIvPgogICAgPHBhdGggZmlsbD0ibm9uZSIgZD0iTTAgMGgyNHYyNEgwVjB6Ii8+Cjwvc3ZnPgo=');
-   this.icons[this.BUTTON_FULLSCREEN] = Util.base64('image/svg+xml', 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNHB4IiBoZWlnaHQ9IjI0cHgiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI0ZGRkZGRiI+CiAgICA8cGF0aCBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+CiAgICA8cGF0aCBkPSJNNyAxNEg1djVoNXYtMkg3di0zem0tMi00aDJWN2gzVjVINXY1em0xMiA3aC0zdjJoNXYtNWgtMnYzek0xNCA1djJoM3YzaDJWNWgtNXoiLz4KPC9zdmc+Cg==');
-   this.icons[this.BUTTON_EXIT_FULLSCREEN] = Util.base64('image/svg+xml', 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNHB4IiBoZWlnaHQ9IjI0cHgiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI0ZGRkZGRiI+CiAgICA8cGF0aCBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+CiAgICA8cGF0aCBkPSJNNSAxNmgzdjNoMnYtNUg1djJ6bTMtOEg1djJoNVY1SDh2M3ptNiAxMWgydi0zaDN2LTJoLTV2NXptMi0xMVY1aC0ydjVoNVY4aC0zeiIvPgo8L3N2Zz4K');
-   this.icons[this.BUTTON_BACK] = Util.base64('image/svg+xml', 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNHB4IiBoZWlnaHQ9IjI0cHgiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI0ZGRkZGRiI+CiAgICA8cGF0aCBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+CiAgICA8cGF0aCBkPSJNMjAgMTFINy44M2w1LjU5LTUuNTlMMTIgNGwtOCA4IDggOCAxLjQxLTEuNDFMNy44MyAxM0gyMHYtMnoiLz4KPC9zdmc+Cg==');
-   this.icons[this.BUTTON_SETTINGS] = Util.base64('image/svg+xml', 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNHB4IiBoZWlnaHQ9IjI0cHgiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI0ZGRkZGRiI+CiAgICA8cGF0aCBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+CiAgICA8cGF0aCBkPSJNMTkuNDMgMTIuOThjLjA0LS4zMi4wNy0uNjQuMDctLjk4cy0uMDMtLjY2LS4wNy0uOThsMi4xMS0xLjY1Yy4xOS0uMTUuMjQtLjQyLjEyLS42NGwtMi0zLjQ2Yy0uMTItLjIyLS4zOS0uMy0uNjEtLjIybC0yLjQ5IDFjLS41Mi0uNC0xLjA4LS43My0xLjY5LS45OGwtLjM4LTIuNjVDMTQuNDYgMi4xOCAxNC4yNSAyIDE0IDJoLTRjLS4yNSAwLS40Ni4xOC0uNDkuNDJsLS4zOCAyLjY1Yy0uNjEuMjUtMS4xNy41OS0xLjY5Ljk4bC0yLjQ5LTFjLS4yMy0uMDktLjQ5IDAtLjYxLjIybC0yIDMuNDZjLS4xMy4yMi0uMDcuNDkuMTIuNjRsMi4xMSAxLjY1Yy0uMDQuMzItLjA3LjY1LS4wNy45OHMuMDMuNjYuMDcuOThsLTIuMTEgMS42NWMtLjE5LjE1LS4yNC40Mi0uMTIuNjRsMiAzLjQ2Yy4xMi4yMi4zOS4zLjYxLjIybDIuNDktMWMuNTIuNCAxLjA4LjczIDEuNjkuOThsLjM4IDIuNjVjLjAzLjI0LjI0LjQyLjQ5LjQyaDRjLjI1IDAgLjQ2LS4xOC40OS0uNDJsLjM4LTIuNjVjLjYxLS4yNSAxLjE3LS41OSAxLjY5LS45OGwyLjQ5IDFjLjIzLjA5LjQ5IDAgLjYxLS4yMmwyLTMuNDZjLjEyLS4yMi4wNy0uNDktLjEyLS42NGwtMi4xMS0xLjY1ek0xMiAxNS41Yy0xLjkzIDAtMy41LTEuNTctMy41LTMuNXMxLjU3LTMuNSAzLjUtMy41IDMuNSAxLjU3IDMuNSAzLjUtMS41NyAzLjUtMy41IDMuNXoiLz4KPC9zdmc+Cg==');
+   this.icons[Modes.ButtonTypes.BUTTON_CARDBOARD] = Util.base64('image/svg+xml', 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNHB4IiBoZWlnaHQ9IjI0cHgiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI0ZGRkZGRiI+CiAgICA8cGF0aCBkPSJNMjAuNzQgNkgzLjIxQzIuNTUgNiAyIDYuNTcgMiA3LjI4djEwLjQ0YzAgLjcuNTUgMS4yOCAxLjIzIDEuMjhoNC43OWMuNTIgMCAuOTYtLjMzIDEuMTQtLjc5bDEuNC0zLjQ4Yy4yMy0uNTkuNzktMS4wMSAxLjQ0LTEuMDFzMS4yMS40MiAxLjQ1IDEuMDFsMS4zOSAzLjQ4Yy4xOS40Ni42My43OSAxLjExLjc5aDQuNzljLjcxIDAgMS4yNi0uNTcgMS4yNi0xLjI4VjcuMjhjMC0uNy0uNTUtMS4yOC0xLjI2LTEuMjh6TTcuNSAxNC42MmMtMS4xNyAwLTIuMTMtLjk1LTIuMTMtMi4xMiAwLTEuMTcuOTYtMi4xMyAyLjEzLTIuMTMgMS4xOCAwIDIuMTIuOTYgMi4xMiAyLjEzcy0uOTUgMi4xMi0yLjEyIDIuMTJ6bTkgMGMtMS4xNyAwLTIuMTMtLjk1LTIuMTMtMi4xMiAwLTEuMTcuOTYtMi4xMyAyLjEzLTIuMTNzMi4xMi45NiAyLjEyIDIuMTMtLjk1IDIuMTItMi4xMiAyLjEyeiIvPgogICAgPHBhdGggZmlsbD0ibm9uZSIgZD0iTTAgMGgyNHYyNEgwVjB6Ii8+Cjwvc3ZnPgo=');
+   this.icons[Modes.ButtonTypes.BUTTON_FULLSCREEN] = Util.base64('image/svg+xml', 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNHB4IiBoZWlnaHQ9IjI0cHgiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI0ZGRkZGRiI+CiAgICA8cGF0aCBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+CiAgICA8cGF0aCBkPSJNNyAxNEg1djVoNXYtMkg3di0zem0tMi00aDJWN2gzVjVINXY1em0xMiA3aC0zdjJoNXYtNWgtMnYzek0xNCA1djJoM3YzaDJWNWgtNXoiLz4KPC9zdmc+Cg==');
+   this.icons[Modes.ButtonTypes.BUTTON_EXIT_FULLSCREEN] = Util.base64('image/svg+xml', 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNHB4IiBoZWlnaHQ9IjI0cHgiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI0ZGRkZGRiI+CiAgICA8cGF0aCBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+CiAgICA8cGF0aCBkPSJNNSAxNmgzdjNoMnYtNUg1djJ6bTMtOEg1djJoNVY1SDh2M3ptNiAxMWgydi0zaDN2LTJoLTV2NXptMi0xMVY1aC0ydjVoNVY4aC0zeiIvPgo8L3N2Zz4K');
+   this.icons[Modes.ButtonTypes.BUTTON_BACK] = Util.base64('image/svg+xml', 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNHB4IiBoZWlnaHQ9IjI0cHgiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI0ZGRkZGRiI+CiAgICA8cGF0aCBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+CiAgICA8cGF0aCBkPSJNMjAgMTFINy44M2w1LjU5LTUuNTlMMTIgNGwtOCA4IDggOCAxLjQxLTEuNDFMNy44MyAxM0gyMHYtMnoiLz4KPC9zdmc+Cg==');
+   this.icons[Modes.ButtonTypes.BUTTON_SETTINGS] = Util.base64('image/svg+xml', 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNHB4IiBoZWlnaHQ9IjI0cHgiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI0ZGRkZGRiI+CiAgICA8cGF0aCBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+CiAgICA8cGF0aCBkPSJNMTkuNDMgMTIuOThjLjA0LS4zMi4wNy0uNjQuMDctLjk4cy0uMDMtLjY2LS4wNy0uOThsMi4xMS0xLjY1Yy4xOS0uMTUuMjQtLjQyLjEyLS42NGwtMi0zLjQ2Yy0uMTItLjIyLS4zOS0uMy0uNjEtLjIybC0yLjQ5IDFjLS41Mi0uNC0xLjA4LS43My0xLjY5LS45OGwtLjM4LTIuNjVDMTQuNDYgMi4xOCAxNC4yNSAyIDE0IDJoLTRjLS4yNSAwLS40Ni4xOC0uNDkuNDJsLS4zOCAyLjY1Yy0uNjEuMjUtMS4xNy41OS0xLjY5Ljk4bC0yLjQ5LTFjLS4yMy0uMDktLjQ5IDAtLjYxLjIybC0yIDMuNDZjLS4xMy4yMi0uMDcuNDkuMTIuNjRsMi4xMSAxLjY1Yy0uMDQuMzItLjA3LjY1LS4wNy45OHMuMDMuNjYuMDcuOThsLTIuMTEgMS42NWMtLjE5LjE1LS4yNC40Mi0uMTIuNjRsMiAzLjQ2Yy4xMi4yMi4zOS4zLjYxLjIybDIuNDktMWMuNTIuNCAxLjA4LjczIDEuNjkuOThsLjM4IDIuNjVjLjAzLjI0LjI0LjQyLjQ5LjQyaDRjLjI1IDAgLjQ2LS4xOC40OS0uNDJsLjM4LTIuNjVjLjYxLS4yNSAxLjE3LS41OSAxLjY5LS45OGwyLjQ5IDFjLjIzLjA5LjQ5IDAgLjYxLS4yMmwyLTMuNDZjLjEyLS4yMi4wNy0uNDktLjEyLS42NGwtMi4xMS0xLjY1ek0xMiAxNS41Yy0xLjkzIDAtMy41LTEuNTctMy41LTMuNXMxLjU3LTMuNSAzLjUtMy41IDMuNSAxLjU3IDMuNSAzLjUtMS41NyAzLjUtMy41IDMuNXoiLz4KPC9zdmc+Cg==');
  };
 
  module.exports = WebVRPageButtons;

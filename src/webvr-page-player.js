@@ -133,14 +133,14 @@ WebVRPagePlayer.prototype.initFigure_ = function() {
 WebVRPagePlayer.prototype.initButtons_ = function(buttonTypes) {
 
   // Create VR and fullscreen buttons.
-  var modeButtons = new WebVRPageButtons(this.dom, this.params);
-  this.buttons.push(modeButtons.createButton(modeButtons.BUTTON_FULLSCREEN, true));
-  this.buttons.push(modeButtons.createButton(modeButtons.BUTTON_CARDBOARD, true));
+  var modeButtons = new WebVRPageButtons(Modes.PanelTypes.PANEL_STATE, Modes.PanelTypes.BOTTOM_RIGHT, this.dom, this.params);
+  this.buttons.push(modeButtons.createButton(Modes.ButtonTypes.BUTTON_FULLSCREEN, true));
+  this.buttons.push(modeButtons.createButton(Modes.ButtonTypes.BUTTON_CARDBOARD, true));
 
   // Create a back button, visible only in fullscreen.
-  var backButton = new WebVRPageButtons(this.dom, this.params);
-  backButton.setPanelPosition(backButton.domPositions.TOP_LEFT);
-  this.buttons.push(backButton.createButton(backButton.BUTTON_BACK, true));
+  var backButton = new WebVRPageButtons(Modes.PanelTypes.PANEL_BACK, Modes.PanelTypes.TOP_LEFT, this.dom, this.params);
+  backButton.setPanelPosition(Modes.ButtonTypes.TOP_LEFT);
+  this.buttons.push(backButton.createButton(Modes.ButtonTypes.BUTTON_BACK, true));
 };
 
 WebVRPagePlayer.prototype.getButtons = function() {

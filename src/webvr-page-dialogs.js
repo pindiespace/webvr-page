@@ -23,15 +23,16 @@
   */
 function WebVRPageDialogs(params) {
 
+  // Minimum sizes for dialog.
   this.DEFAULT_WIDTH = 480;
   this.DEFAULT_HEIGHT = 360;
-  this.DIALOG = 'dialog';
-  this.DIALOG_MENU = 'dialog-menu'; // Ajax selection menu.
+
+  window.mm = Modes;
 
   // CSS classes.
   this.dialogClasses = {
-    dialog: this.DIALOG,
-    dialogMenu: this.DIALOG_MENU
+    dialog: Modes.DialogTypes.DIALOG,
+    dialogMenu: Modes.DialogTypes.DIALOG_MENU
   };
 
   // Save params.

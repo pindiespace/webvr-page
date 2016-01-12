@@ -14,31 +14,25 @@
  */
 
 var Modes = {
-  // Who knows, Highlander?
   UNKNOWN: 'unknown',
-  // Not fullscreen, may be in DOM.
-  DOM: 'dom',
-  // Request fullscreen in progress.
-  REQUEST_FULLSCREEN: 'requestfullscreen',
-  // Magic window fullscreen immersive mode.
-  FULLSCREEN: 'fullscreen',
-  // Exiting fullscreen.
-  EXIT_FULLSCREEN: 'exitfullscreen',
-  // VR mode (always in fullscreen).
-  VR: 'vr',
-  // Back button.
-  BACK: 'back',
-  // Information dialog.
-  INFO: 'info',
+  DOM: 'dom', // Not fullscreen, may be in DOM.
+  REQUEST_FULLSCREEN: 'requestfullscreen', // Request fullscreen in progress.
+  FULLSCREEN: 'fullscreen', // Magic window fullscreen immersive mode.
+  EXIT_FULLSCREEN: 'exitfullscreen', // Exiting fullscreen.
+  VR: 'vr', // VR mode (always in fullscreen).
+  BACK: 'back', // Back button.
+  INFO: 'info', // Information dialog.
 };
 
 var DialogTypes = {
-  ALERT: 'alert',
-  DEVICE_SELECT: 'device-select',
-  HMD_SELECT: 'hmd-select'
+  DIALOG: 'dialog',
+  DIALOG_ALERT: 'alert',
+  DIALOG_DEVICE_MENU: 'device-menu',
+  DIALOG_HMD_SELECT: 'hmd-select'
 };
 
 var PanelTypes = {
+  PANEL: 'panel',
   // Panel name: state
   PANEL_STATE: 'panel-state',
   // Panel name: back
@@ -47,19 +41,20 @@ var PanelTypes = {
   TOP_RIGHT: 'topright',
   BOTTOM_LEFT: 'bottomleft',
   BOTTOM_RIGHT: 'bottomright',
+  CENTER_TOP: 'centertop',
+  CENTER_BOTTOM: 'centerbottom',
+  CENTER_CENTER: 'centercenter'
 };
 
 var ButtonTypes = {
-  CARDBOARD: 'cardboard',
-  HMD: 'hmd',
-  FULLSCREEN: 'fullscreen',
-  EXIT_FULLSCREEN: 'exitfullscreen',
-  BACK: 'back',
-  SETTINGS: 'settings',
-  DEVICE: 'device'
+  BUTTON_CARDBOARD: 'cardboard',
+  BUTTON_HMD: 'hmd',
+  BUTTON_FULLSCREEN: 'fullscreen',
+  BUTTON_EXIT_FULLSCREEN: 'exitfullscreen',
+  BUTTON_BACK: 'back',
+  BUTTON_SETTINGS: 'settings',
+  BUTTON_SETTINGS_DEVICE: 'settings-device'
 };
-
-
 
 module.exports.Modes = Modes;
 module.exports.DialogTypes = DialogTypes;
