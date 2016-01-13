@@ -3,22 +3,36 @@
 <head>
 <title>Web VR Page Boilerplate</title>
 <meta charset="utf-8">
+
 <!--favicon-->
 <link rel="icon" href="img/favicon.ico">
+
 <!--set the viewport, shrink-to-fit fixes safari bug-->
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0 shrink-to-fit=no">
-<!--handle iOS and android mobile
-http://www.html5rocks.com/en/mobile/fullscreen/ -->
-<!--ios fullscreen-->
+
+<!--Web manifest.-->
+<link rel="manifest" href="manifest.webmanifest">
+
+<!--
+handle iOS and android mobile
+http://www.html5rocks.com/en/mobile/fullscreen/
+ios fullscreen
+-->
 <meta name="apple-mobile-web-app-capable" content="yes">
+
 <!--android fullscreen-->
 <meta name="mobile-web-app-capable" content="yes">
+
 <!--hide the Apple status bar-->
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
 <!--default styles-->
 <link rel="stylesheet" href="css/styles.css">
 
-<!--Detector script. Determine if polyfills needed-->
+<!--
+Detector script. Determine if polyfills needed. Couple with a loader
+like head.js
+-->
 <script src="js/lib/feature-detector.js"></script>
 </head>
 
@@ -36,14 +50,14 @@ http://www.html5rocks.com/en/mobile/fullscreen/ -->
       <article id="sample-webvr">
         <figure class="webvr-page">
           <canvas id='scene-cube'>Canvas is not enabled, upgrade your browser</canvas>
-          <figcaption>Spinning Cube</figcaption>
+          <figcaption>Cube World</figcaption>
         </figure>
       </article>
       <!--second webvr sample goes here-->
       <article id="second-webvr">
         <figure class="webvr-page">
           <canvas id='scene-text'>Canvas is not supported, upgrade your browser.</canvas>
-          <figcaption>3D Text</figcaption>
+          <figcaption>3D Text World</figcaption>
         </figure>
       </article>
     </section>
@@ -84,10 +98,11 @@ WebVRPageConfig = {
 <script src="js/lib/Promise.min.js"></script>
 
 <!--
+for ie9 running canvas renderer.
 typedarray.js by inexorabletrash
 https://github.com/inexorabletash/polyfill
 -->
-<script src="js/lib/typedarray.js"></script><!--for ie9 running canvas 2d renderer-->
+<script src="js/lib/typedarray.js"></script>
 
 <!--
   three.js 3d library by mrdoob
@@ -218,6 +233,25 @@ var w = parseFloat(getComputedStyle(canvas).getPropertyValue('width'));
 var h = parseFloat(getComputedStyle(canvas).getPropertyValue('height'));
 var aspect = w/h;
 
+/*
+ * Params for the Manager.
+ * hidebutton: if true, don't show buttons
+ * detector: if present, we can used the feature detections later.
+ */
+
+ // Create a three.js camera.
+ var camera = new THREE.PerspectiveCamera(75, w / h, 0.1, 10000);
+
+ // Apply VR headset positional data to camera.
+ var controls = new THREE.VRControls(camera);
+
+ // Apply VR stereo rendering to renderer.
+ var effect = new THREE.VREffect(renderer);
+ effect.setSize(w, h);
+
+// Create a Manager.
+window.manager = new WebVRPageManager(renderer, effect, camera, {hideButton: false, detector: (FeatureDetector || THREE.Detector)});
+
 // Create a three.js scene.
 var scene = new THREE.Scene();
 
@@ -238,6 +272,14 @@ var material = new THREE.MeshBasicMaterial({
 });
 
 var skybox = new THREE.Mesh(geometry, material);
+window.skybox = skybox;
+
+// Add a separate uuid from the one THREE generates (crypto-secure).
+skybox.userData.uuid = WebVRPageManager.Util.getUUID();
+
+// Name it (so we could use .getObjectByName() later). Leave the generated .id alone.
+skybox.name = 'skybox';
+
 scene.add(skybox);
 
 // Create 3D objects.
@@ -245,30 +287,17 @@ var geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
 var material = new THREE.MeshNormalMaterial();
 var cube = new THREE.Mesh(geometry, material);
 
+// Add a separate uuid from the one THREE generates (crypto-secure).
+cube.userData.uuid = WebVRPageManager.Util.getUUID();
+
+// Name it.
+cube.name = 'spinning cube';
+
 // Position cube mesh
 cube.position.z = -1;
 
 // Add cube mesh to your three.js scene
 scene.add(cube);
-
-// Create a three.js camera.
-var camera = new THREE.PerspectiveCamera(75, w / h, 0.1, 10000);
-
-// Apply VR headset positional data to camera.
-var controls = new THREE.VRControls(camera);
-
-// Apply VR stereo rendering to renderer.
-var effect = new THREE.VREffect(renderer);
-effect.setSize(w, h);
-
-/*
- * Params for the Manager.
- * hidebutton: if true, don't show buttons
- * detector: if present, we can used the feature detections later.
- */
-
-// Create a Manager.
-window.manager = new WebVRPageManager(renderer, effect, camera, {hideButton: false, detector: (FeatureDetector || THREE.Detector)});
 
 // Reset the position sensor when 'z' pressed.
 function onKey(event) {

@@ -35,7 +35,7 @@ function WebVRPagePlayer(renderer, params, buttonTypes) {
   // CSS classes.
   this.playerClasses = {
     player: 'player',    //player suffix
-    caption: '-caption', //<figcaption> suffix
+    caption: 'caption', //<figcaption> suffix
     canvas: 'canvas',   //canvas suffix
   };
 
@@ -126,7 +126,7 @@ WebVRPagePlayer.prototype.initFigure_ = function() {
   Util.addClass(c, prefix + this.playerClasses.canvas);
 
   // Set the ARIA attribute for figure caption.
-  d.setAttribute('aria-describedby', this.uid + this.playerClasses.caption);
+  d.setAttribute('aria-describedby', this.uid + '-' + this.playerClasses.caption);
 };
 
 // Create control buttons.
@@ -162,7 +162,7 @@ WebVRPagePlayer.prototype.initCaption_ = function() {
 
     // Set the standard class.
     var prefix = Util.parseText(this.params.uid);
-    Util.addClass(figCaption, prefix + this.playerClasses.player + this.playerClasses.caption);
+    Util.addClass(figCaption, prefix + this.playerClasses.player + '-' + this.playerClasses.caption);
 
     // Add caption text, if supplied, otherwise default.
     if (this.params.caption) {

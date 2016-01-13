@@ -31,8 +31,7 @@ function WebVRPageDialogs(params) {
 
   // CSS classes.
   this.dialogClasses = {
-    dialog: Modes.DialogTypes.DIALOG,
-    dialogMenu: Modes.DialogTypes.DIALOG_MENU
+    dialog: 'dialog'
   };
 
   // Save params.
@@ -49,14 +48,14 @@ function WebVRPageDialogs(params) {
 WebVRPageDialogs.prototype = new Emitter();
 
 // Create a page dialog.
-WebVRPageDialogs.prototype.createDialog_ = function(container, width, height, ok,cancel, callback) {
+WebVRPageDialogs.prototype.createDialog_ = function(dialogType, container, width, height, ok, cancel, callback) {
   this.container = container;
   var sz = this.adjustDialogSize_(width, height);
 
   this.dom = document.createElement('div');
   if(this.dom) {
     var d = this.dom;
-    d.id = this.params.uid + this.dialogClasses.DIALOG;
+    d.id = this.params.uid + dialogType;
     d.style.fontFamily = 'monospace';
     d.style.fontSize = '13px';
     d.style.fontWeight = 'normal';
@@ -69,6 +68,9 @@ WebVRPageDialogs.prototype.createDialog_ = function(container, width, height, ok
     d.style.margin = 'auto 0 auto 0';
     d.style.borderRadius = '6px';
     d.style.zIndex = 16777271; // Should support old browsers.
+
+    // Make it visible.
+    this.container.appendChild(d);
   } else {
     // TODO: respond to 'ok' and 'cancel' options.
     alert('error');
@@ -79,7 +81,7 @@ WebVRPageDialogs.prototype.createDialog_ = function(container, width, height, ok
 WebVRPageDialogs.prototype.closeDialog_ = function() {
   // Hide the dialog.
   if(this.dom) {
-
+    this.container.removeChild(this.dom);
     // Zero out the dialog.
     this.dom = null;
   }
@@ -91,13 +93,19 @@ WebVRPageDialogs.prototype.isOpenDialog = function() {
 };
 
 // Add a Button (actually a button panel) to the dialog.
-WebVRPageDialogs.prototype.addButton_ = function() {
-
+WebVRPageDialogs.prototype.addButtons_ = function(type) {
+  switch(type) {
+    default:
+      break;
+  }
 };
 
 // Add text to the dialog.
 WebVRPageDialogs.prototype.addText_ = function() {
-
+  switch(type) {
+    default:
+      break;
+  }
 };
 
 // Adjust dialog for the screen.
@@ -123,6 +131,9 @@ WebVRPageDialogs.prototype.adjustDialogSize_ = function(width, height) {
       height = h;
     }
   }
+
+  //TODO: shrink text or change text wrapping if necessary.
+
   return {
     width:width,
     height:height

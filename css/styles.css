@@ -6,6 +6,7 @@ body, header, section, footer, figure, h1 {
   border:0;
   padding:0;
 }
+
 /* basic body styles */
 body {
   width: 100%;
@@ -16,6 +17,7 @@ body {
   padding: 0;
   overflow: hidden;
 }
+
 /* semantic element styles */
 header, section, footer {
   width:100%;
@@ -46,4 +48,9 @@ header, section, footer {
 .webvr-page canvas {
   width:100%!important;
   height:100%!important;
+}
+
+/* CSS Media queries */
+@media all and (display-mode: standalone) {
+  /* ... */
 }

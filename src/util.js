@@ -17,7 +17,37 @@
  */
 var Util = {};
 
-// Get a unique, incrementing Id value for any object on the page.
+Util.hasCrypto = (typeof(window.crypto) != 'undefined' &&
+  typeof(window.crypto.getRandomValues) != 'undefined');
+
+// Get an RFC-compliant UUID, use crypto if possible.
+// http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
+Util.getUUID = Util.hasCrypto ?
+  function() {
+    // If we have a cryptographically secure PRNG, use that.
+    // http://stackoverflow.com/questions/6906916/collisions-when-generating-uuids-in-javascript
+    var buf = new Uint16Array(8);
+    var crypto = (window.crypto || window.msCrypto);
+    crypto.getRandomValues(buf);
+    var S4 = function(num) {
+      var ret = num.toString(16);
+      while(ret.length < 4){
+        ret = "0"+ret;
+      }
+    return ret;
+    };
+    // Assemble the GUID.
+    return (S4(buf[0])+S4(buf[1])+"-"+S4(buf[2])+"-"+S4(buf[3])+"-"+S4(buf[4])+"-"+S4(buf[5])+S4(buf[6])+S4(buf[7]));
+  } // End of crypto version.
+
+  :
+  // fast Math.random
+  function b(a){
+    console.warn('Warning - GUID not cryptographically secure');
+    return a?(a^Math.random()*16>>a/4).toString(16):([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,b)
+  }; // End of Math.random version.
+
+// Get a unique, incrementing Id value with a prefix for any object on the page.
 Util.getUniqueId = (function(prefix) {
   var i = Math.floor(Math.random() * 999) + 100;
   var pfx = prefix || '';

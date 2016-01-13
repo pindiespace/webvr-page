@@ -28,16 +28,9 @@ function WebVRPageButtons(type, position, container, params) {
 
   // CSS classes.
   this.buttonClasses = {
-    button: '-button',      //prefix
-    cardboard: '-' + Modes.ButtonTypes.BUTTON_CARDBOARD,
-    back: '-' + Modes.ButtonTypes.BUTTON_BACK, //back button
-    fullscreen: '-' + Modes.ButtonTypes.BUTTON_FULLSCREEN,  //fullscreen mode butto,n
-    exitfullscreen: '-' + Modes.ButtonTypes.BUTTON_EXIT_FULLSCREEN,
-    settings: '-' + Modes.ButtonTypes.BUTTON_SETTINGS,  //settings panel
-    panel: '-' + Modes.PanelTypes.PANEL //panel class
+    button: '-button', // Button class.
+    panel: '-' + Modes.PanelTypes.PANEL // Panel class.
   };
-
-  window.butclass = this.buttonClasses;
 
   this.dom = null; // DOME object for Panel enclosing all buttons.
   this.buttons = []; // Link to individual button DOM objects.
@@ -126,7 +119,7 @@ WebVRPageButtons.prototype.createButton = function(buttonType, display) {
   var button = document.createElement('img');
 
   // Give button a unique Id.
-  button.id = this.uid + this.buttonClasses.button + this.buttonClasses[buttonType];
+  button.id = this.uid + this.buttonClasses.button + '-' + buttonType;
 
   // Save the type.
   button.type = buttonType;
