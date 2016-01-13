@@ -62,9 +62,6 @@ function WebVRPageManager(renderer, effect, camera, params) {
   // Create the Player and define its buttons.
   this.player = new WebVRPagePlayer(renderer, params);
 
-  // Init the state buttons in the state panel.
-  this.buttons = this.player.getButtons();
-
   // Get available device information, along with viewer params.
   this.deviceInfo = new DeviceInfo(params);
   this.viewerInfo = this.deviceInfo.viewerInfo;
@@ -74,6 +71,12 @@ function WebVRPageManager(renderer, effect, camera, params) {
 
   // Get the Cardboard distorter.
   this.distorter = new CardboardDistorter(renderer, this.deviceInfo);
+
+  // Init the state buttons in the state panel.
+  this.buttons = this.player.getButtons();
+
+  // Bind buttons to handlers.
+  
 
   // Get info for any HMD (head-mounted device).
   this.getDeviceByType_(HMDVRDevice).then(function(hmd) {
@@ -108,8 +111,10 @@ function WebVRPageManager(renderer, effect, camera, params) {
 
 WebVRPageManager.prototype = new Emitter();
 
-// Make these modules visible statically from their class.
+// Make Modes visible statically to all parts of our app.
 WebVRPageManager.Modes = Modes;
+
+// Make Util visible so we can use it in scene construction.
 WebVRPageManager.Util = Util;
 
 // Render the scene.
