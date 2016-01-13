@@ -113,13 +113,18 @@ WebVRPageButtons.prototype.createClickHandler_ = function(e) {
   }.bind(this);
 };
 
+WebVRPageButtons.prototype.getButtonId = function(buttonType) {
+  return this.uid + this.buttonClasses.button + '-' + buttonType;
+};
+
 // Create a button of a specific type
 WebVRPageButtons.prototype.createButton = function(buttonType, display) {
+
   // Use <img> element as button.
   var button = document.createElement('img');
 
   // Give button a unique Id.
-  button.id = this.uid + this.buttonClasses.button + '-' + buttonType;
+  button.id = this.getButtonId(buttonType);
 
   // Save the type.
   button.type = buttonType;
@@ -176,6 +181,12 @@ WebVRPageButtons.prototype.createButton = function(buttonType, display) {
     default:
       break;
   }
+
+  // Prevent button from being selected and dragged.
+  button.draggable = false;
+  button.addEventListener('dragstart', function(e) {
+    e.preventDefault();
+  });
 
   // Store a reference to the button
   this.buttons.push(button);

@@ -131,21 +131,34 @@ WebVRPagePlayer.prototype.initFigure_ = function() {
 
 // Create control buttons.
 WebVRPagePlayer.prototype.initButtons_ = function(buttonTypes) {
+  this.initStatePanel_();
+  this.initBackPanel_();
+};
 
+// Create buttons controlling state.
+WebVRPagePlayer.prototype.initStatePanel_ = function() {
   // Create VR and fullscreen buttons. Save as associative for manager access.
-  var modeButtons = new WebVRPageButtons(Modes.PanelTypes.PANEL_STATE, Modes.PanelTypes.BOTTOM_RIGHT, this.dom, this.params);
-  this.buttons[Modes.ButtonTypes.BUTTON_FULLSCREEN] = modeButtons.createButton(Modes.ButtonTypes.BUTTON_FULLSCREEN, true);
-  this.buttons[Modes.ButtonTypes.BUTTON_CARDBOARD] = modeButtons.createButton(Modes.ButtonTypes.BUTTON_CARDBOARD, true);
+  this.statePanel = new WebVRPageButtons(Modes.PanelTypes.PANEL_STATE, Modes.PanelTypes.BOTTOM_RIGHT, this.dom, this.params);
+  this.buttons[Modes.ButtonTypes.BUTTON_FULLSCREEN] = this.statePanel.createButton(Modes.ButtonTypes.BUTTON_FULLSCREEN, true);
+  this.buttons[Modes.ButtonTypes.BUTTON_CARDBOARD] = this.statePanel.createButton(Modes.ButtonTypes.BUTTON_CARDBOARD, true);
 
+};
+
+// Create buttons jumping to the last state.
+WebVRPagePlayer.prototype.initBackPanel_ = function() {
   // Create a back button, visible only in fullscreen.
-  var backButton = new WebVRPageButtons(Modes.PanelTypes.PANEL_BACK, Modes.PanelTypes.TOP_LEFT, this.dom, this.params);
-  backButton.setPanelPosition(Modes.ButtonTypes.TOP_LEFT);
-  this.buttons[Modes.ButtonTypes.BUTTON_BACK] = backButton.createButton(Modes.ButtonTypes.BUTTON_BACK, true);
+  this.backPanel = new WebVRPageButtons(Modes.PanelTypes.PANEL_BACK, Modes.PanelTypes.TOP_LEFT, this.dom, this.params);
+  this.backPanel.setPanelPosition(Modes.ButtonTypes.TOP_LEFT);
+  this.buttons[Modes.ButtonTypes.BUTTON_BACK] = this.backPanel.createButton(Modes.ButtonTypes.BUTTON_BACK, true);
 };
 
 // Get buttons currently in the Player.
-WebVRPagePlayer.prototype.getButtons = function() {
-  return this.buttons;
+WebVRPagePlayer.prototype.getStatePanel = function() {
+  return this.statePanel;
+};
+
+WebVRPagePlayer.prototype.getBackPanel = function() {
+  return this.backPanel;
 };
 
 // Set up the Player caption element.

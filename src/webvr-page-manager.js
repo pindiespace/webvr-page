@@ -72,11 +72,13 @@ function WebVRPageManager(renderer, effect, camera, params) {
   // Get the Cardboard distorter.
   this.distorter = new CardboardDistorter(renderer, this.deviceInfo);
 
-  // Init the state buttons in the state panel.
-  this.buttons = this.player.getButtons();
+  // Init the state buttons in the Player state panel.
+  this.stateButtons = this.player.getStatePanel();
+  this.stateButtons.on(this.stateButtons.getButtonId(Modes.ButtonTypes.BUTTON_FULLSCREEN), this.requestFullscreen.bind(this));
 
-  // Bind buttons to handlers.
-  
+  // Init the button in the Player back panel.
+  this.backButtons = this.player.getBackPanel();
+  this.backButtons.on(this.backButtons.getButtonId(Modes.ButtonTypes.BUTTON_BACK), this.exitFullscreen.bind(this));
 
   // Get info for any HMD (head-mounted device).
   this.getDeviceByType_(HMDVRDevice).then(function(hmd) {
@@ -123,7 +125,7 @@ WebVRPageManager.prototype.render = function(scene) {
   this.effect.render(scene, this.camera);
 };
 
-// Get the VR device.
+// Get the VR device, hmd, positionsensor, compass?
 WebVRPageManager.prototype.getDeviceByType_ = function(type) {
   return new Promise(function(resolve, reject) {
     navigator.getVRDevices().then(function(devices) {

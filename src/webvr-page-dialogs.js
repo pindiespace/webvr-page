@@ -27,8 +27,6 @@ function WebVRPageDialogs(params) {
   this.DEFAULT_WIDTH = 480;
   this.DEFAULT_HEIGHT = 360;
 
-  window.mm = Modes;
-
   // CSS classes.
   this.dialogClasses = {
     dialog: 'dialog'
