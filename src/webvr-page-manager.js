@@ -82,7 +82,14 @@ function WebVRPageManager(renderer, effect, camera, params) {
 
   // Get info for any HMD (head-mounted device).
   this.getDeviceByType_(HMDVRDevice).then(function(hmd) {
+
+    if (WebVRConfig.FORCE_DISTORTION) {
+      this.distorter.setActive(true);
+    }
+
+
     this.hmd = hmd;
+    window.hmd = hmd;
   }.bind(this));
 
   // Save the input device for later sending timing data.
@@ -122,7 +129,9 @@ WebVRPageManager.Util = Util;
 // Render the scene.
 WebVRPageManager.prototype.render = function(scene) {
   this.camera.updateProjectionMatrix();
+  this.distorter.preRender();
   this.effect.render(scene, this.camera);
+  this.distorter.postRender();
 };
 
 // Get the VR device, hmd, positionsensor, compass?

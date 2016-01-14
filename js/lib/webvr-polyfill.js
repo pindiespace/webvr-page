@@ -19,6 +19,7 @@
  */
 function VRDevice() {
   this.hardwareUnitId = 'polyfill';
+  this.deviceName = 'webvr-polyfill';
 }
 
 /**

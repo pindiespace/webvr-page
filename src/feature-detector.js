@@ -123,6 +123,22 @@ var FeatureDetector = (function() {
   };
 
   /*
+   * Detect localStorage support.
+   * Similar to Modernizr test.
+   */
+var detectLocalStorage_ = function() {
+  var mod = 'test';
+  try {
+        localStorage.setItem(mod, mod);
+        localStorage.removeItem(mod);
+        return true;
+    } catch(e) {
+        return false;
+    }
+
+};
+
+  /*
    * Detect support for W3C Fullscreen API. Browsers with
    * vendor prefixes need to be polyfilled.
    */
@@ -175,6 +191,7 @@ var FeatureDetector = (function() {
       defineproperty: detectDefineProperty_(),
       defineproperties: detectDefineProperties_(),
       promise: detectPromise_(),
+      localStorage: detectLocalStorage_(),
       fullscreen: detectFullscreen_(),
       orientation: detectEventSupport_(window, 'deviceorientation'), //detectOrientationSupport_(),
       devicemotion: detectEventSupport_(window, 'devicemotion'), //detectMotionSupport_(),
