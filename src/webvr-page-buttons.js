@@ -46,12 +46,14 @@ function WebVRPageButtons(type, position, container, params) {
   this.buttonScale = 0.05; //5% of screen width (may vary).
   this.buttonPadding = '12';
 
-  // Set up the button panel.
-  this.initPanel_(type, position);
-
   // Load images associated with the buttons.
   this.loadIcons_();
 
+  // Set up the button panel.
+  this.initPanel_(type, position);
+
+  // Flag initialization.
+  this.ready = true;
 };
 
 WebVRPageButtons.prototype = new Emitter();

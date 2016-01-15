@@ -41,6 +41,7 @@ function WebVRPagePlayer(renderer, params, buttonTypes) {
 
   this.dom = null;
   this.buttons = [];
+  this.caption = null;
 
   // Save params.
   this.params = params || {uid: Util.getUniqueId()};
@@ -78,6 +79,8 @@ function WebVRPagePlayer(renderer, params, buttonTypes) {
   // Always resize the player to the initial aspect ratio (unless manually changed).
   this.aspect = this.getCurrentWidth() / this.getCurrentHeight();
 
+  // flag initialization.
+  this.ready = true;
 };
 
 WebVRPagePlayer.prototype = new Emitter();
@@ -89,6 +92,16 @@ WebVRPagePlayer.prototype.errorMsgIfNeeded_ = function() {
   } else if(!this.params.webgl) {
     //TODO: call dialog manager with message
   }
+};
+
+// Get the Player container.
+WebVRPagePlayer.prototype.getContainer = function() {
+  return this.dom;
+};
+
+// Get the Player canvas.
+WebVRPagePlayer.prototype.getCanvas = function() {
+  return this.canvas;
 };
 
 // Set up Player <figure> element.
@@ -188,6 +201,30 @@ WebVRPagePlayer.prototype.initCaption_ = function() {
     }
 
     // Caption style, typically near the bottom and centered.
+    var s = figCaption.style;
+    s.position = 'absolute';
+    if(this.backPanel) {
+      s.marginBottom = this.backPanel.dom.style.height;
+    } else {
+      s.marginBottom = '24px'
+    }
+    s.width = '100%';
+    s.textAlign = 'center';
+
+    // Save a reference
+    this.caption = figCaption;
+};
+
+// Get the Player caption.
+WebVRPagePlayer.prototype.getCaption = function() {
+  return this.caption;
+};
+
+WebVRPagePlayer.prototype.showCaption = function() {
+
+};
+
+WebVRPagePlayer.prototype.hideCaption = function() {
 
 };
 
@@ -216,16 +253,6 @@ WebVRPagePlayer.prototype.exitFullscreen = function(e) {
   var cs = this.getCanvas();
   Util.removeClass(cn, Util.fullscreenClass);
   //cn.classList.remove(Util.fullscreenClass);
-};
-
-// Get the Player container.
-WebVRPagePlayer.prototype.getContainer = function() {
-  return this.dom;
-};
-
-// Get the Player canvas.
-WebVRPagePlayer.prototype.getCanvas = function() {
-  return this.canvas;
 };
 
 WebVRPagePlayer.prototype.getAspect = function() {

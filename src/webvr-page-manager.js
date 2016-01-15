@@ -86,8 +86,6 @@ function WebVRPageManager(renderer, effect, camera, params) {
     if (WebVRConfig.FORCE_DISTORTION) {
       this.distorter.setActive(true);
     }
-
-
     this.hmd = hmd;
     window.hmd = hmd;
   }.bind(this));
