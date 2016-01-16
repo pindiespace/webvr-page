@@ -43,7 +43,7 @@ function DeviceInfo(params) {
   } else {
     this.viewerInfo = new ViewerInfo();
   }
-  this.viewer = this.viewerInfo.getViewer();
+  this.viewer = this.getViewer(); //this.viewerInfo.getViewer();
 
   // Current device.
   this.device = null;
@@ -61,20 +61,28 @@ function DeviceInfo(params) {
     // Run feature and user agent detects on the browser.
     this.detectGL_();
     this.detectDisplay_();
-    this.detectDevice_();
+    this.detectOS_();
+    this.detectFormFactor_();
 
-    // Find the device in our database.
-    this.detectDevice();
+    //Get our device.
+    this.getDevice();
   }
 
 };
 
 // Get the found device.
 DeviceInfo.prototype.getDevice = function() {
-  if(!this.device) {
-    this.detectDevice_();
+  if (!this.device) {
+    return this.detectDevice();
   }
   return this.device;
+};
+
+DeviceInfo.prototype.getViewer = function() {
+  if(!this.viewer) {
+    return this.viewerInfo.getViewer();
+  }
+  return this.viewer;
 };
 
 DeviceInfo.prototype.setDevice = function(deviceName) {
@@ -171,7 +179,6 @@ DeviceInfo.prototype.detectDevice = function() {
   } else { // 2%, Symbian, Series 40, 60 Firefox OS, others.
     //TBD
   }
-
   // Using the device list, run the tests.
   for (var i in devices) {
     if (devices[i].detect(this.ua, this.display, this.tests)) {
@@ -263,7 +270,7 @@ DeviceInfo.prototype.detectEvents_ = function(elem, eventName) {
 };
 
 // Use a combination of browser features and user-agent sniffing to detect the correct device.
-DeviceInfo.prototype.detectDevice_ = function() {
+DeviceInfo.prototype.detectOS_ = function() {
   var m;
   var ua = this.ua;
 
@@ -318,14 +325,18 @@ DeviceInfo.prototype.detectDevice_ = function() {
     this.os.version = 0;
   }
 
+}; // End of os detect function.
+
+// Detect the general form factor.
+DeviceInfo.prototype.detectFormFactor_ = function() {
+  var ua = this.ua;
   // Form factor detects.
   this.mobile = this.os.ios || this.os.android || /mobi|ip(hone|od|ad)|touch|blackberry|bb10|windows phone|kindle|silk|htc|(hpw|web)os|opera mini|fxios/.test(ua);
   this.tablet = /ipad|tablet|nexus[\s]+(7|9|10)|playbook|silk|ideapad|slate|touchpad|playbook|toshiba|xoom/.test(ua);
   this.gameConsole = /(nintendo|wiiu|3ds|playstation|xbox)/.test(ua);
   this.tv = /(google|apple|smart|hbb|opera|pov|net).*tv|(lg|aquos|inettv).*browser|(roku|kylo|aquos|viera|espial|boxee|dlnadoc|crkey|ce-html)/.test(ua);
   this.desktop = !this.mobile && !this.tablet && !this.gameConsole && !this.tv || (window.screenX != 0);
-
-}; // End of detect function.
+}; // End of formfactor detect function.
 
 /**
  * Calculates field of view for the left eye.

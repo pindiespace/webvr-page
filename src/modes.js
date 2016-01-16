@@ -16,14 +16,26 @@
 var Modes = {
   UNKNOWN: 'unknown',
   DOM: 'dom', // Not fullscreen, may be in DOM.
-  REQUEST_FULLSCREEN: 'requestfullscreen', // Request fullscreen in progress.
   FULLSCREEN: 'fullscreen', // Magic window fullscreen immersive mode.
-  EXIT_FULLSCREEN: 'exitfullscreen', // Exiting fullscreen.
   VR: 'vr', // VR mode (always in fullscreen).
+  REQUEST_FULLSCREEN: 'requestfullscreen', // Request fullscreen in progress.
+  EXIT_FULLSCREEN: 'exitfullscreen', // Exiting fullscreen.
   BACK: 'back', // Back button.
-  INFO: 'info', // Information dialog.
-  TEXT_IN_DOM: 'text-in-dom', // Element is a 2D DOM element
-  TEXT_IN_SPRITE: 'text-in-sprite' // Element is a sprite in the scene
+  INFO: 'info', // Information dialog foremost.
+};
+
+var ViewStates = {
+  UNKNOWN: 'unknown',
+  THUMBNAIL: 'thumbnail',
+  DOM: 'dom', // Not fullscreen, may be in DOM.
+  FULLSCREEN: 'fullscreen', // Magic window fullscreen immersive mode.
+  VR: 'vr' // VR mode (always in fullscreen).
+};
+
+// State of elements, e.g. in DOM or in 3D scene.
+var ElementStates = {
+  IN_DOM: 'text-in-dom', // Element is a 2D DOM element
+  IN_SPRITE: 'text-in-sprite' // Element is a sprite in the scene
 };
 
 var DialogTypes = {
@@ -49,9 +61,10 @@ var PanelTypes = {
 };
 
 var ButtonTypes = {
-  BUTTON_CARDBOARD: 'cardboard',
+  BUTTON_CARDBOARD: 'cardboard', //TODO: currently not used, using BUTTON_VR
   BUTTON_HMD: 'hmd',
   BUTTON_FULLSCREEN: 'fullscreen',
+  BUTTON_VR: 'vr',
   BUTTON_EXIT_FULLSCREEN: 'exitfullscreen',
   BUTTON_BACK: 'back',
   BUTTON_SETTINGS: 'settings',
@@ -59,6 +72,7 @@ var ButtonTypes = {
 };
 
 module.exports.Modes = Modes;
+module.exports.ViewStates = ViewStates;
 module.exports.DialogTypes = DialogTypes;
 module.exports.PanelTypes = PanelTypes;
 module.exports.ButtonTypes = ButtonTypes;

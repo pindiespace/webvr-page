@@ -97,7 +97,6 @@ ViewerInfo.prototype.detectViewer_ = function() {
   console.warn('using generic viewer');
   this.viewer = this.viewerList.getDefault();
   return this.viewer;
-  return {};
 };
 
 // Scan for a list of devices matching keywords

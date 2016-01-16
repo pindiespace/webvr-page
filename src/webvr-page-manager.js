@@ -42,12 +42,15 @@ function WebVRPageManager(renderer, effect, camera, params) {
   // Give a unique to ID to each manager.
   this.prefix = 'webvr';
   this.uid = Util.getUniqueId(this.prefix);
-  if (params) {
-    params.prefix = this.prefix;
-    params.uid = this.uid;
-  }
 
-  // Save the THREE.js renderer and effect for later.
+  // Set manager uid.
+  params.prefix = this.prefix;
+  params.uid = this.uid;
+
+  // Set the default Mode.
+  this.mode = params.mode || Modes.ViewStates.DOM;
+
+  // Save the THREE.js renderer, effect, and camera for later.
   this.renderer = renderer;
   this.effect = effect;
   this.camera = camera;
@@ -72,21 +75,28 @@ function WebVRPageManager(renderer, effect, camera, params) {
   // Get the Cardboard distorter.
   this.distorter = new CardboardDistorter(renderer, this.deviceInfo);
 
+
   // Init the state buttons in the Player state panel.
   this.stateButtons = this.player.getStatePanel();
   this.stateButtons.on(this.stateButtons.getButtonId(Modes.ButtonTypes.BUTTON_FULLSCREEN), this.requestFullscreen.bind(this));
+  this.stateButtons.on(this.stateButtons.getButtonId(Modes.ButtonTypes.BUTTON_VR), this.requestVR.bind(this));
 
   // Init the button in the Player back panel.
   this.backButtons = this.player.getBackPanel();
   this.backButtons.on(this.backButtons.getButtonId(Modes.ButtonTypes.BUTTON_BACK), this.exitFullscreen.bind(this));
 
+  console.log('about to check for hmd')
   // Get info for any HMD (head-mounted device).
   this.getDeviceByType_(HMDVRDevice).then(function(hmd) {
-
-    if (WebVRConfig.FORCE_DISTORTION) {
+    if (hmd) {
+      console.log('forcing distortion, hmd present:' + hmd.deviceName);
       this.distorter.setActive(true);
-    } else if (hmd) {
       this.hmd = hmd;
+    } else if (WebVRConfig.FORCE_DISTORTION) {
+      console.log('no hmd, forcing distortion due to WebVRConfig');
+      this.distorter.setActive(true);
+    } else {
+      console.log('no hmd, no distortion forcing');
     }
     window.hmd = hmd;
   }.bind(this));
@@ -114,7 +124,7 @@ function WebVRPageManager(renderer, effect, camera, params) {
   // Bind events.
 
   // Emit an a general initialization event to all managers on the page.
-  this.emit('initialized');
+  this.emit(this.prefix + '-initialized');
 };
 
 WebVRPageManager.prototype = new Emitter();
@@ -124,6 +134,30 @@ WebVRPageManager.Modes = Modes;
 
 // Make Util visible so we can use it in scene construction.
 WebVRPageManager.Util = Util;
+
+// Render the scene.
+WebVRPageManager.prototype.render = function(scene) {
+  //this.camera.updateProjectionMatrix();
+  //this.effect.render(scene, this.camera);
+
+  if(this.mode == Modes.ViewStates.VR) {
+    this.distorter.preRender();
+    this.effect.render(scene, this.camera);
+    this.distorter.postRender();
+  } else {
+    this.renderer.render(scene, this.camera);
+    //this.effect.render(scene, this.camera); //TODO: still giving 2 images.
+  }
+
+};
+
+WebVRPageManager.prototype.getViewer = function() {
+  return this.deviceInfo.getViewer(); // TODO: Also updates device.
+};
+
+WebVRPageManager.prototype.getDevice = function() {
+  return this.deviceInfo.getDevice();
+};
 
 // Get the VR device, hmd, positionsensor.
 WebVRPageManager.prototype.getDeviceByType_ = function(type) {
@@ -144,12 +178,37 @@ WebVRPageManager.prototype.getDeviceByType_ = function(type) {
   });
 };
 
-// Render the scene.
-WebVRPageManager.prototype.render = function(scene) {
-  //this.camera.updateProjectionMatrix();
-  this.distorter.preRender();
-  this.effect.render(scene, this.camera);
-  this.distorter.postRender();
+/**
+ * Sets parameters on CardboardHMDVRDevice. These changes are ultimately handled
+ * by VREffect.
+ */
+WebVRPageManager.prototype.setHMDVRDeviceParams_ = function(viewer) {
+  this.getDeviceByType_(HMDVRDevice).then(function(hmd) {
+    if (!hmd) {
+      console.error('in setHMDVRDeviceParams_, no hmd present');
+      return;
+    }
+
+    console.log('in setHMDVRDeviceParams, hmd present, setting HMDVRDeviceParams');
+
+    // If we can set fields of view, do that now.
+    if (hmd.setFieldOfView) {
+      // Calculate the optimal field of view for each eye.
+      hmd.setFieldOfView(this.deviceInfo.getFieldOfViewLeftEye(this.isUndistorted),
+                         this.deviceInfo.getFieldOfViewRightEye(this.isUndistorted));
+    }
+
+    // Note: setInterpupillaryDistance is not part of the WebVR standard.
+    if (hmd.setInterpupillaryDistance) {
+      hmd.setInterpupillaryDistance(viewer.interLensDistance);
+    }
+
+    if (hmd.setRenderRect) {
+      // TODO(smus): If we can set the render rect, do it.
+      //var renderRect = this.deviceInfo.getUndistortedViewportLeftEye();
+      //hmd.setRenderRect(renderRect, renderRect);
+    }
+  }.bind(this));
 };
 
 // Make a copy of the FOV for this device.
@@ -203,7 +262,6 @@ WebVRPageManager.prototype.adjustFOV_ = function(width, height) {
       fov.eyeFOVR.upDegrees = fov.eyeFOVR.downDegrees *= aspectChange;
     }
     console.log("going to adjust FOV, aspectChange:" + aspectChange);
-    window.eff = this.effect;
     this.effect.setFOV(fov.eyeFOVL, fov.eyeFOVR);
   }
 }
@@ -243,7 +301,6 @@ WebVRPageManager.prototype.listenResize_ = function() {
 // Callback for device motion changes.
 WebVRPageManager.prototype.onMotionChange_ = function(e) {
   console.log('devicemotion detected');
-  window.evt = e;
   var current = e.accelerationIncludingGravity,
     time,
     diff,
@@ -292,7 +349,7 @@ WebVRPageManager.prototype.onExitFullscreen_ = function(e) {
   console.log('Manager onExitFullscreen_ custom event, object is:' + e);
   console.log('ABOUT TO RESET FOV');
   var fov = this.getFOV_();
-  window.fov =fov;
+  //window.fov = fov;
   this.effect.setFOV(fov.eyeFOVL, fov.eyeFOVR);
   this.exitFullscreen();
 };
@@ -306,6 +363,11 @@ WebVRPageManager.prototype.requestFullscreen = function() {
   // Trigger fullscreen only if we support it.
   if (this.params.detector.webgl) {
     console.log('Manager entering fullscreen');
+
+    console.log("ENTERING FULLSCREEN, Mode:" + this.mode)
+    if (this.mode == Modes.ViewStates.VR) {
+      this.exitVR();
+    }
 
   // Adjust the scene to the screen dimensions.
     this.adjustFOV_(screen.width, screen.height);
@@ -323,17 +385,62 @@ WebVRPageManager.prototype.requestFullscreen = function() {
 // Trigger an exitfullscreen event.
 WebVRPageManager.prototype.exitFullscreen = function() {
   console.log('exiting exitFullscreen');
+  if(this.mode == Modes.ViewStates.VR) {
+    this.exitVR(); // Normal screen never VR.
+  }
   this.player.exitFullscreen();
   document.exitFullscreen();
 };
 
 // Jump to VR (stereo) rendering mode. Also jumps to fullscreen.
 WebVRPageManager.prototype.requestVR = function() {
-
+  this.requestFullscreen();
+  this.setMode(Modes.ViewStates.VR);
+  this.setHMDVRDeviceParams_(this.getViewer());
+  this.distorter.patch();
 };
 
 // Exit VR (stereo) rendering mode. Exits fullscreen to DOM.
 WebVRPageManager.prototype.exitVR = function() {
+  this.distorter.unpatch();
+  this.setMode(Modes.ViewStates.DOM);
+};
+
+// Update according to the current mode.
+WebVRPageManager.prototype.setMode = function(mode) {
+  // Redundant mode change.
+  var oldMode = this.mode;
+  if (mode == this.mode) {
+    console.error('Not changing modes, already in %s', mode);
+    return;
+  } else if (mode == undefined) {
+    console.error('Not changing modes, in %s, mode is undefined', this.mode);
+    return;
+  }
+  console.log('Mode change: %s => %s', this.mode, mode);
+
+  this.mode = mode;
+
+  // Update Player element visiblity.
+
+  // Update Dialog visibility.
+
+  // Change the mode.
+  switch(mode) {
+    case Modes.ViewStates.DOM:
+      break;
+    case Modes.ViewStates.FULLSCREEN:
+      break;
+    case Modes.ViewStates.VR:
+      //this.setHMDVRDeviceParams_(this.getViewer());
+      break;
+    default:
+      console.error('Unknown mode: %s => %s', this.mode, mode);
+      break;
+  }
+
+  // Emit an event indicating the mode changed.
+  this.emit(this.prefix + '-modechange', mode, oldMode);
 
 };
 

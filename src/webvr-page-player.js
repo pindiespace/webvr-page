@@ -158,7 +158,7 @@ WebVRPagePlayer.prototype.initStatePanel_ = function() {
   // Create VR and fullscreen buttons. Save as associative for manager access.
   this.statePanel = new WebVRPageButtons(Modes.PanelTypes.PANEL_STATE, Modes.PanelTypes.BOTTOM_RIGHT, this.dom, this.params);
   this.buttons[Modes.ButtonTypes.BUTTON_FULLSCREEN] = this.statePanel.createButton(Modes.ButtonTypes.BUTTON_FULLSCREEN, true);
-  this.buttons[Modes.ButtonTypes.BUTTON_CARDBOARD] = this.statePanel.createButton(Modes.ButtonTypes.BUTTON_CARDBOARD, true);
+  this.buttons[Modes.ButtonTypes.BUTTON_VR] = this.statePanel.createButton(Modes.ButtonTypes.BUTTON_VR, true);
 
 };
 
@@ -245,9 +245,9 @@ WebVRPagePlayer.prototype.setCaptionVisibility = function(mode) {
  * http://stemkoski.github.io/Three.js/#sprite-text-labels
  */
 WebVRPagePlayer.setCaptionLocation = function(loc) {
-  if (loc == Modes.TEXT_IN_DOM) {
+  if (loc == Modes.ElementStates.TEXT_IN_DOM) {
     // Move the elements into the DOM.
-  } else if (loc == Modes.TEXT_IN_SPRITE) {
+  } else if (loc == Modes.ElementStates.TEXT_IN_SPRITE) {
     // Make the element a sprite in the 3D scene.
   }
 };
