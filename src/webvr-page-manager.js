@@ -346,6 +346,7 @@ WebVRPageManager.prototype.onFullscreenChange_ = function(e) {
     var event = new CustomEvent('exitfullscreen');
     document.dispatchEvent(event);
   }
+
   this.player.onFullscreenChange_(e);
 };
 
@@ -374,10 +375,11 @@ WebVRPageManager.prototype.requestFullscreen = function() {
       this.exitVR();
     }
 
-  // Adjust the scene to the screen dimensions.
-    this.adjustFOV_(screen.width, screen.height);
+    // Adjust the scene to the screen dimensions.
+    //this.adjustFOV_(screen.width, screen.height);
+    console.log("WIDTH:" + screen.width + " HEIGHT:" + screen.height)
 
-  // Let the player know we are going to fullscreen, and let it choose the fullscreen element.
+    // Let the player know we are going to fullscreen, and let it choose the fullscreen element.
     var canvas = this.player.requestFullscreen();
     //this.effect.setFullScreen(true);
     //TODO: this is a way to pass in an altered HMD to the renderer
@@ -401,6 +403,11 @@ WebVRPageManager.prototype.exitFullscreen = function() {
 WebVRPageManager.prototype.requestVR = function() {
   this.requestFullscreen();
   this.setMode(Modes.ViewStates.VR);
+  // Get the Cardboard distorter.
+  this.distorter = new CardboardDistorter(this.renderer, this.deviceInfo);
+  this.distorter.setActive(true);
+  // Update the distortion appropriately.
+
   this.setHMDVRDeviceParams_(this.getViewer());
   this.distorter.patch();
 };

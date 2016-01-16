@@ -209,6 +209,7 @@ Util.isAppMode = function() {
  * Fullscreen API in webkit browsers.
  * Adapted from:
  * @link https://github.com/ethanius/fullscreen-api
+ * @link http://johndyer.name/native-fullscreen-javascript-api-plus-jquery-plugin/
  */
 (function() {
   var hasStyles = false;
