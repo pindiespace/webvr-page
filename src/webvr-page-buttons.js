@@ -58,14 +58,21 @@ function WebVRPageButtons(type, position, container, params) {
 
 WebVRPageButtons.prototype = new Emitter();
 
+// Get the Panel Id.
+WebVRPageButtons.prototype.getPanelId = function() {
+  return this.uid + '-' + this.type;
+};
+
 // Each WebVRPageButtons object is a panel to which buttons may be added or removed.
 WebVRPageButtons.prototype.initPanel_ = function(type, panelPosition) {
   this.dom = document.createElement('nav');
 
-  // Set the id and class.
-  this.dom.id = this.uid + '-' + type;
-  Util.addClass(this.dom, this.params.prefix + type);
+  // Set the panel type.
   this.type = type;
+
+  // Set the id and class.
+  this.dom.id = this.getPanelId();
+  Util.addClass(this.dom, this.params.prefix + type);
 
   // Default panel position in Player.
   this.dom.quadrant = panelPosition;
@@ -106,15 +113,51 @@ WebVRPageButtons.prototype.initPanel_ = function(type, panelPosition) {
   this.container.appendChild(this.dom);
 };
 
-WebVRPageButtons.prototype.createClickHandler_ = function(e) {
-  return function(e) {
-    e.stopPropagation();
-    e.preventDefault();
-    console.log("*****************ABOUT TO EMIT:" + e.target.id);
-    this.emit(e.target.id);
-  }.bind(this);
+// Make the Panel visible in the DOM.
+WebVRPageButtons.prototype.setPanelVisibility = function(mode) {
+  if (mode) {
+      this.dom.style.visibility = 'block';
+  } else {
+    this.dom.style.visibility = 'none';
+  }
 };
 
+// Set the Panel position in a quadrant in its container.
+WebVRPageButtons.prototype.setPanelPosition = function(quadrant) {
+  this.dom.quadrant = quadrant;
+  var s = this.dom.style;
+  var dist = '0px';
+  switch(quadrant) {
+    case Modes.PanelTypes.TOP_LEFT:
+      s.top = dist;
+      s.left = dist;
+      break;
+    case Modes.PanelTypes.TOP_RIGHT:
+      s.top = dist;
+      s.right = dist;
+      break;
+    case Modes.PanelTypes.BOTTOM_RIGHT:
+      s.bottom = dist;
+      s.right = dist;
+      break;
+    case Modes.PanelTypes.BOTTOM_LEFT:
+      s.bottom = dist;
+      s.left = dist;
+      break;
+    case Modes.PanelTypes.CENTER_TOP:
+    //TODO:
+      break;
+    case Modes.PanelTypes.CENTER_BOTTOM:
+    //TODO:
+      break;
+    case Modes.PanelTypes.CENTER_CENTER:
+      break;
+    default:
+      break;
+  }
+};
+
+// Get the Id of a specific button.
 WebVRPageButtons.prototype.getButtonId = function(buttonType) {
   return this.uid + this.buttonClasses.button + '-' + buttonType;
 };
@@ -200,40 +243,6 @@ WebVRPageButtons.prototype.createButton = function(buttonType, display) {
   return button;
 };
 
-WebVRPageButtons.prototype.setPanelPosition = function(quadrant) {
-  this.dom.quadrant = quadrant;
-  var s = this.dom.style;
-  var dist = '0px';
-  switch(quadrant) {
-    case Modes.PanelTypes.TOP_LEFT:
-      s.top = dist;
-      s.left = dist;
-      break;
-    case Modes.PanelTypes.TOP_RIGHT:
-      s.top = dist;
-      s.right = dist;
-      break;
-    case Modes.PanelTypes.BOTTOM_RIGHT:
-      s.bottom = dist;
-      s.right = dist;
-      break;
-    case Modes.PanelTypes.BOTTOM_LEFT:
-      s.bottom = dist;
-      s.left = dist;
-      break;
-    case Modes.PanelTypes.CENTER_TOP:
-    //TODO:
-      break;
-    case Modes.PanelTypes.CENTER_BOTTOM:
-    //TODO:
-      break;
-    case Modes.PanelTypes.CENTER_CENTER:
-      break;
-    default:
-      break;
-  }
-};
-
 // Compute button size (CSS pixels) based on container size. Scale up for mobile.
 WebVRPageButtons.prototype.calcButtonSize_ = function() {
   var w = parseInt(this.buttonScale * Util.getElementWidth(this.container));
@@ -251,10 +260,21 @@ WebVRPageButtons.prototype.calcButtonSize_ = function() {
 };
 
 // Set the visiblity of a button, based on program mode.
-WebVRPageButtons.prototype.setVisibility = function(mode) {
+WebVRPageButtons.prototype.setButtonVisibility = function(mode) {
   //TODO: give all buttons a ruleset for determing if they should be visible.
 };
 
+// Create a clickhandler for an individual button.
+WebVRPageButtons.prototype.createClickHandler_ = function(e) {
+  return function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    console.log("*****************ABOUT TO EMIT:" + e.target.id);
+    this.emit(e.target.id);
+  }.bind(this);
+};
+
+// Load Button visual styles.
  WebVRPageButtons.prototype.loadIcons_ = function() {
    // Preload some hard-coded SVG.
    this.icons = [];

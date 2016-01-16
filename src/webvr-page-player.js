@@ -94,6 +94,11 @@ WebVRPagePlayer.prototype.errorMsgIfNeeded_ = function() {
   }
 };
 
+// Get the player Id.
+WebVRPagePlayer.prototype.getPlayerId = function() {
+  return this.uid;
+}
+
 // Get the Player container.
 WebVRPagePlayer.prototype.getContainer = function() {
   return this.dom;
@@ -125,7 +130,7 @@ WebVRPagePlayer.prototype.initFigure_ = function() {
 
   // Set the Player id and standard class.
   if (!d.id) {
-    d.id = this.uid;
+    d.id = this.getPlayerId();
   }
   Util.addClass(d, prefix + this.playerClasses.player);
 
@@ -213,6 +218,9 @@ WebVRPagePlayer.prototype.initCaption_ = function() {
 
     // Save a reference
     this.caption = figCaption;
+
+    // Show it.
+    this.setCaptionVisibility(true);
 };
 
 // Get the Player caption.
@@ -220,12 +228,27 @@ WebVRPagePlayer.prototype.getCaption = function() {
   return this.caption;
 };
 
-WebVRPagePlayer.prototype.showCaption = function() {
-
+// Set the visibility of the caption in the DOM.
+// TODO: handle visibility as a DOM element, or a Sprite.
+WebVRPagePlayer.prototype.setCaptionVisibility = function(mode) {
+  if(mode) {
+    this.caption.style.visibility = 'block';
+  } else {
+    this.caption.style.visibility = 'none';
+  }
 };
 
-WebVRPagePlayer.prototype.hideCaption = function() {
-
+/*
+ * Player objects can be 2D DOM elements in the web page, or
+ * 3D elements embedded in the scene. This function convets DOM elements
+ * to Sprites,or does the reverse.
+ */
+WebVRPagePlayer.setLocation = function(loc) {
+  if (loc == Modes.IN_DOM) {
+    // Move the elements into the DOM.
+  } else if (loc == Modes.IN_SPRITE) {
+    // Make the element a sprite in the 3D scene.
+  }
 };
 
 // Respond to events.
