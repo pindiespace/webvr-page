@@ -22,6 +22,8 @@ var Modes = {
   VR: 'vr', // VR mode (always in fullscreen).
   BACK: 'back', // Back button.
   INFO: 'info', // Information dialog.
+  TEXT_IN_DOM: 'text-in-dom', // Element is a 2D DOM element
+  TEXT_IN_SPRITE: 'text-in-sprite' // Element is a sprite in the scene
 };
 
 var DialogTypes = {

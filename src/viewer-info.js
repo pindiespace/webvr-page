@@ -105,4 +105,14 @@ ViewerInfo.prototype.searchViewer = function(keywords) {
   //TODO: write a progressive search funciton
 };
 
+// Get the default Field of View.
+ViewerInfo.prototype.getDefaultFOV_ = function() {
+  return {
+    downDegrees:40,
+    leftDegrees:40,
+    rightDegrees:40,
+    upDegrees:40
+  };
+};
+
 module.exports = ViewerInfo;

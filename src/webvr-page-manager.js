@@ -85,8 +85,9 @@ function WebVRPageManager(renderer, effect, camera, params) {
 
     if (WebVRConfig.FORCE_DISTORTION) {
       this.distorter.setActive(true);
+    } else if (hmd) {
+      this.hmd = hmd;
     }
-    this.hmd = hmd;
     window.hmd = hmd;
   }.bind(this));
 
@@ -124,15 +125,7 @@ WebVRPageManager.Modes = Modes;
 // Make Util visible so we can use it in scene construction.
 WebVRPageManager.Util = Util;
 
-// Render the scene.
-WebVRPageManager.prototype.render = function(scene) {
-  this.camera.updateProjectionMatrix();
-  this.distorter.preRender();
-  this.effect.render(scene, this.camera);
-  this.distorter.postRender();
-};
-
-// Get the VR device, hmd, positionsensor, compass?
+// Get the VR device, hmd, positionsensor.
 WebVRPageManager.prototype.getDeviceByType_ = function(type) {
   return new Promise(function(resolve, reject) {
     navigator.getVRDevices().then(function(devices) {
@@ -151,13 +144,12 @@ WebVRPageManager.prototype.getDeviceByType_ = function(type) {
   });
 };
 
-WebVRPageManager.prototype.getDefaultDeviceFOV_ = function() {
-  return {
-    downDegrees:40,
-    leftDegrees:40,
-    rightDegrees:40,
-    upDegrees:40
-  };
+// Render the scene.
+WebVRPageManager.prototype.render = function(scene) {
+  //this.camera.updateProjectionMatrix();
+  this.distorter.preRender();
+  this.effect.render(scene, this.camera);
+  this.distorter.postRender();
 };
 
 // Make a copy of the FOV for this device.
@@ -170,7 +162,7 @@ WebVRPageManager.prototype.cloneFOV_ = function(fovObj) {
   };
 };
 
-// Polyfill for managinging different HMD object structures.
+// Polyfill for managing different HMD object structures.
 WebVRPageManager.prototype.getFOV_ = function() {
   var eyeFOVL, eyeFOVR;
   if (this.hmd) {
@@ -193,8 +185,8 @@ WebVRPageManager.prototype.getFOV_ = function() {
     }
   } else {
     // Return a generic FOV
-    eyeFOVL = this.getDefaultDeviceFOV_();
-    eyeFOVR = this.getDefaultDeviceFOV_();
+    eyeFOVL = this.viewerInfo.getDefaultFOV_();
+    eyeFOVR = this.viewerInfo.getDefaultFOV_();
   }
   return {
     eyeFOVL:eyeFOVL,

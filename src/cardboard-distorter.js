@@ -15,6 +15,7 @@
 
 var BarrelDistortion = require('./distortion/barrel-distortion-fragment-v2.js');
 
+
 function ShaderPass(shader) {
   this.uniforms = THREE.UniformsUtils.clone(shader.uniforms);
 
@@ -137,7 +138,7 @@ CardboardDistorter.prototype.recalculateUniforms = function() {
   // Set distortion coefficients.
   var coefficients = this.deviceInfo.viewer.distortionCoefficients;
   uniforms.distortion.value.set(coefficients[0], coefficients[1]);
-
+      
 
   // For viewer profile debugging, show the lens center.
   if (WebVRConfig.SHOW_EYE_CENTERS) {

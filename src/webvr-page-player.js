@@ -242,11 +242,12 @@ WebVRPagePlayer.prototype.setCaptionVisibility = function(mode) {
  * Player objects can be 2D DOM elements in the web page, or
  * 3D elements embedded in the scene. This function convets DOM elements
  * to Sprites,or does the reverse.
+ * http://stemkoski.github.io/Three.js/#sprite-text-labels
  */
-WebVRPagePlayer.setLocation = function(loc) {
-  if (loc == Modes.IN_DOM) {
+WebVRPagePlayer.setCaptionLocation = function(loc) {
+  if (loc == Modes.TEXT_IN_DOM) {
     // Move the elements into the DOM.
-  } else if (loc == Modes.IN_SPRITE) {
+  } else if (loc == Modes.TEXT_IN_SPRITE) {
     // Make the element a sprite in the 3D scene.
   }
 };
