@@ -98,7 +98,6 @@ function WebVRPageManager(renderer, effect, camera, params) {
     } else {
       console.log('no hmd, no distortion forcing');
     }
-    window.hmd = hmd;
   }.bind(this));
 
   // Save the input device for later sending timing data.
@@ -145,8 +144,14 @@ WebVRPageManager.prototype.render = function(scene) {
     this.effect.render(scene, this.camera);
     this.distorter.postRender();
   } else {
-    this.renderer.render(scene, this.camera);
-    //this.effect.render(scene, this.camera); //TODO: still giving 2 images.
+    //this.renderer.render(scene, this.camera);
+    ////////////this.effect.render(scene, this.camera); //this gives 2 images.
+    // Scene may be an array of two scenes, one for each eye.
+    if (scene instanceof Array) {
+      this.renderer.render(scene[0], this.camera);
+    } else {
+      this.renderer.render(scene, this.camera);
+    }
   }
 
 };
