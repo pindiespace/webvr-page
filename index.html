@@ -34,14 +34,18 @@ Detector script. Determine if polyfills needed. Couple with a loader
 like head.js
 -->
 <script src="js/lib/feature-detector.js"></script>
+
 </head>
 
 <body>
   <header>
     <h1>WebVR - DOM Page-Friendly Boilerplate</h1>
-    <div class="menu">
-      <button id="go-fullscreen">Go Fullscreen</button>
-    </div>
+    <nav class="menu">
+      <ul>
+        <li><button id="go-fullscreen">Go Fullscreen</button></li>
+        <li><span>Load Progress:</span><progress id='webvr-page-load-progress' value='0' max='100'><span>0</span>%</progress></li>
+      </ul>
+    </nav>
   </header>
   <main>
     <section>
@@ -67,100 +71,22 @@ like head.js
   </footer>
 
 <!--
-  ES5 and DOM menthod polyfills.
--->
-<script src="js/lib/dom.js"></script>
-<script src="js/lib/es5.js"></script>
-
-<!--
-  Promise polyfill by taylorhakes
-  https://github.com/taylorhakes/promise-polyfill
--->
-<script src="js/lib/Promise.min.js"></script>
-
-<!--
-for ie9 running canvas renderer.
-typedarray.js by inexorabletrash
-https://github.com/inexorabletash/polyfill
--->
-<script src="js/lib/typedarray.js"></script>
-
-<!--
-  three.js 3d library by mrdoob
-  https://github.com/mrdoob/three.js/
-  typedarray.js by inexorabletrash
-  https://github.com/inexorabletash/polyfill
-  -->
-<script src="js/lib/three.min.js"></script>
-
-<!--
   Canvas renderer (from threejs examples) for one-time render in browsers lacking WebGL,
   in particular, IE9 and IE10.
 -->
-<script src="js/lib/Projector.js"></script>
-<script src="js/lib/CanvasRenderer.js"></script>
+<!--<script src="js/lib/Projector.js"></script>-->
+<!--<script src="js/lib/CanvasRenderer.js"></script>-->
 
 <!--
   VREffect.js handles stereo camera setup and rendering. NOTE: this needs to load before VRControls.js
   NOTE: needs setFOV() added to work!
   -->
-<script src="js/lib/VREffect.js"></script>
-
-<!--
-  Add a function for setting the FOV dynamically. Used to support VR scene correct scaling even if the device orientation changes.
--->
-<script>
-  THREE.VREffect.prototype.setFOV = function(FOVL, FOVR) {
-    eyeFOVL = FOVL;
-  	eyeFOVR = FOVR;
-  };
-</script>
+<!--<script src="js/lib/VREffect.js"></script>-->
 
 <!--
   VRControls.js acquires positional information from connected VR devices and applies the transformations to a three.js camera object.
    -->
-<script src="js/lib/VRControls.js"></script>
-
-<!--
-  Fix the filter function so it returns values if .deviceName isn't defined.
--->
-<script>
-if(!THREE.VRControls.filterInvalidDevices) {
-THREE.VRControls.filterInvalidDevices = function( devices ) {
-
-  // Exclude Cardboard position sensor if Oculus exists.
-
-  var oculusDevices = devices.filter( function ( device ) {
-
-    if (device && device.deviceName) {
-
-      return device.deviceName.toLowerCase().indexOf( 'oculus' ) !== - 1;
-
-    }
-
-  } );
-
-  if ( oculusDevices.length >= 1 ) {
-
-    return devices.filter( function ( device ) {
-
-      if(device && device.deviceName) {
-
-        return device.deviceName.toLowerCase().indexOf( 'cardboard' ) === - 1;
-
-      }
-
-    } );
-
-  } else {
-
-    return devices;
-
-  }
-
-} //end of function.
-} // end of test.
-</script>
+<!--<script src="js/lib/VRControls.js"></script>-->
 
 <!--
   A polyfill for WebVR using the Device{Motion,Orientation}Event API.
@@ -185,12 +111,12 @@ THREE.VRControls.filterInvalidDevices = function( devices ) {
    };
 </script>
 
-<script src="js/lib/webvr-polyfill.js"></script>
+<!--<script src="js/lib/webvr-polyfill.js"></script>-->
 
 <!--
   Helps enter and exit VR mode, provides best practices while in VR.
   -->
-<script src="js/webvr-page.js"></script>
+<!--<script src="js/webvr-page.js"></script>-->
 
 <!--
   set up the VR scene.
@@ -207,132 +133,180 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
-  // Example at: https://github.com/jeromeetienne/threejsboilerplate/blob/master/index.html4
-  document.getElementById('go-fullscreen').addEventListener('click', function(e) {
-    manager.requestFullscreen();
-  }.bind(this), false);
+  /*
+   * Load JS Polyfills.
+   * ES5 and DOM menthod polyfills.
+   * https://github.com/inexorabletash/polyfill
+   * Promise polyfill by taylorhakes
+   * https://github.com/taylorhakes/promise-polyfill
+   * Typed array polyfill for ie9 running canvas renderer.
+   * typedarray.js by inexorabletrash
+   * https://github.com/inexorabletash/polyfill
+   *
+   * Load JS Libraries.
+   * three.js 3d library by mrdoob
+   * https://github.com/mrdoob/three.js/
+   */
+  FeatureDetector.load([
+    {name: 'querySelectorAll', poly: 'js/lib/dom.js'},
+    {name: 'defineProperty', poly: 'js/lib/es5.js'},
+    {name: 'typedArray', poly: 'js/lib/typedarray.js'},
+    {name: 'promise', poly: 'js/lib/Promise.min.js'},
+    {name: 'three', poly: 'js/lib/three.min.js'},
+    {name: 'projector', poly: 'js/lib/Projector.js'},
+    {name: 'canvasRenderer', poly: 'js/lib/CanvasRenderer.js'},
+    {name: 'VREffect', poly: 'js/lib/VREffect.js'},
+    {name: 'VRControls', poly: 'js/lib/VRControls.js'},
+    {name: 'WebVRPolyfill', poly: 'js/lib/webvr-polyfill.js'},
+    {name: 'WebVRPage', poly: 'js/webvr-page.js'}
+  ], function() {
+    console.log('callback');
 
-// Use an existing <canvas> in the markup.
-var canvas = document.getElementById('scene-cube');
-var renderer;
-if(FeatureDetector.webgl) { // 3D scenes ok.
-  renderer = new THREE.WebGLRenderer({
-    antialias: true,
-    canvas: canvas
-  });
-  renderer.setPixelRatio(window.devicePixelRatio);
-} else { // Can't do 3d, just draw the scene once and use as a fallback image.
-  console.warn('no webgl, fallback to canvas still image rendering of scene');
-  renderer = new THREE.CanvasRenderer({
-    antialias: true,
-    canvas: canvas
-  });
-}
+    // Example at: https://github.com/jeromeetienne/threejsboilerplate/blob/master/index.html4
+    document.getElementById('go-fullscreen').addEventListener('click', function(e) {
+      manager.requestFullscreen();
+    }.bind(this), false);
 
-// Canvas size determined by markup, not JS.
-var w = parseFloat(getComputedStyle(canvas).getPropertyValue('width'));
-var h = parseFloat(getComputedStyle(canvas).getPropertyValue('height'));
-var aspect = w/h;
-
-/*
- * Params for the Manager.
- * hidebutton: if true, don't show buttons
- * detector: if present, we can used the feature detections later.
- */
-
- // Create a three.js camera.
- var camera = new THREE.PerspectiveCamera(75, w / h, 0.1, 10000);
-
- // Apply VR headset positional data to camera.
- var controls = new THREE.VRControls(camera);
-
- // Apply VR stereo rendering to renderer.
- var effect = new THREE.VREffect(renderer);
- effect.setSize(w, h);
-
-// Create a Manager.
-window.manager = new WebVRPageManager(renderer, effect, camera, {hideButton: false, detector: (FeatureDetector || THREE.Detector)});
-
-// Create a three.js scene.
-var scene = new THREE.Scene();
-
-// Add a repeating grid as a skybox.
-var boxWidth = 5;
-var texture = THREE.ImageUtils.loadTexture(
-  'img/box.png'
-);
-texture.wrapS = THREE.RepeatWrapping;
-texture.wrapT = THREE.RepeatWrapping;
-texture.repeat.set(boxWidth, boxWidth);
-
-var geometry = new THREE.BoxGeometry(boxWidth, boxWidth, boxWidth);
-var material = new THREE.MeshBasicMaterial({
-  map: texture,
-  color: 0x01BE00,
-  side: THREE.BackSide
-});
-
-var skybox = new THREE.Mesh(geometry, material);
-window.skybox = skybox;
-
-// Add a separate uuid from the one THREE generates (crypto-secure).
-skybox.userData.uuid = WebVRPageManager.Util.getUUID();
-
-// Name it (so we could use .getObjectByName() later). Leave the generated .id alone.
-skybox.name = 'skybox';
-
-scene.add(skybox);
-
-// Create 3D objects.
-var geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-var material = new THREE.MeshNormalMaterial();
-var cube = new THREE.Mesh(geometry, material);
-
-// Add a separate uuid from the one THREE generates (crypto-secure).
-cube.userData.uuid = WebVRPageManager.Util.getUUID();
-
-// Name it.
-cube.name = 'spinning cube';
-
-// Position cube mesh
-cube.position.z = -1;
-
-// Add cube mesh to your three.js scene
-scene.add(cube);
-
-// Reset the position sensor when 'z' pressed.
-function onKey(event) {
-  if (event.keyCode == 90) { // z
-    controls.resetSensor();
+    // Use an existing <canvas> in the markup.
+    var canvas = document.getElementById('scene-cube');
+    var renderer;
+    if(FeatureDetector.webgl) { // 3D scenes ok.
+      renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        canvas: canvas
+      });
+      renderer.setPixelRatio(window.devicePixelRatio);
+    } else { // Can't do 3d, just draw the scene once and use as a fallback image.
+    console.warn('no webgl, fallback to canvas still image rendering of scene');
+    renderer = new THREE.CanvasRenderer({
+      antialias: true,
+      canvas: canvas
+    });
   }
-}
-window.addEventListener('keydown', onKey, true);
 
-// Request animation frame loop function
-function animate(timestamp) {
-  // Apply rotation to cube mesh
-  cube.rotation.y += 0.01;
+  // Canvas size determined by markup, not JS.
+  var w = parseFloat(getComputedStyle(canvas).getPropertyValue('width'));
+  var h = parseFloat(getComputedStyle(canvas).getPropertyValue('height'));
+  var aspect = w/h;
 
-  // Update VR headset position and apply to camera.
-  controls.update();
+  /*
+  * Params for the Manager.
+  * hidebutton: if true, don't show buttons
+  * detector: if present, we can used the feature detections later.
+  */
 
-  // Render the scene through the manager.
-  manager.render(scene, camera, timestamp);
+  // Create a three.js camera.
+  var camera = new THREE.PerspectiveCamera(75, w / h, 0.1, 10000);
 
-  requestAnimationFrame(animate);
-}
+  // Apply VR headset positional data to camera.
+  var controls = new THREE.VRControls(camera);
 
-// Kick off animation loop, or draw a still image one time.
-if(FeatureDetector.webgl) { // Render animated 3D scene.
-  animate();
-} else { // Render exactly once to canvas, treat as image.
-  manager.render(scene, camera);
-}
+  /////////////////////////////////////////////////////////////////////
+  THREE.VREffect.prototype.setFOV = function(FOVL, FOVR) {
+    eyeFOVL = FOVL;
+    eyeFOVR = FOVR;
+  };
+  /////////////////////////////////////////////////////////////////////
 
+  // Apply VR stereo rendering to renderer.
+  var effect = new THREE.VREffect(renderer);
+  effect.setSize(w, h);
+
+  // Create a Manager.
+  window.manager = new WebVRPageManager(renderer, effect, camera, {hideButton: false, detector: (FeatureDetector || THREE.Detector)});
+
+  // Create a three.js scene.
+  var scene = new THREE.Scene();
+
+  // Add a repeating grid as a skybox.
+  var boxWidth = 5;
+  var texture = THREE.ImageUtils.loadTexture(
+    'img/box.png'
+  );
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(boxWidth, boxWidth);
+
+  var geometry = new THREE.BoxGeometry(boxWidth, boxWidth, boxWidth);
+  var material = new THREE.MeshBasicMaterial({
+    map: texture,
+    color: 0x01BE00,
+    side: THREE.BackSide
+  });
+
+  var skybox = new THREE.Mesh(geometry, material);
+  window.skybox = skybox;
+
+  // Add a separate uuid from the one THREE generates (crypto-secure).
+  skybox.userData.uuid = WebVRPageManager.Util.getUUID();
+
+  // Name it (so we could use .getObjectByName() later). Leave the generated .id alone.
+  skybox.name = 'skybox';
+
+  scene.add(skybox);
+
+  // Create 3D objects.
+  var geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+  var material = new THREE.MeshNormalMaterial();
+  var cube = new THREE.Mesh(geometry, material);
+
+  // Add a separate uuid from the one THREE generates (crypto-secure).
+  cube.userData.uuid = WebVRPageManager.Util.getUUID();
+
+  // Name it.
+  cube.name = 'spinning cube';
+
+  // Position cube mesh
+  cube.position.z = -1;
+
+  // Add cube mesh to your three.js scene
+  scene.add(cube);
+
+  // Reset the position sensor when 'z' pressed.
+  function onKey(event) {
+    if (event.keyCode == 90) { // z
+      controls.resetSensor();
+    }
+  }
+  window.addEventListener('keydown', onKey, true);
+
+  // Request animation frame loop function
+  function animate(timestamp) {
+    // Apply rotation to cube mesh
+    cube.rotation.y += 0.01;
+
+    // Update VR headset position and apply to camera.
+    controls.update();
+
+    // Render the scene through the manager.
+    manager.render(scene, camera, timestamp);
+
+    requestAnimationFrame(animate);
+  }
+
+  // Kick off animation loop, or draw a still image one time.
+  if(FeatureDetector.webgl) { // Render animated 3D scene.
+    animate();
+  } else { // Render exactly once to canvas, treat as image.
+    manager.render(scene, camera);
+  }
+
+  //END OF CALLBACK FOR LOADER
+
+  }, function(percent) {
+    console.log('progress function, ' + percent + '%');
+    var prog = document.getElementById('webvr-page-load-progress');
+    if(prog) {
+      prog.value = percent;
+      prog.getElementsByTagName('span')[0].innerHTML = percent;
+    }
+  }, function(s, loadCount) {
+    console.log('failed to load:' + s.src + ' count:' + loadCount);
+  }); // End of Loader callback.
 
 }); //end of DOMCOntentLoaded callback.
 
-// Things to do once ALL content is loaded.
+// Things to do once ALL content is loaded (i.e. window.onload).
 window.addEventListener('load', function(e) {
 
 });

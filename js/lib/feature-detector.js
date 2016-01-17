@@ -47,7 +47,7 @@ var FeatureDetector = (function() {
     if (detectCanvas_()) {
         cs = document.createElement('canvas');
         var names = ['3d', 'webgl', 'experimental-webgl', 'experimental-webgl2', 'moz-webgl'];
-        for(i in names) {
+        for (i in names) {
           try {
             ctx = cs.getContext(names[i]);
             if (ctx && typeof ctx.getParameter == 'function') {
@@ -70,6 +70,13 @@ var FeatureDetector = (function() {
    var detectFileAPI_ = function() {
      return !!(window.File && window.FileReader && window.FileList && window.Blob);
    };
+
+   /*
+    * Detect support for .classList
+    */
+    var detectQuerySelectorAll_ = function() {
+      return !!document.querySelectorAll;
+  };
 
   /*
    * Detect support for addEventListener.
@@ -178,6 +185,123 @@ var detectLocalStorage_ = function() {
     }
   };
 
+  /*
+   * Microloader. Store polyfills to load. Deliberately old-school for maximum browser support.
+   * After: https://css-tricks.com/snippets/javascript/async-script-loader-with-callback/
+   * https://www.nczonline.net/blog/2009/07/28/the-best-way-to-load-external-javascript/
+  */
+  var load = function(scripts, callback, progressFn, failFn) {
+    this.head = document.getElementsByTagName('head')[0] || document.documentElement;
+    this.loadCount = 0;
+    this.totalRequired = scripts.length;
+    this.callback = callback;
+    this.progressFn = progressFn;
+    this.failFn = failFn;
+    var self = this;
+
+    var err_ = function(s) {
+      console.log('loader in err_ function, failed to load:' + s.src);
+      if(self.failFn) {
+        self.failFn(s, self.loadCount);
+      }
+    };
+
+    // Check loading progress, callback when complete.
+    var loaded = function(s) {
+
+      console.log(self.loadCount + ' of ' + self.totalRequired + ' scripts loaded, path:' + s.src);
+
+      if (s.onreadyState) {
+        if (s.readyState === 'loaded' || s.readyState === 'complete') {
+          // IE completion hack.
+          // http://stackoverflow.com/questions/6946631/dynamically-creating-script-readystate-never-complete/18840568#18840568
+          var currState = s.readyState;
+          s.children;
+          if (currState == 'loaded' && s.readyState == 'loading') {
+            // custom error code
+            self.err_(s);
+          }
+          self.loadCount++;
+        }
+      } else {
+        self.loadCount++;
+      }
+
+      if (typeof self.progressFn == 'function') {
+        // Precent loaded.
+        self.progressFn(parseInt(100 * self.loadCount / self.totalRequired));
+      }
+
+      // Run callback, or run progress function, if present.
+      if (self.loadCount == self.totalRequired && typeof self.callback == 'function') {
+        console.log('JS loading complete');
+        self.callback.call();
+      }
+
+      // Null script to prevent memory leaks.
+      s.onload = s.onreadystatechange = null;
+      if (this.head && s.parentNode) {
+        this.head.removeChild(s);
+      }
+
+    }; // End of loaded.
+
+    // Load the scripts in an async way.
+    var queueScripts = function(src) {
+      var s = document.createElement('script');
+      s.type = 'text/javascript';
+      s.charset = 'utf8';
+      s.async = true;
+      s.src = src;
+      if (s.onreadystatechange) { // Separate since IE 9, 10 have both defined.
+        console.log('ie script loader');
+        s.onreadystatechange = function() {
+          console.log('running ie loader for:' + s.src);
+          loaded(s);
+        };
+      } else if (s.onload !== undefined) {
+        console.log('regular script loader for:' + s.src);
+        s.onload = function() {
+          console.log('running standard loader for:' + s.src);
+          loaded(s);
+        };
+        s.onerror = function() {
+          console.log('error loading:' + s.src);
+          err_(s);
+        };
+      }
+      // Add script to document.head.
+      //console.log('self.head is a:' + self.head)
+      self.head.insertBefore(s, self.head.firstChild);
+    }; // End of queueScripts.
+
+    // Initialize progress
+    if (self.progressFn) {
+      self.progressFn(0);
+    }
+
+    // Queue the necessary scripts (required polyfills and libraries).
+    var runQueue = function () {
+    var notNeeded = 0;
+    for (var i = 0; i < self.totalRequired; i++) {
+      var nm = scripts[i].name;
+      //console.log('checking ' + nm);
+      if (FeatureDetector[nm] !== undefined && FeatureDetector[nm] === true) {
+        console.log(nm + ' does not need a polyfill');
+        notNeeded++;
+        continue;
+      }
+      console.log('queueing script: ' + nm + ' #' + i + ':' + scripts[i].poly);
+      queueScripts(scripts[i].poly);
+    }
+    self.totalRequired -= notNeeded;
+  };
+  runQueue();
+
+  //TODO: nest multiple queues to get script loading order.
+
+  }; // End of microloader.
+
   // Detect features. Export so we can re-detect after polyfills are loaded.
   var detect = function() {
     return {
@@ -188,6 +312,7 @@ var detectLocalStorage_ = function() {
       webgl: detectWebGL_(),
       workers: detectWorkers_(),
       fileapi: detectFileAPI_(),
+      querySelectorAll: detectQuerySelectorAll_(),
       defineproperty: detectDefineProperty_(),
       defineproperties: detectDefineProperties_(),
       promise: detectPromise_(),
@@ -197,7 +322,8 @@ var detectLocalStorage_ = function() {
       devicemotion: detectEventSupport_(window, 'devicemotion'), //detectMotionSupport_(),
       touch: detectTouchSupport_(),
       webVR: detectWebVR_(),
-      requestAnimationFrame: detectRequestAnimationFrame_()
+      requestAnimationFrame: detectRequestAnimationFrame_(),
+      load: load
     };
   };
 
