@@ -97,7 +97,7 @@ like head.js
    */
   WebVRConfig = {
      // Forces availability of VR mode.
-     FORCE_ENABLE_VR: true, // Default: false. Enables VR toggles on Desktops.
+     FORCE_ENABLE_VR: true // Default: false. Enables VR toggles on Desktops.
      //FORCE_DISTORTION: true, // Default: false.
      // Complementary filter coefficient. 0 for accelerometer, 1 for gyro.
      //K_FILTER: 0.98, // Default: 0.98.
@@ -111,40 +111,42 @@ like head.js
    };
 </script>
 
-<!--<script src="js/lib/webvr-polyfill.js"></script>-->
-
-<!--
-  Helps enter and exit VR mode, provides best practices while in VR.
-  -->
-<!--<script src="js/webvr-page.js"></script>-->
-
 <!--
   set up the VR scene.
 -->
 <script>
+/*
+ * Feature-detect <canvas> support and WebGL API using FeatureDetector.js.
+ * The <canvas> tag can't be polyfilled for VR, and addEventListener is supported by all browsers which support <canvas>
+ * More tests at: https://github.com/facebookarchive/rng.io/blob/c96a962ec18beef5f456d04820d791cbda59c2bc/dist/tests.js
+*/
+if(!FeatureDetector.addEventListener || !FeatureDetector.canvas) {
+  //the <canvas> tags will display our error message (one reason for putting them into markup).
+  //TODO: polyfill with blank GIF image.
+} else {
+
 // Setup three.js WebGL renderer. Note: Antialiasing is a big performance hit.
 // Only enable it if you actually need to.
 document.addEventListener('DOMContentLoaded', function() {
 
-  // Feature-detect <canvas> support and WebGL API using THREE.js webvr-detector.js (in examples).
-  // More sophsiticated tests at: https://github.com/facebookarchive/rng.io/blob/c96a962ec18beef5f456d04820d791cbda59c2bc/dist/tests.js
-  if(!FeatureDetector.canvas) {
-    //the <canvas> tags will display our error message (one reason for putting them into markup).
-    return;
-  }
-
   /*
-   * Load JS Polyfills.
-   * ES5 and DOM menthod polyfills.
-   * https://github.com/inexorabletash/polyfill
+   * 1. Load JS Polyfills required for a VR scene.
    * Promise polyfill by taylorhakes
    * https://github.com/taylorhakes/promise-polyfill
-   * Typed array polyfill for ie9 running canvas renderer.
+   * Fetch polyfill.
+   * https://github.com/github/fetch
+   * ES5 methods (es5.js) for Object() methods.
+   * DOM methods and properties (dom.js) including querySelector(), querySelectorAll(), .classList.
+   * Typed array polyfill (typedArray.js) for ie9 running canvas renderer.
    * typedarray.js by inexorabletrash
    * https://github.com/inexorabletash/polyfill
    *
-   * Load JS Libraries.
+   * 2. Load JS Libraries.
    * three.js 3d library by mrdoob
+   * CanvasRenderer for fallback from WebGL (static images).
+   * Projector.js for Canvas rendering.
+   * VREffect.js for stereo rendering.
+   * VRControls.js for correct VR events.
    * https://github.com/mrdoob/three.js/
    */
   FeatureDetector.load([
@@ -165,6 +167,7 @@ document.addEventListener('DOMContentLoaded', function() {
       {name: 'WebVRPolyfill', poly: 'js/lib/webvr-polyfill.js'}
     ],
     [
+      {name: 'Fetch', poly: 'js/lib/fetch.js'},
       {name: 'WebVRPage', poly: 'js/webvr-page.js'}
     ]
   ], function() {
@@ -318,6 +321,8 @@ document.addEventListener('DOMContentLoaded', function() {
 window.addEventListener('load', function(e) {
 
 });
+
+} // End of conditional for un-polyfill-able features.
 
 </script>
 </body>

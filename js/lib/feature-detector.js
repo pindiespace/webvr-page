@@ -44,7 +44,7 @@ var FeatureDetector = (function() {
    * IE 9, 10 Polyfill: https://github.com/iewebgl/iewebgl
    */
   var detectWebGL_ = function() {
-    if (detectCanvas_()) {
+    if (detectCanvas_() && document.createElement) {
         cs = document.createElement('canvas');
         var names = ['3d', 'webgl', 'experimental-webgl', 'experimental-webgl2', 'moz-webgl'];
         for (i in names) {
@@ -61,21 +61,63 @@ var FeatureDetector = (function() {
   };
 
   /*
+   * Detect Promise object support.
+   * Polyfill available:
+   */
+  var detectPromise_ = function() {
+    return ('Promise' in window);
+  };
+
+  /*
    * Detect support for WebWorkers.
    */
-   var detectWorkers_ = function() {
-     return !!window.Worker;
-   };
+  var detectWorkers_ = function() {
+    return !!window.Worker;
+  };
 
-   var detectFileAPI_ = function() {
-     return !!(window.File && window.FileReader && window.FileList && window.Blob);
+  /*
+   * Detect application cache.
+   */
+  var detectApplicationCache_ = function() {
+    return !!window.applicationCache;
+  };
+
+  /*
+   * Detect FileAPI support.
+   */
+  var detectFileAPI_ = function() {
+    return !!(window.File && window.FileReader && window.FileList && window.Blob);
+  };
+
+  /*
+  * Detect localStorage support.
+  * Similar to Modernizr test.
+  */
+  var detectLocalStorage_ = function() {
+    var mod = 'test';
+      try {
+           localStorage.setItem(mod, mod);
+           localStorage.removeItem(mod);
+           return true;
+       } catch(e) {
+           return false;
+       }
    };
 
    /*
-    * Detect support for .classList
+    * Detect fetch (alternative to XHR) support.
+    * https://davidwalsh.name/fetch
+    * https://github.com/github/fetch
     */
-    var detectQuerySelectorAll_ = function() {
-      return !!document.querySelectorAll;
+  var detectFetch_ = function() {
+    return ('fetch' in window);
+  };
+
+  /*
+   * Detect support for .classList
+   */
+  var detectQuerySelectorAll_ = function() {
+    return !!document.querySelectorAll;
   };
 
   /*
@@ -120,30 +162,6 @@ var FeatureDetector = (function() {
   var detectTypedArray_ = function() {
     return ('ArrayBuffer' in window);
   };
-
-  /*
-   * Detect Promise object support.
-   * Polyfill available:
-   */
-  var detectPromise_ = function() {
-    return ('Promise' in window);
-  };
-
-  /*
-   * Detect localStorage support.
-   * Similar to Modernizr test.
-   */
-var detectLocalStorage_ = function() {
-  var mod = 'test';
-  try {
-        localStorage.setItem(mod, mod);
-        localStorage.removeItem(mod);
-        return true;
-    } catch(e) {
-        return false;
-    }
-
-};
 
   /*
    * Detect support for W3C Fullscreen API. Browsers with
@@ -192,6 +210,7 @@ var detectLocalStorage_ = function() {
   */
   var load = function(scripts, callback, progressFn, failFn) {
     this.head = document.getElementsByTagName('head')[0] || document.documentElement;
+    this.batchCount = 0;
     this.loadCount = 0; // Per-batch count.
     this.totalRequired = 0; // Set for each batch in the queue.
     this.scriptCount = 0; // Entire load operation.
@@ -211,7 +230,7 @@ var detectLocalStorage_ = function() {
     // Check loading progress, callback when complete.
     var loaded = function(s) {
 
-      console.log(self.loadCount + ' of ' + self.totalRequired + ' scripts loaded, path:' + s.src);
+      console.log((self.loadCount + 1) + ' of ' + self.totalRequired + ' scripts loaded, path:' + s.src);
 
       if (s.onreadyState) {
         if (s.readyState === 'loaded' || s.readyState === 'complete') {
@@ -238,13 +257,12 @@ var detectLocalStorage_ = function() {
       // Run callback, or run progress function, if present.
       if (self.loadCount == self.totalRequired && typeof self.callback == 'function') {
         // If we have another batch of scripts, start the queue. Otherwise, do the callback.
-        if(scripts.length) {
-          console.log('batch finish, shifting');
-          scripts.shift();
-        };
-        if(scripts.length) {
+        self.batchCount++;
+        console.log('batchcount:' + self.batchCount)
+        window.bb = scripts
+        if(scripts.length && scripts[self.batchCount]) {
           console.log('another batch done, starting new batch');
-          runQueue(scripts[0]);
+          runQueue(scripts[self.batchCount]);
         } else {
           console.log('All batches done, JS loading complete');
           self.callback.call();
@@ -301,20 +319,21 @@ var detectLocalStorage_ = function() {
       console.log('in runQueue')
       var notNeeded = 0;
       self.totalRequired = s.length;
-      console.log('starting batch length:' + self.totalRequired);
+      console.log('starting batch #' + self.batchCount + ' length:' + self.totalRequired);
       for (var i = 0; i < self.totalRequired; i++) {
         var nm = s[i].name;
         //console.log('checking ' + nm);
         if (FeatureDetector[nm] !== undefined && FeatureDetector[nm] === true) {
           console.log(nm + ' does not need a polyfill');
-          notNeeded++;
-          continue;
+          notNeeded++; self.scriptCount++;
+        } else {
+          console.log(nm + ' needs polyfill, queueing script: ' + nm + ' at #' + i + ':' + s[i].poly);
+          queueScripts(s[i].poly);
         }
-        console.log('queueing script: ' + nm + ' #' + i + ':' + s[i].poly);
-        queueScripts(s[i].poly);
       }
       // Reduce by the number of polyfills not needed for this browser.
       self.totalRequired -= notNeeded;
+      self.loadCount = 0;
       console.log('reduced batch length:' + self.totalRequired);
     };
 
@@ -341,13 +360,15 @@ var detectLocalStorage_ = function() {
       canvas: detectCanvas_(),
       typedArray: detectTypedArray_(),
       webgl: detectWebGL_(),
+      promise: detectPromise_(),
       workers: detectWorkers_(),
       fileapi: detectFileAPI_(),
+      applicationCache: detectApplicationCache_(),
+      localStorage: detectLocalStorage_(),
+      fetch: detectFetch_(),
       querySelectorAll: detectQuerySelectorAll_(),
       defineproperty: detectDefineProperty_(),
       defineproperties: detectDefineProperties_(),
-      promise: detectPromise_(),
-      localStorage: detectLocalStorage_(),
       fullscreen: detectFullscreen_(),
       orientation: detectEventSupport_(window, 'deviceorientation'), //detectOrientationSupport_(),
       devicemotion: detectEventSupport_(window, 'devicemotion'), //detectMotionSupport_(),

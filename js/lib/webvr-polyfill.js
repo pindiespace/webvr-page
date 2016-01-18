@@ -264,7 +264,7 @@ ComplementaryFilter.prototype.addGyroMeasurement = function(vector, timestampS) 
   if (Util.isTimestampDeltaValid(deltaT)) {
     this.run_();
   }
-
+  
   this.previousGyroMeasurement.copy(this.currentGyroMeasurement);
 };
 
@@ -402,8 +402,6 @@ function FusionPositionSensorVRDevice() {
   // Set the filter to world transform, depending on OS.
   if (Util.isIOS()) {
     this.filterToWorldQ.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI/2);
-  } else if (Util.isWindowsPhone()) {
-    this.filterToWorldQ.setFromAxisAngle(new THREE.Vector3(1, 0, 0), 0);
   } else {
     this.filterToWorldQ.setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI/2);
   }
@@ -413,6 +411,7 @@ function FusionPositionSensorVRDevice() {
 
   // Keep track of a reset transform for resetSensor.
   this.resetQ = new THREE.Quaternion();
+
   this.isFirefoxAndroid = Util.isFirefoxAndroid();
   this.isIOS = Util.isIOS();
 }
@@ -3218,14 +3217,9 @@ Util.isIOS = function() {
   return /iPad|iPhone|iPod/.test(navigator.platform);
 };
 
-// Windows Phone 8 & 10 support WebGL, but may have 'Android' in their user-agent strings.
-Util.isWindowsPhone = function() {
-  return navigator.userAgent.indexOf('Windows Phone') !== -1;
-};
-
 Util.isFirefoxAndroid = function() {
   return navigator.userAgent.indexOf('Firefox') !== -1 && navigator.userAgent.indexOf('Android') !== -1;
-};
+}
 
 // Helper method to validate the time steps of sensor timestamps.
 Util.isTimestampDeltaValid = function(timestampDeltaS) {
