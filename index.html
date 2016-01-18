@@ -148,17 +148,25 @@ document.addEventListener('DOMContentLoaded', function() {
    * https://github.com/mrdoob/three.js/
    */
   FeatureDetector.load([
-    {name: 'querySelectorAll', poly: 'js/lib/dom.js'},
-    {name: 'defineProperty', poly: 'js/lib/es5.js'},
-    {name: 'typedArray', poly: 'js/lib/typedarray.js'},
-    {name: 'promise', poly: 'js/lib/Promise.min.js'},
-    {name: 'three', poly: 'js/lib/three.min.js'},
-    {name: 'projector', poly: 'js/lib/Projector.js'},
-    {name: 'canvasRenderer', poly: 'js/lib/CanvasRenderer.js'},
-    {name: 'VREffect', poly: 'js/lib/VREffect.js'},
-    {name: 'VRControls', poly: 'js/lib/VRControls.js'},
-    {name: 'WebVRPolyfill', poly: 'js/lib/webvr-polyfill.js'},
-    {name: 'WebVRPage', poly: 'js/webvr-page.js'}
+    [
+      {name: 'querySelectorAll', poly: 'js/lib/dom.js'},
+      {name: 'defineProperty', poly: 'js/lib/es5.js'},
+      {name: 'typedArray', poly: 'js/lib/typedarray.js'},
+      {name: 'promise', poly: 'js/lib/Promise.min.js'},
+      {name: 'three', poly: 'js/lib/three.min.js'}
+    ],
+    [
+      {name: 'projector', poly: 'js/lib/Projector.js'},
+      {name: 'canvasRenderer', poly: 'js/lib/CanvasRenderer.js'},
+      {name: 'VREffect', poly: 'js/lib/VREffect.js'},
+      {name: 'VRControls', poly: 'js/lib/VRControls.js'}
+    ],
+    [
+      {name: 'WebVRPolyfill', poly: 'js/lib/webvr-polyfill.js'}
+    ],
+    [
+      {name: 'WebVRPage', poly: 'js/webvr-page.js'}
+    ]
   ], function() {
     console.log('callback');
 

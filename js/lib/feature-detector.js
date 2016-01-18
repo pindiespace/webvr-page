@@ -192,12 +192,14 @@ var detectLocalStorage_ = function() {
   */
   var load = function(scripts, callback, progressFn, failFn) {
     this.head = document.getElementsByTagName('head')[0] || document.documentElement;
-    this.loadCount = 0;
-    this.totalRequired = scripts.length;
+    this.loadCount = 0; // Per-batch count.
+    this.totalRequired = 0; // Set for each batch in the queue.
+    this.scriptCount = 0; // Entire load operation.
+    this.totalScripts = 0; // Sum of all scripts in all batches.
     this.callback = callback;
     this.progressFn = progressFn;
     this.failFn = failFn;
-    var self = this;
+    var self = this; // Scope.
 
     var err_ = function(s) {
       console.log('loader in err_ function, failed to load:' + s.src);
@@ -222,20 +224,31 @@ var detectLocalStorage_ = function() {
             self.err_(s);
           }
           self.loadCount++;
+          self.scriptCount++;
         }
       } else {
         self.loadCount++;
+        self.scriptCount++;
       }
-
       if (typeof self.progressFn == 'function') {
         // Precent loaded.
-        self.progressFn(parseInt(100 * self.loadCount / self.totalRequired));
+        self.progressFn(parseInt(100 * self.scriptCount / self.totalScripts));
       }
 
       // Run callback, or run progress function, if present.
       if (self.loadCount == self.totalRequired && typeof self.callback == 'function') {
-        console.log('JS loading complete');
-        self.callback.call();
+        // If we have another batch of scripts, start the queue. Otherwise, do the callback.
+        if(scripts.length) {
+          console.log('batch finish, shifting');
+          scripts.shift();
+        };
+        if(scripts.length) {
+          console.log('another batch done, starting new batch');
+          runQueue(scripts[0]);
+        } else {
+          console.log('All batches done, JS loading complete');
+          self.callback.call();
+        }
       }
 
       // Null script to prevent memory leaks.
@@ -254,15 +267,15 @@ var detectLocalStorage_ = function() {
       s.async = true;
       s.src = src;
       if (s.onreadystatechange) { // Separate since IE 9, 10 have both defined.
-        console.log('ie script loader');
+        //console.log('ie script loader');
         s.onreadystatechange = function() {
-          console.log('running ie loader for:' + s.src);
+          console.log('ran ie loader for:' + s.src);
           loaded(s);
         };
       } else if (s.onload !== undefined) {
-        console.log('regular script loader for:' + s.src);
+        //console.log('regular script loader for:' + s.src);
         s.onload = function() {
-          console.log('running standard loader for:' + s.src);
+          console.log('ran standard loader for:' + s.src);
           loaded(s);
         };
         s.onerror = function() {
@@ -280,25 +293,43 @@ var detectLocalStorage_ = function() {
       self.progressFn(0);
     }
 
-    // Queue the necessary scripts (required polyfills and libraries).
-    var runQueue = function () {
-    var notNeeded = 0;
-    for (var i = 0; i < self.totalRequired; i++) {
-      var nm = scripts[i].name;
-      //console.log('checking ' + nm);
-      if (FeatureDetector[nm] !== undefined && FeatureDetector[nm] === true) {
-        console.log(nm + ' does not need a polyfill');
-        notNeeded++;
-        continue;
+    /*
+     * Queue the necessary scripts (required polyfills and libraries).
+     * Scripts are loaded on batches which don't depend on each other.
+     */
+    var runQueue = function (s) {
+      console.log('in runQueue')
+      var notNeeded = 0;
+      self.totalRequired = s.length;
+      console.log('starting batch length:' + self.totalRequired);
+      for (var i = 0; i < self.totalRequired; i++) {
+        var nm = s[i].name;
+        //console.log('checking ' + nm);
+        if (FeatureDetector[nm] !== undefined && FeatureDetector[nm] === true) {
+          console.log(nm + ' does not need a polyfill');
+          notNeeded++;
+          continue;
+        }
+        console.log('queueing script: ' + nm + ' #' + i + ':' + s[i].poly);
+        queueScripts(s[i].poly);
       }
-      console.log('queueing script: ' + nm + ' #' + i + ':' + scripts[i].poly);
-      queueScripts(scripts[i].poly);
-    }
-    self.totalRequired -= notNeeded;
-  };
-  runQueue();
+      // Reduce by the number of polyfills not needed for this browser.
+      self.totalRequired -= notNeeded;
+      console.log('reduced batch length:' + self.totalRequired);
+    };
 
-  //TODO: nest multiple queues to get script loading order.
+    // Count the total number of scripts.
+    this.totalScripts = 0;
+    for(var i = 0; i < scripts.length; i++) {
+      var batch = scripts[i];
+      for(var j = 0; j < batch.length; j++) {
+          this.totalScripts++;
+        }
+      }
+      console.log('total script count is:' + this.totalScripts);
+
+      // Run the first batch. The scripts object is an array of arrays.
+      runQueue(scripts[0]);
 
   }; // End of microloader.
 
