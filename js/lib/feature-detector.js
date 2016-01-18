@@ -32,6 +32,29 @@ var FeatureDetector = (function() {
    */
 
   /*
+   * Test for document.createElement.
+   */
+  var detectCreateElement_ = function() {
+    return !!(document.createElement);
+  };
+
+  /*
+   * Test for basic HTML5 tag support.
+   * From HTML5Shiv - https://github.com/aFarkas/html5shiv/blob/master/dist/html5shiv.js
+   */
+  var detectHTML5_ = function() {
+    if(detectCreateElement_()) {
+      var a = document.createElement('a');
+      a.innerHTML = '<xyz></xyz>';
+      //if the hidden property is implemented we can assume, that the browser supports basic HTML5 Styles
+      var res = ('hidden' in a);
+      a = a.innerHTML = null;
+      return res;
+    }
+    return false;
+  };
+
+  /*
    * Test for HTML5 canvas.
    * No compatible polyfill (Flash-based ones won't work).
    */
@@ -356,6 +379,7 @@ var FeatureDetector = (function() {
   var detect = function() {
     return {
       // Individual feature detects.
+      html5: detectHTML5_(),
       addEventListener: detectEventListener_(),
       canvas: detectCanvas_(),
       typedArray: detectTypedArray_(),
