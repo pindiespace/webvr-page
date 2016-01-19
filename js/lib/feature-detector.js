@@ -231,7 +231,8 @@ var FeatureDetector = (function() {
    * After: https://css-tricks.com/snippets/javascript/async-script-loader-with-callback/
    * https://www.nczonline.net/blog/2009/07/28/the-best-way-to-load-external-javascript/
   */
-  var load = function(scripts, callback, progressFn, failFn) {
+  var load = function(scripts, callback, progressFn, failFn, retest) {
+    var retest = [];
     this.head = document.getElementsByTagName('head')[0] || document.documentElement;
     this.batchCount = 0;
     this.loadCount = 0; // Per-batch count.
@@ -287,6 +288,7 @@ var FeatureDetector = (function() {
           console.log('another batch done, starting new batch');
           runQueue(scripts[self.batchCount]);
         } else {
+          redetect();
           console.log('All batches done, JS loading complete');
           self.callback.call();
         }
@@ -348,6 +350,7 @@ var FeatureDetector = (function() {
         //console.log('checking ' + nm);
         if (FeatureDetector[nm] !== undefined && FeatureDetector[nm] === true) {
           console.log(nm + ' does not need a polyfill');
+          retest.push(s);
           notNeeded++; self.scriptCount++;
         } else {
           console.log(nm + ' needs polyfill, queueing script: ' + nm + ' at #' + i + ':' + s[i].poly);
@@ -377,7 +380,7 @@ var FeatureDetector = (function() {
 
   // Detect features. Export so we can re-detect after polyfills are loaded.
   var detect = function() {
-    return {
+    this.results = {
       // Individual feature detects.
       html5: detectHTML5_(),
       addEventListener: detectEventListener_(),
@@ -401,6 +404,14 @@ var FeatureDetector = (function() {
       requestAnimationFrame: detectRequestAnimationFrame_(),
       load: load
     };
+    return results;
+  };
+
+  function redetect() {
+    console.log('checking if polyfills fixed things');
+    //TODO: rewrite detect function so redetect of individual properties possible.
+    //TODO: make associative array of keywords with functions as values.
+    //TODO: detect() should run through the array.
   };
 
   // Run our detector script (which returns an object).
