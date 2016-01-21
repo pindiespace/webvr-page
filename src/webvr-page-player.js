@@ -62,7 +62,8 @@ function WebVRPagePlayer(renderer, params, buttonTypes) {
   this.renderer = renderer;
 
   // Save the drawing canvas.
-  this.canvas = this.renderer.domElement;
+  ////////////////this.canvas = this.renderer.domElement;
+  this.canvas = this.renderer.context.canvas;
 
   // Find the enclosing Player container (a <figure>), or create one.
   this.initFigure_();
@@ -267,6 +268,10 @@ WebVRPagePlayer.prototype.requestFullscreen = function(e) {
   // Return the parent DOM object (Player) rather than the drawing <canvas>.
   Util.addClass(cn, Util.fullscreenClass);
   //cn.classList.add(Util.fullscreenClass);
+  //this.effect.setFullScreen(true);
+  //TODO: this is a way to pass in an altered HMD to the renderer
+  //TODO: RECOMPUTE field of view for FF, when passing in.
+  cn.requestFullscreen({vrDisplay: this.hmd});
   return cn;
 };
 
@@ -296,13 +301,16 @@ WebVRPagePlayer.prototype.getCurrentHeight = function() {
 WebVRPagePlayer.prototype.getSize = function() {
   var h;
   if(document.fullscreenElement !== null) {
-    h = this.getCurrentHeight();
+    h = screen.height;
+    w = screen.width;
   } else {
+    // Reset to correct size on exiting fullscreen.
+    w = this.getCurrentWidth();
     h = this.getCurrentWidth() / this.aspect;
   }
   return {
-    width: this.getCurrentWidth(),
-    height:h //this.getCurrentHeight()
+    width: w,
+    height:h
   };
 };
 

@@ -402,6 +402,8 @@ function FusionPositionSensorVRDevice() {
   // Set the filter to world transform, depending on OS.
   if (Util.isIOS()) {
     this.filterToWorldQ.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI/2);
+  } else if(Util.isWindowsPhone()) {
+    this.filterToWorldQ.setFromAxisAngle(new THREE.Vector3(1, 0, 0), 0); // Microsoft Edge mobile emulation.
   } else {
     this.filterToWorldQ.setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI/2);
   }
@@ -3219,7 +3221,11 @@ Util.isIOS = function() {
 
 Util.isFirefoxAndroid = function() {
   return navigator.userAgent.indexOf('Firefox') !== -1 && navigator.userAgent.indexOf('Android') !== -1;
-}
+};
+
+Util.isWindowsPhone = function() {
+  return navigator.userAgent.indexOf('Windows Phone') !== -1;
+};
 
 // Helper method to validate the time steps of sensor timestamps.
 Util.isTimestampDeltaValid = function(timestampDeltaS) {

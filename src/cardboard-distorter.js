@@ -41,6 +41,7 @@ ShaderPass.prototype.render = function(renderFunc, buffer) {
 function createRenderTarget(renderer) {
   var width  = renderer.context.canvas.width;
   var height = renderer.context.canvas.height;
+  console.log(">>>>>>>>>>>>>>>>>>>>>>>>RENDERTARGET DIMENSIONS width:" + width + " height:" + height)
   var parameters = {
     minFilter: THREE.LinearFilter,
     magFilter: THREE.LinearFilter,
@@ -68,9 +69,14 @@ CardboardDistorter.prototype.patch = function() {
   if (!this.isActive) {
     return;
   }
+
   this.textureTarget = createRenderTarget(this.renderer);
 
   this.renderer.render = function(scene, camera, renderTarget, forceClear) {
+    camera.aspect = 0.625 / 2; // CORRECT ASPECT RATIO DIVIDED BY 2 **********************************
+    camera.fov = 50 * 2; // STARTING FOV TIMES 2 *************************
+    camera.updateProjectionMatrix();
+
     this.genuineRender.call(this.renderer, scene, camera, this.textureTarget, forceClear);
   }.bind(this);
 
@@ -138,7 +144,7 @@ CardboardDistorter.prototype.recalculateUniforms = function() {
   // Set distortion coefficients.
   var coefficients = this.deviceInfo.viewer.distortionCoefficients;
   uniforms.distortion.value.set(coefficients[0], coefficients[1]);
-      
+
 
   // For viewer profile debugging, show the lens center.
   if (WebVRConfig.SHOW_EYE_CENTERS) {

@@ -268,8 +268,8 @@ WebVRPageManager.prototype.adjustFOV_ = function(width, height) {
     }
     console.log("going to adjust FOV, aspectChange:" + aspectChange);
     this.effect.setFOV(fov.eyeFOVL, fov.eyeFOVR);
-  }
-}
+  } // this.hmd present.
+};
 
 // Start listening for motion events.
 WebVRPageManager.prototype.listenMotion_ = function() {
@@ -345,6 +345,8 @@ WebVRPageManager.prototype.onFullscreenChange_ = function(e) {
     document.exitFullscreen();
     var event = new CustomEvent('exitfullscreen');
     document.dispatchEvent(event);
+  } else {
+    // Catch fullscreen late
   }
 
   this.player.onFullscreenChange_(e);
@@ -356,7 +358,7 @@ WebVRPageManager.prototype.onExitFullscreen_ = function(e) {
   console.log('ABOUT TO RESET FOV');
   var fov = this.getFOV_();
   //window.fov = fov;
-  this.effect.setFOV(fov.eyeFOVL, fov.eyeFOVR);
+  //////////////////////////////this.effect.setFOV(fov.eyeFOVL, fov.eyeFOVR);
   this.exitFullscreen();
 };
 
@@ -368,24 +370,20 @@ WebVRPageManager.prototype.onErrorFullscreen_ = function(e) {
 WebVRPageManager.prototype.requestFullscreen = function() {
   // Trigger fullscreen only if we support it.
   if (this.params.detector.webgl) {
-    console.log('Manager entering fullscreen');
-
-    console.log("ENTERING FULLSCREEN, Mode:" + this.mode)
+    console.log('Manager entering fullscreen, mode:' + this.mode);
     if (this.mode == Modes.ViewStates.VR) {
       this.exitVR();
     }
 
     // Adjust the scene to the screen dimensions.
-    //this.adjustFOV_(screen.width, screen.height);
     console.log("WIDTH:" + screen.width + " HEIGHT:" + screen.height)
+    //this.adjustFOV_(screen.width, screen.height);
+
+    // Reset effect size.
+    this.effect.setSize(screen.width, screen.height);
 
     // Let the player know we are going to fullscreen, and let it choose the fullscreen element.
-    var canvas = this.player.requestFullscreen();
-    //this.effect.setFullScreen(true);
-    //TODO: this is a way to pass in an altered HMD to the renderer
-    //TODO: RECOMPUTE field of view for FF, when passing in.
-    canvas.requestFullscreen({vrDisplay: this.hmd});
-    //canvas.requestFullscreen();
+    this.player.requestFullscreen({vrDisplay: this.hmd});
   }
 };
 
@@ -401,14 +399,19 @@ WebVRPageManager.prototype.exitFullscreen = function() {
 
 // Jump to VR (stereo) rendering mode. Also jumps to fullscreen.
 WebVRPageManager.prototype.requestVR = function() {
+
   this.requestFullscreen();
   this.setMode(Modes.ViewStates.VR);
-  // Get the Cardboard distorter.
-  this.distorter = new CardboardDistorter(this.renderer, this.deviceInfo);
-  this.distorter.setActive(true);
-  // Update the distortion appropriately.
 
-  this.setHMDVRDeviceParams_(this.getViewer());
+  // Activate barrel distorter.
+  this.distorter.setActive(true);
+  /////////////////////////////////////////////this.setHMDVRDeviceParams_(this.getViewer());
+/*
+camera.aspect = 0.625 / 2; // CURRENT ASPECT RATIO DIVIDED BY 2 **********************************
+camera.fov = 50 * 2; // STARTING FOV TIMES 2 *************************
+camera.updateProjectionMatrix();
+*/
+
   this.distorter.patch();
 };
 
