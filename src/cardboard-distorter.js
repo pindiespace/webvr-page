@@ -73,8 +73,11 @@ CardboardDistorter.prototype.patch = function() {
   this.textureTarget = createRenderTarget(this.renderer);
 
   this.renderer.render = function(scene, camera, renderTarget, forceClear) {
-    camera.aspect = 0.625 / 2; // CORRECT ASPECT RATIO DIVIDED BY 2 **********************************
-    camera.fov = 50 * 2; // STARTING FOV TIMES 2 *************************
+    // TODO: this works
+    camera.aspect = (screen.width/screen.height) / 2; // CORRECT ASPECT RATIO DIVIDED BY 2 **********************************
+    camera.fov = 40 * (2 + camera.aspect); //2.6; // STARTING FOV TIMES 2, higher number shows walls.
+    //TODO: can THREE camera change FOV in up, down, left, right???
+    //TODO: FULLSCREEN ALSO MESSED UP BY THIS.
     camera.updateProjectionMatrix();
 
     this.genuineRender.call(this.renderer, scene, camera, this.textureTarget, forceClear);

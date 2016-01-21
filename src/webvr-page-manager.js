@@ -362,6 +362,7 @@ WebVRPageManager.prototype.onExitFullscreen_ = function(e) {
   this.exitFullscreen();
 };
 
+// Fullscreen error callback.
 WebVRPageManager.prototype.onErrorFullscreen_ = function(e) {
   console.log('Manager error on fullscreen change, object is:' + e);
 };
@@ -383,7 +384,7 @@ WebVRPageManager.prototype.requestFullscreen = function() {
     this.effect.setSize(screen.width, screen.height);
 
     // Let the player know we are going to fullscreen, and let it choose the fullscreen element.
-    this.player.requestFullscreen({vrDisplay: this.hmd});
+    this.player.requestFullscreen(this.hmd);
   }
 };
 
@@ -407,16 +408,32 @@ WebVRPageManager.prototype.requestVR = function() {
   this.distorter.setActive(true);
   /////////////////////////////////////////////this.setHMDVRDeviceParams_(this.getViewer());
 /*
-camera.aspect = 0.625 / 2; // CURRENT ASPECT RATIO DIVIDED BY 2 **********************************
-camera.fov = 50 * 2; // STARTING FOV TIMES 2 *************************
+camera.aspect = (screen.width / screen.height) / 2; // CURRENT ASPECT RATIO DIVIDED BY 2 **********************************
+camera.fov = 40 * 2; // STARTING FOV TIMES 2 *************************
 camera.updateProjectionMatrix();
+TODO:
+TODO:
 */
+  /////////////////////////////////// ADDED
+  //this.oldFOV = this.camera.fov;
+  //this.oldAspect = this.camera.aspect;
+
+  // VR Settings.
+  //this.camera.aspect = (screen.width / screen.height) / 2;
+  //this.camera.fov *= 2;
+  //this.camera.updateProjectionMatrix();
 
   this.distorter.patch();
 };
 
 // Exit VR (stereo) rendering mode. Exits fullscreen to DOM.
 WebVRPageManager.prototype.exitVR = function() {
+  //////////////////////////////ADDED
+  // Restore old Camera values.
+  //this.camera.fov = this.oldFOV;
+  //this.camera.aspect = this.oldAspect;
+  //this.camera.updateProjectionMatrix();
+
   this.distorter.unpatch();
   this.setMode(Modes.ViewStates.DOM);
 };

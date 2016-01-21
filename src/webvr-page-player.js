@@ -261,8 +261,11 @@ WebVRPagePlayer.prototype.onFullscreenChange_ = function() {
 };
 
 // Fullscreen request initiated, add fullscreen class and return element.
-WebVRPagePlayer.prototype.requestFullscreen = function(e) {
+WebVRPagePlayer.prototype.requestFullscreen = function(hmd) {
   console.log('Player requestFullscreen');
+
+  window.hh = hmd.fieldOfViewLeft; // object with 4 fov values.
+
   var cn = this.getContainer();
   var cs = this.getCanvas();
   // Return the parent DOM object (Player) rather than the drawing <canvas>.
@@ -271,7 +274,7 @@ WebVRPagePlayer.prototype.requestFullscreen = function(e) {
   //this.effect.setFullScreen(true);
   //TODO: this is a way to pass in an altered HMD to the renderer
   //TODO: RECOMPUTE field of view for FF, when passing in.
-  cn.requestFullscreen({vrDisplay: this.hmd});
+  cn.requestFullscreen();
   return cn;
 };
 
@@ -284,6 +287,7 @@ WebVRPagePlayer.prototype.exitFullscreen = function(e) {
   //cn.classList.remove(Util.fullscreenClass);
 };
 
+// Return aspect, which does NOT change as long as Player is in DOM and not fullscreen.
 WebVRPagePlayer.prototype.getAspect = function() {
   return this.aspect;
 };
