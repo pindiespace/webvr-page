@@ -282,10 +282,16 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   window.addEventListener('keydown', onKey, true);
 
+  var lastRender = 0;
+
   // Request animation frame loop function
   function animate(timestamp) {
+    // Throttle.
+    var delta = Math.min(timestamp - lastRender, 500);
+     lastRender = timestamp;
+
     // Apply rotation to cube mesh
-    cube.rotation.y += 0.01;
+    cube.rotation.y += delta * 0.001;
 
     // Update VR headset position and apply to camera.
     controls.update();
@@ -298,7 +304,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Kick off animation loop, or draw a still image one time.
   if(FeatureDetector.webgl) { // Render animated 3D scene.
-    animate();
+    animate(performance ? performance.now() : Date.now());
   } else { // Render exactly once to canvas, treat as image.
     manager.render(scene, camera);
   }
