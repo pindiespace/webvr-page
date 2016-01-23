@@ -22,7 +22,9 @@
  */
 
 var FeatureDetector = (function() {
-  var cs, ctx;
+  var self = this; // Scope.
+  var cs, ctx, tests = [], retests = {}; self.results = {};
+
 
   /*
    * Feature detection.
@@ -34,7 +36,7 @@ var FeatureDetector = (function() {
   /*
    * Test for document.createElement.
    */
-  var detectCreateElement_ = function() {
+  tests['createElement'] = function() {
     return !!(document.createElement);
   };
 
@@ -42,8 +44,8 @@ var FeatureDetector = (function() {
    * Test for basic HTML5 tag support.
    * From HTML5Shiv - https://github.com/aFarkas/html5shiv/blob/master/dist/html5shiv.js
    */
-  var detectHTML5_ = function() {
-    if(detectCreateElement_()) {
+  tests['html5'] = function() {
+    if(tests['createElement']()) {
       var a = document.createElement('a');
       a.innerHTML = '<xyz></xyz>';
       //if the hidden property is implemented we can assume, that the browser supports basic HTML5 Styles
@@ -58,7 +60,7 @@ var FeatureDetector = (function() {
    * Test for HTML5 canvas.
    * No compatible polyfill (Flash-based ones won't work).
    */
-  var detectCanvas_ = function() {
+  tests['canvas'] = function() {
     return !!window.CanvasRenderingContext2D;
   };
 
@@ -66,8 +68,8 @@ var FeatureDetector = (function() {
    * Test for WebGL enabled.
    * IE 9, 10 Polyfill: https://github.com/iewebgl/iewebgl
    */
-  var detectWebGL_ = function() {
-    if (detectCanvas_() && document.createElement) {
+  tests['webgl'] = function() {
+    if (tests['canvas']() && document.createElement) {
         cs = document.createElement('canvas');
         var names = ['3d', 'webgl', 'experimental-webgl', 'experimental-webgl2', 'moz-webgl'];
         for (i in names) {
@@ -87,28 +89,28 @@ var FeatureDetector = (function() {
    * Detect Promise object support.
    * Polyfill available:
    */
-  var detectPromise_ = function() {
+  tests['promise'] = function() {
     return ('Promise' in window);
   };
 
   /*
    * Detect support for WebWorkers.
    */
-  var detectWorkers_ = function() {
+  tests['workers'] = function() {
     return !!window.Worker;
   };
 
   /*
    * Detect application cache.
    */
-  var detectApplicationCache_ = function() {
+  tests['applicationCache'] = function() {
     return !!window.applicationCache;
   };
 
   /*
    * Detect FileAPI support.
    */
-  var detectFileAPI_ = function() {
+  tests['fileapi'] = function() {
     return !!(window.File && window.FileReader && window.FileList && window.Blob);
   };
 
@@ -116,7 +118,7 @@ var FeatureDetector = (function() {
   * Detect localStorage support.
   * Similar to Modernizr test.
   */
-  var detectLocalStorage_ = function() {
+  tests['localStorage'] = function() {
     var mod = 'test';
       try {
            localStorage.setItem(mod, mod);
@@ -132,14 +134,14 @@ var FeatureDetector = (function() {
     * https://davidwalsh.name/fetch
     * https://github.com/github/fetch
     */
-  var detectFetch_ = function() {
+  tests['fetch'] = function() {
     return ('fetch' in window);
   };
 
   /*
    * Detect support for .classList
    */
-  var detectQuerySelectorAll_ = function() {
+  tests['querySelectorAll'] = function() {
     return !!document.querySelectorAll;
   };
 
@@ -147,7 +149,7 @@ var FeatureDetector = (function() {
    * Detect support for addEventListener.
    * Polyfills available.
    */
-  var detectEventListener_ = function() {
+  tests['addEventListener'] = function() {
     return ('addEventListener' in window);
   };
 
@@ -155,7 +157,7 @@ var FeatureDetector = (function() {
    * Detect support for an event.
    * http://perfectionkills.com/detecting-event-support-without-browser-sniffing/
    */
-  var detectEventSupport_ = function(elem, eventName) {
+  var eventSupport_ = function(elem, eventName) {
     eventName = 'on' + eventName;
     var isSupported = (eventName in elem);
     if (!isSupported && 'setAttribute' in elem) {
@@ -170,11 +172,11 @@ var FeatureDetector = (function() {
    * Support for ES5 properties.
    * Polyfill available:
    */
-  var detectDefineProperty_ = function () {
+  tests['defineProperty'] = function () {
     return ('defineProperty' in Object);
   };
 
-  var detectDefineProperties_ = function() {
+  tests['defineProperties'] = function() {
     return ('defineProperties' in Object);
   };
 
@@ -182,7 +184,7 @@ var FeatureDetector = (function() {
    * Detect typed arrays (needed for WebGL).
    * Polyfill available:
    */
-  var detectTypedArray_ = function() {
+  tests['typedArray'] = function() {
     return ('ArrayBuffer' in window);
   };
 
@@ -190,14 +192,14 @@ var FeatureDetector = (function() {
    * Detect support for W3C Fullscreen API. Browsers with
    * vendor prefixes need to be polyfilled.
    */
-  var detectFullscreen_ = function() {
+  tests['fullScreen'] = function() {
     return !!(document.documentElement.requestFullscreen);
   };
 
   /*
    * Detect touch support (useful for changing the Ui if touch is used).
    */
-  var detectTouchSupport_ = function() {
+  tests['touch'] = function() {
     return !!(('ontouchstart' in window) || (window.DocumentTouch && document instanceof DocumentTouch));
   };
 
@@ -205,7 +207,7 @@ var FeatureDetector = (function() {
    * Detect native support for requestAnimationFrame
    * Polyfills available.
    */
-  var detectRequestAnimationFrame_ = function() {
+  tests['requestAnimationFrame'] = function() {
     return ('requestAnimationFrame' in window);
   };
 
@@ -213,7 +215,7 @@ var FeatureDetector = (function() {
    * Test for WebVR
    * Polyfill for desktops: https://github.com/borismus/webvr-polyfill
    */
-  var detectWebVR_ = function() {
+  tests['webvr'] = function() {
     if ('getVRDevices' in navigator || 'mozGetVRDevices' in navigator) {
       console.log('found getVRDevices in navigator');
       return true;
@@ -233,16 +235,15 @@ var FeatureDetector = (function() {
   */
   var load = function(scripts, callback, progressFn, failFn, retest) {
     var retest = [];
-    this.head = document.getElementsByTagName('head')[0] || document.documentElement;
-    this.batchCount = 0;
-    this.loadCount = 0; // Per-batch count.
-    this.totalRequired = 0; // Set for each batch in the queue.
-    this.scriptCount = 0; // Entire load operation.
-    this.totalScripts = 0; // Sum of all scripts in all batches.
-    this.callback = callback;
-    this.progressFn = progressFn;
-    this.failFn = failFn;
-    var self = this; // Scope.
+    self.head = document.getElementsByTagName('head')[0] || document.documentElement;
+    self.batchCount = 0;
+    self.loadCount = 0; // Per-batch count.
+    self.totalRequired = 0; // Set for each batch in the queue.
+    self.scriptCount = 0; // Entire load operation.
+    self.totalScripts = 0; // Sum of all scripts in all batches.
+    self.callback = callback;
+    self.progressFn = progressFn;
+    self.failFn = failFn;
 
     var err_ = function(s) {
       console.log('loader in err_ function, failed to load:' + s.src);
@@ -288,7 +289,6 @@ var FeatureDetector = (function() {
           console.log('another batch done, starting new batch');
           runQueue(scripts[self.batchCount]);
         } else {
-          redetect();
           console.log('All batches done, JS loading complete');
           self.callback.call();
         }
@@ -296,8 +296,8 @@ var FeatureDetector = (function() {
 
       // Null script to prevent memory leaks.
       s.onload = s.onreadystatechange = null;
-      if (this.head && s.parentNode) {
-        this.head.removeChild(s);
+      if (self.head && s.parentNode) {
+        self.head.removeChild(s);
       }
 
     }; // End of loaded.
@@ -353,8 +353,14 @@ var FeatureDetector = (function() {
           retest.push(s);
           notNeeded++; self.scriptCount++;
         } else {
-          console.log(nm + ' needs polyfill, queueing script: ' + nm + ' at #' + i + ':' + s[i].poly);
-          queueScripts(s[i].poly);
+          if(s[i].poly) {
+            console.log('queueing polyfill for ' + nm + ' at #' + i + ':' + s[i].path);
+            retests[(s[i].name)] = true;
+          } else {
+            console.log('queueing library script: ' + nm + ' at #' + i + ':' + s[i].path);
+          }
+          // Save a list of polyfills so we can re-test later.
+          queueScripts(s[i].path);
         }
       }
       // Reduce by the number of polyfills not needed for this browser.
@@ -364,57 +370,54 @@ var FeatureDetector = (function() {
     };
 
     // Count the total number of scripts.
-    this.totalScripts = 0;
+    self.totalScripts = 0;
     for(var i = 0; i < scripts.length; i++) {
       var batch = scripts[i];
       for(var j = 0; j < batch.length; j++) {
-          this.totalScripts++;
+          self.totalScripts++;
         }
       }
-      console.log('total script count is:' + this.totalScripts);
+      console.log('total script count is:' + self.totalScripts);
 
       // Run the first batch. The scripts object is an array of arrays.
       runQueue(scripts[0]);
 
   }; // End of microloader.
 
+  // Redetect after loading complete
+  function reDetect() {
+    for (var i in retests) {
+      console.log('retesting ' + i);
+      if (self.results[i] === undefined) {
+        console.error('error retest ' + i + ' not in original results!');
+      } else if (!self.results[i]) {
+        console.log('checking if polyfill ' + i + ' added functionality to browser');
+        self.results[i] = tests[i]();
+        if (self.results[i]) {
+          console.log('polyfill ' + i + ' added browser functionality');
+        } else {
+          console.error('polyfill ' + i + ' failed to fix browser!');
+        }
+      }
+    }
+  };
+
   // Detect features. Export so we can re-detect after polyfills are loaded.
-  var detect = function() {
-    this.results = {
-      // Individual feature detects.
-      html5: detectHTML5_(),
-      addEventListener: detectEventListener_(),
-      canvas: detectCanvas_(),
-      typedArray: detectTypedArray_(),
-      webgl: detectWebGL_(),
-      promise: detectPromise_(),
-      workers: detectWorkers_(),
-      fileapi: detectFileAPI_(),
-      applicationCache: detectApplicationCache_(),
-      localStorage: detectLocalStorage_(),
-      fetch: detectFetch_(),
-      querySelectorAll: detectQuerySelectorAll_(),
-      defineproperty: detectDefineProperty_(),
-      defineproperties: detectDefineProperties_(),
-      fullscreen: detectFullscreen_(),
-      orientation: detectEventSupport_(window, 'deviceorientation'), //detectOrientationSupport_(),
-      devicemotion: detectEventSupport_(window, 'devicemotion'), //detectMotionSupport_(),
-      touch: detectTouchSupport_(),
-      webVR: detectWebVR_(),
-      requestAnimationFrame: detectRequestAnimationFrame_(),
-      load: load
+    // Create the results object.
+  function detect() {
+    self.results = {
+      deviceorientation: eventSupport_(window, 'deviceorientation'),
+      devicemotion: eventSupport_(window, 'devicemotion'),
+      load: load,
+      detect: detect,
+      reDetect: reDetect
     };
-    return results;
-  };
-
-  function redetect() {
-    console.log('checking if polyfills fixed things');
-    //TODO: rewrite detect function so redetect of individual properties possible.
-    //TODO: make associative array of keywords with functions as values.
-    //TODO: detect() should run through the array.
-  };
-
-  // Run our detector script (which returns an object).
+    for (var i in tests) {
+      self.results[i] = tests[i]();
+    };
+    return self.results;
+  }
+  //fire the first detection
   return detect();
 
 })();

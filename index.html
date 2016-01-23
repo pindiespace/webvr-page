@@ -148,28 +148,32 @@ document.addEventListener('DOMContentLoaded', function() {
    * VREffect.js for stereo rendering.
    * VRControls.js for correct VR events.
    * https://github.com/mrdoob/three.js/
+   * Params are:
+   * Feature name
+   * Path to files
+   * Whether this is a polyfill (true) or another library file (false)
    */
   FeatureDetector.load([
     [
-      {name: 'addEventListener', poly: 'js/lib/ie8.js'},
-      {name: 'querySelectorAll', poly: 'js/lib/dom.js'},
-      {name: 'defineProperty', poly: 'js/lib/es5.js'},
-      {name: 'typedArray', poly: 'js/lib/typedarray.js'},
-      {name: 'promise', poly: 'js/lib/Promise.min.js'},
-      {name: 'three', poly: 'js/lib/three.min.js'}
+      {name: 'addEventListener', path: 'js/lib/ie8.js', poly: true},
+      {name: 'querySelectorAll', path: 'js/lib/dom.js', poly: true},
+      {name: 'defineProperty', path: 'js/lib/es5.js', poly: true},
+      {name: 'typedArray', path: 'js/lib/typedarray.js', poly: true},
+      {name: 'promise', path: 'js/lib/Promise.min.js', poly: true},
+      {name: 'three', path: 'js/lib/three.min.js', poly: false}
     ],
     [
-      {name: 'projector', poly: 'js/lib/Projector.js'},
-      {name: 'canvasRenderer', poly: 'js/lib/CanvasRenderer.js'},
-      {name: 'VREffect', poly: 'js/lib/VREffect.js'},
-      {name: 'VRControls', poly: 'js/lib/VRControls.js'}
+      {name: 'projector', path: 'js/lib/Projector.js', poly: false},
+      {name: 'canvasRenderer', path: 'js/lib/CanvasRenderer.js', poly: false},
+      {name: 'VREffect', path: 'js/lib/VREffect.js', poly: false},
+      {name: 'VRControls', path: 'js/lib/VRControls.js', poly: false}
     ],
     [
-      {name: 'WebVRPolyfill', poly: 'js/lib/webvr-polyfill.js'}
+      {name: 'WebVRPolyfill', path: 'js/lib/webvr-polyfill.js', poly: false}
     ],
     [
-      {name: 'Fetch', poly: 'js/lib/fetch.js'},
-      {name: 'WebVRPage', poly: 'js/webvr-page.js'}
+      {name: 'fetch', path: 'js/lib/fetch.js', poly: true},
+      {name: 'WebVRPage', path: 'js/webvr-page.js', poly: false}
     ]
   ], function() {
     console.log('callback');
