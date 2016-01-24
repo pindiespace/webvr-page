@@ -216,61 +216,6 @@ WebVRPageManager.prototype.setHMDVRDeviceParams_ = function(viewer) {
   }.bind(this));
 };
 
-// Make a copy of the FOV for this device.
-WebVRPageManager.prototype.cloneFOV_ = function(fovObj) {
-  return {
-    downDegrees:fovObj.downDegrees,
-    upDegrees:fovObj.upDegrees,
-    leftDegrees:fovObj.leftDegrees,
-    rightDegrees:fovObj.rightDegrees
-  };
-};
-
-// Polyfill for managing different HMD object structures.
-WebVRPageManager.prototype.getFOV_ = function() {
-  var eyeFOVL, eyeFOVR;
-  if (this.hmd) {
-    var h = this.hmd;
-    if (h.getEyeParameters !== undefined) {
-      var eyeParamsL = h.getEyeParameters('left');
-      var eyeParamsR = h.getEyeParameters('right');
-      eyeFOVL = this.cloneFOV_(eyeParamsL.recommendedFieldOfView);
-      eyeFOVR = this.cloneFOV_(eyeParamsR.recommendedFieldOfView);
-    } else if (h.getRecommendedFOV !== undefined) {
-      // MS Edge Browser in mobile emulation mode.
-      var eyeParamsL = h.getRecommendedFOV('left');
-      var eyeParamsR = h.getREcommendedFOV('right');
-      eyeFOVL = this.cloneFOV_(eyeParamsL);
-      eyeFOVR = this.cloneFOV_(eyeParamsR);
-    } else {
-      // Obsolete code path.
-      eyeFOVL = this.cloneFOV_(h.getRecommendedEyeFieldOfView('left'));
-      eyeFOVR = this.cloneFOV_(h.getRecommendedEyeFieldOfView('right'));
-    }
-  } else {
-    // Return a generic FOV
-    eyeFOVL = this.viewerInfo.getDefaultFOV_();
-    eyeFOVR = this.viewerInfo.getDefaultFOV_();
-  }
-  return {
-    eyeFOVL:eyeFOVL,
-    eyeFOVR:eyeFOVR
-  };
-};
-
-WebVRPageManager.prototype.adjustFOV_ = function(width, height) {
-  if (this.hmd) {
-    var aspectChange = height / (width);
-    var fov = this.getFOV_();
-    if (aspectChange > 1) {
-      fov.eyeFOVL.upDegrees = fov.eyeFOVL.downDegrees =
-      fov.eyeFOVR.upDegrees = fov.eyeFOVR.downDegrees *= aspectChange;
-    }
-    console.log("going to adjust FOV, aspectChange:" + aspectChange);
-    this.effect.setFOV(fov.eyeFOVL, fov.eyeFOVR);
-  } // this.hmd present.
-};
-
 // Start listening for motion events.
 WebVRPageManager.prototype.listenMotion_ = function() {
   /*
@@ -355,10 +300,6 @@ WebVRPageManager.prototype.onFullscreenChange_ = function(e) {
 // Take action when exiting a fullscreen. Triggered by custom event 'exitfullscreen'.
 WebVRPageManager.prototype.onExitFullscreen_ = function(e) {
   console.log('Manager onExitFullscreen_ custom event, object is:' + e);
-  console.log('ABOUT TO RESET FOV');
-  var fov = this.getFOV_();
-  //window.fov = fov;
-  //////////////////////////////this.effect.setFOV(fov.eyeFOVL, fov.eyeFOVR);
   this.exitFullscreen();
 };
 
@@ -378,7 +319,6 @@ WebVRPageManager.prototype.requestFullscreen = function() {
 
     // Adjust the scene to the screen dimensions.
     console.log("WIDTH:" + screen.width + " HEIGHT:" + screen.height)
-    //this.adjustFOV_(screen.width, screen.height);
 
     // Reset effect size.
     this.effect.setSize(screen.width, screen.height);
@@ -406,33 +346,13 @@ WebVRPageManager.prototype.requestVR = function() {
 
   // Activate barrel distorter.
   this.distorter.setActive(true);
-  /////////////////////////////////////////////this.setHMDVRDeviceParams_(this.getViewer());
-/*
-camera.aspect = (screen.width / screen.height) / 2; // CURRENT ASPECT RATIO DIVIDED BY 2 **********************************
-camera.fov = 40 * 2; // STARTING FOV TIMES 2 *************************
-camera.updateProjectionMatrix();
-TODO:
-TODO:
-*/
-  /////////////////////////////////// ADDED
-  //this.oldFOV = this.camera.fov;
-  //this.oldAspect = this.camera.aspect;
 
-  // VR Settings.
-  //this.camera.aspect = (screen.width / screen.height) / 2;
-  //this.camera.fov *= 2;
-  //this.camera.updateProjectionMatrix();
-
-  this.distorter.patch();
+  // Patch renderer to render barrel-distorted images in stereo.
+  this.distorter.patch(this.camera);
 };
 
 // Exit VR (stereo) rendering mode. Exits fullscreen to DOM.
 WebVRPageManager.prototype.exitVR = function() {
-  //////////////////////////////ADDED
-  // Restore old Camera values.
-  //this.camera.fov = this.oldFOV;
-  //this.camera.aspect = this.oldAspect;
-  //this.camera.updateProjectionMatrix();
 
   this.distorter.unpatch();
   this.setMode(Modes.ViewStates.DOM);

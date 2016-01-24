@@ -41,7 +41,6 @@ ShaderPass.prototype.render = function(renderFunc, buffer) {
 function createRenderTarget(renderer) {
   var width  = renderer.context.canvas.width;
   var height = renderer.context.canvas.height;
-  console.log(">>>>>>>>>>>>>>>>>>>>>>>>RENDERTARGET DIMENSIONS width:" + width + " height:" + height)
   var parameters = {
     minFilter: THREE.LinearFilter,
     magFilter: THREE.LinearFilter,
@@ -65,17 +64,25 @@ function CardboardDistorter(renderer, deviceInfo) {
   //this.recalculateUniforms();
 }
 
-CardboardDistorter.prototype.patch = function() {
+CardboardDistorter.prototype.patch = function(camera) {
   if (!this.isActive) {
     return;
   }
 
+  // Save the non-distorted FOV
+  this.oldFOV = camera.fov;
+  this.newAspect = (screen.width /screen.height) / 2; // CORRECT ASPECT RATIO DIVIDED BY 2 **********************************
+  this.newFOV = this.oldFOV * (2 + this.newAspect) / 2; //2.6; // STARTING FOV TIMES 2, higher number shows walls.
+
   this.textureTarget = createRenderTarget(this.renderer);
 
+  // Patch renderer to render distorted scene to a texture.
   this.renderer.render = function(scene, camera, renderTarget, forceClear) {
     // TODO: this works
-    camera.aspect = (screen.width/screen.height) / 2; // CORRECT ASPECT RATIO DIVIDED BY 2 **********************************
-    camera.fov = 40 * (2 + camera.aspect); //2.6; // STARTING FOV TIMES 2, higher number shows walls.
+    camera.aspect = this.newAspect;
+    camera.fov = this.newFOV;
+    //camera.aspect = (screen.width /screen.height) / 2; // CORRECT ASPECT RATIO DIVIDED BY 2 **********************************
+    //camera.fov = this.oldFOV * (2 + camera.aspect) / 2; //2.6; // STARTING FOV TIMES 2, higher number shows walls.
     //TODO: can THREE camera change FOV in up, down, left, right???
     //TODO: FULLSCREEN ALSO MESSED UP BY THIS.
     camera.updateProjectionMatrix();

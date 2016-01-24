@@ -324,7 +324,7 @@ Util.isAppMode = function() {
       }
       console.log('dispatching fullscreenchange in screenChange, toggle:' + toFS)
       var bob = document.fullscreenElement;
-      console.log('bob is a type:' + typeof bob + ' and value:' + bob)
+      //console.log('bob is a type:' + typeof bob + ' and value:' + bob)
       var event = new CustomEvent('fullscreenchange', e);
       document.dispatchEvent(event);
     };

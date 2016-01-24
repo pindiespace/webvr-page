@@ -154,6 +154,18 @@ var FeatureDetector = (function() {
   };
 
   /*
+   * CustomEvents for IE 9, 10, 11
+   */
+  tests['CustomEvent'] = function() {
+    try {
+      new CustomEvent("test");
+    } catch(e) {
+      return false;
+    }
+    return true;
+  };
+
+  /*
    * Detect support for an event.
    * http://perfectionkills.com/detecting-event-support-without-browser-sniffing/
    */
