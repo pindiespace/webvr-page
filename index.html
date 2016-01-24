@@ -35,6 +35,35 @@ like head.js
 -->
 <script src="js/lib/feature-detector.js"></script>
 
+<script>
+  if(FeatureDetector && !FeatureDetector.canvas) {
+    window.html5 = {
+      shivMethods: true
+    };
+    FeatureDetector.load([
+      [
+        {name: 'html5', path: 'js/lib/html5shiv.min.js', poly: true}
+      ], function () {
+        console.log("added HTML5 Shiv");
+        // Replace canvas tags with images.
+        var c = document.getElementsByTagName('canvas');
+        console.log('c is ' + c.length + ' long')
+      },
+      function (percent) {
+        console.log('progress function, ' + percent + '%');
+        var prog = document.getElementById('webvr-page-load-progress');
+        if(prog) {
+          prog.value = percent;
+          prog.getElementsByTagName('span')[0].innerHTML = percent;
+        }
+      },
+      function (err) {
+        console.log('error function')
+      }
+    ]);
+  }
+</script>
+
 </head>
 
 <body>
@@ -159,7 +188,9 @@ document.addEventListener('DOMContentLoaded', function() {
       {name: 'querySelectorAll', path: 'js/lib/dom.js', poly: true},
       {name: 'defineProperty', path: 'js/lib/es5.js', poly: true},
       {name: 'typedArray', path: 'js/lib/typedarray.js', poly: true},
-      {name: 'promise', path: 'js/lib/Promise.min.js', poly: true},
+      {name: 'promise', path: 'js/lib/Promise.min.js', poly: true}
+    ],
+    [
       {name: 'three', path: 'js/lib/three.min.js', poly: false}
     ],
     [
@@ -315,14 +346,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
   //END OF CALLBACK FOR LOADER
 
-  }, function(percent) {
+}, function(percent) { // Progress function.
     console.log('progress function, ' + percent + '%');
     var prog = document.getElementById('webvr-page-load-progress');
     if(prog) {
       prog.value = percent;
       prog.getElementsByTagName('span')[0].innerHTML = percent;
     }
-  }, function(s, loadCount) {
+  }, function(s, loadCount) { // Error function.
     console.log('failed to load:' + s.src + ' count:' + loadCount);
   }); // End of Loader callback.
 

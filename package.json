@@ -5,9 +5,9 @@
   "scripts": {
     "preinstall": "npm i -g bower grunt grunt-cli jshint copyfiles rimraf mkdirp browserify uglifyjs mocha",
     "install-three": "bower install threejs",
-    "install-polyfill": "bower install webvr-polyfill && bower install fetch && npm install js-polyfills && && npm install ie8 && npm install promise-polyfill",
+    "install-polyfill": "bower install webvr-polyfill && bower install html5shiv && bower install fetch && npm install js-polyfills && npm install ie8 && npm install promise-polyfill",
     "build-three": "copyfiles -f bower_components/three.js/build/three.min.js bower_components/three.js/examples/js/Detector.js bower_components/three.js/examples/js/controls/VRControls.js bower_components/three.js/examples/js/effects/VREffect.js bower_components/three.js/examples/js/renderers/CanvasRenderer.js bower_components/three.js/examples/js/renderers/Projector.js js/lib",
-    "build-polyfill": "copyfiles -f src/feature-detector.js bower_components/webvr-polyfill/build/webvr-polyfill.js bower_components/fetch/fetch.js node_modules/promise-polyfill/Promise.min.js node_modules/js-polyfills/es5.js node_modules/js-polyfills/dom.js node_modules/js-polyfills/typedarray.js node_modules/ie8/build/ie8.js js/lib",
+    "build-polyfill": "copyfiles -f src/feature-detector.js bower_components/webvr-polyfill/build/webvr-polyfill.js bower_components/fetch/fetch.js bower_components/html5shiv/dist/html5shiv.min.js node_modules/promise-polyfill/Promise.min.js node_modules/js-polyfills/es5.js node_modules/js-polyfills/dom.js node_modules/js-polyfills/typedarray.js node_modules/ie8/build/ie8.js js/lib",
     "build-app": "browserify src/main.js | uglifyjs > js/webvr-page.js",
     "build": "npm run build-app && copyfiles -f src/feature-detector.js js/lib",
     "buildall": "npm install && npm run install-polyfill && npm run build-polyfill && npm run install-three && npm run build-three && npm run build-app",

@@ -62,8 +62,8 @@ function WebVRPagePlayer(renderer, params, buttonTypes) {
   this.renderer = renderer;
 
   // Save the drawing canvas.
-  ////////////////this.canvas = this.renderer.domElement;
-  this.canvas = this.renderer.context.canvas;
+  this.canvas = this.renderer.domElement;
+  ////////////////////this.canvas = this.renderer.context.canvas;
 
   // Find the enclosing Player container (a <figure>), or create one.
   this.initFigure_();

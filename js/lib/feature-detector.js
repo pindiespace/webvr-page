@@ -233,8 +233,11 @@ var FeatureDetector = (function() {
    * After: https://css-tricks.com/snippets/javascript/async-script-loader-with-callback/
    * https://www.nczonline.net/blog/2009/07/28/the-best-way-to-load-external-javascript/
   */
-  var load = function(scripts, callback, progressFn, failFn, retest) {
-    var retest = [];
+  var load = function(scripts, callback, progressFn, failFn) {
+
+    console.log("typeofs scripts:" + typeof scripts + " callback:" + typeof callback + " progress:" + typeof progressFn + " fail:" + typeof failFn)
+
+    //var retest = [];
     self.head = document.getElementsByTagName('head')[0] || document.documentElement;
     self.batchCount = 0;
     self.loadCount = 0; // Per-batch count.
@@ -256,13 +259,17 @@ var FeatureDetector = (function() {
     var loaded = function(s) {
 
       console.log((self.loadCount + 1) + ' of ' + self.totalRequired + ' scripts loaded, path:' + s.src);
-
-      if (s.onreadyState) {
+      window.ss = s;
+      console.log('#1 s.readyState:' + s.readyState)
+      if (s.readyState !== undefined) {
+        console.log('#2 readyState:' + s.readyState)
         if (s.readyState === 'loaded' || s.readyState === 'complete') {
           // IE completion hack.
           // http://stackoverflow.com/questions/6946631/dynamically-creating-script-readystate-never-complete/18840568#18840568
+          console.log('#3 s.readyState:' + s.readyState)
           var currState = s.readyState;
           s.children;
+          console.log('#4 s.readyState:' + s.readyState)
           if (currState == 'loaded' && s.readyState == 'loading') {
             // custom error code
             self.err_(s);
@@ -274,7 +281,9 @@ var FeatureDetector = (function() {
         self.loadCount++;
         self.scriptCount++;
       }
+      console.log('self.progressFn:' + typeof self.progressFn)
       if (typeof self.progressFn == 'function') {
+        console.log('record progress')
         // Precent loaded.
         self.progressFn(parseInt(100 * self.scriptCount / self.totalScripts));
       }
@@ -304,16 +313,20 @@ var FeatureDetector = (function() {
 
     // Load the scripts in an async way.
     var queueScripts = function(src) {
+      console.log('in queuescripts')
       var s = document.createElement('script');
       s.type = 'text/javascript';
       s.charset = 'utf8';
       s.async = true;
       s.src = src;
-      if (s.onreadystatechange) { // Separate since IE 9, 10 have both defined.
+      if (s.onreadystatechange !== undefined) { // Separate since IE 9, 10 have both defined.
         //console.log('ie script loader');
         s.onreadystatechange = function() {
           console.log('ran ie loader for:' + s.src);
-          loaded(s);
+          if (/loaded|complete/.test(s.readyState)) {
+            loaded(s);
+        }
+          //loaded(s);
         };
       } else if (s.onload !== undefined) {
         //console.log('regular script loader for:' + s.src);
@@ -350,7 +363,7 @@ var FeatureDetector = (function() {
         //console.log('checking ' + nm);
         if (FeatureDetector[nm] !== undefined && FeatureDetector[nm] === true) {
           console.log(nm + ' does not need a polyfill');
-          retest.push(s);
+          //retest.push(s);
           notNeeded++; self.scriptCount++;
         } else {
           if(s[i].poly) {
@@ -367,9 +380,17 @@ var FeatureDetector = (function() {
       self.totalRequired -= notNeeded;
       self.loadCount = 0;
       console.log('reduced batch length:' + self.totalRequired);
-    };
+      //TODO: if self.totalRequired = 0, we need to jump to the next script batch
+      //TODO: store current batch. If we are zero, jump to the next batch.
+      if( self.totalRequired == 0) {
+        console.log('nothing required, jumping to next batch')
+        self.currBatch++;
+        runQueue(scripts[self.currBatch]);
+      }
+    }; // End of runQueue().
 
     // Count the total number of scripts.
+    self.totalBatches = 0;
     self.totalScripts = 0;
     for(var i = 0; i < scripts.length; i++) {
       var batch = scripts[i];
@@ -377,9 +398,10 @@ var FeatureDetector = (function() {
           self.totalScripts++;
         }
       }
-      console.log('total script count is:' + self.totalScripts);
+      console.log('batch count is:' + scripts.length + ', total script count is:' + self.totalScripts);
 
       // Run the first batch. The scripts object is an array of arrays.
+      self.currBatch = 0;
       runQueue(scripts[0]);
 
   }; // End of microloader.
