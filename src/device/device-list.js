@@ -34,6 +34,9 @@
 
    this.ERROR = -1;
 
+   // Use the dpdb datase.
+   this.ONLINE_DPDB_URL = 'https://storage.googleapis.com/cardboard-dpdb/dpdb.json';
+
    // TODO: Future versions could get this info from a dynamic database.
    // Choose a DeviceList to load.
    this.getList = function(whichList) {
@@ -128,6 +131,47 @@
     }
     return arguments[0];
   };
+
+  /*
+   * Use Google Android device databases. Load if local database
+   * does not contain a match for android.
+   * https://storage.googleapis.com/cardboard-dpdb/dpdb.json
+   */
+  this.getDPDB = function(ua) {
+
+    fetch(this.ONLINE_DPDB_URL, {
+    	method: 'get'
+    }).then(function(response) {
+      // Parse the JSON.
+      var dpdb = JSON.parse(response);
+      if (dpdb) {
+        var width = Util.getScreenWidth();
+        var height = Util.getScreenHeight();
+        // Match rules. If found, convert to our device format.
+        for (var i in dpdb.devices) {
+          var device = dpdb.devices[i];
+          if (device.rules) {
+            for (var j = 0; j < device.rules.length; j++) {
+              var rule = dpdb.rules[j];
+              if (rule.ua && rule.res) {
+                if (rule.ua && ua.indexOf(rule.ua) >= 0) {
+
+                  //TODO:convert to our object format here.
+                  console.log('found device:' + rule.ua);
+                  break;
+                }
+              }
+            }
+          }
+        }
+        // See if we found a matching rule.
+
+      }
+    }).catch(function(err) {
+    	// Error :(
+    }); // End of Promise.
+
+  }; // End of getDPDB.
 
   /*
    * Data lists.

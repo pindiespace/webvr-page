@@ -37,10 +37,10 @@ function WebVRPageButtons(type, position, container, params) {
   this.container = container; // Container DOM element for buttons.
 
   // Save params.
-  this.params = params || {};
+  this.params = params || {uid: Util.getUniqueIncrementingId()};
 
   // Assign base uid for Player elements.
-  this.uid = (this.params.uid || Util.getUniqueId());
+  this.uid = this.params.uid;
 
   // Button defaults.
   this.buttonScale = 0.05; //5% of screen width (may vary).

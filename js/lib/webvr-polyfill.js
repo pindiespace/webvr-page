@@ -264,7 +264,7 @@ ComplementaryFilter.prototype.addGyroMeasurement = function(vector, timestampS) 
   if (Util.isTimestampDeltaValid(deltaT)) {
     this.run_();
   }
-  
+
   this.previousGyroMeasurement.copy(this.currentGyroMeasurement);
 };
 
@@ -677,9 +677,16 @@ MouseKeyboardPositionSensorVRDevice.prototype.onMouseDown_ = function(e) {
 
 // Very similar to https://gist.github.com/mrflix/8351020
 MouseKeyboardPositionSensorVRDevice.prototype.onMouseMove_ = function(e) {
+  //TODO: make this work for independent canvas elements
+  //TODO:
+  if (e.target.tagName !== 'CANVAS') {
+    return;
+  }
+//  window.target = e.target.id;
   if (!this.isDragging && !this.isPointerLocked_()) {
     return;
   }
+
   // Support pointer lock API.
   if (this.isPointerLocked_()) {
     var movementX = e.movementX || e.mozMovementX || 0;

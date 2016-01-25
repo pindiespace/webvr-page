@@ -44,10 +44,10 @@ function WebVRPagePlayer(renderer, params, buttonTypes) {
   this.caption = null;
 
   // Save params.
-  this.params = params || {uid: Util.getUniqueId()};
+  this.params = params || {uid: Util.getUniqueIncrementingId()};
 
   // Assign base uid for Player elements.
-  this.uid = (params.uid || Util.getUniqueId()) + '-' + this.playerClasses.player;
+  this.uid = params.uid  + '-' + this.playerClasses.player;
 
   // Create default text for <figcaption> element.
   this.captionDefault = 'WebVR Page Player Scene #' + parseInt(params.uid);

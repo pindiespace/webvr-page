@@ -48,7 +48,7 @@ Util.getUUID = Util.hasCrypto ?
   }; // End of Math.random version.
 
 // Get a unique, incrementing Id value with a prefix for any object on the page.
-Util.getUniqueId = (function(prefix) {
+Util.getUniqueIncrementingId = (function(prefix) {
   var i = Math.floor(Math.random() * 999) + 100;
   var pfx = prefix || '';
   function inc(pfx) {
@@ -382,6 +382,18 @@ Util.getQueryParameter = function(name) {
 // Check if we are in landscape mode
 Util.isLandscapeMode = function() {
   return (window.orientation == 90 || window.orientation == -90);
+};
+
+// Get screen width, in real pixels.
+Util.getScreenWidth = function() {
+  return Math.max(window.screen.width, window.screen.height) *
+      window.devicePixelRatio;
+};
+
+// Get screen height, in real pixels.
+Util.getScreenHeight = function() {
+  return Math.min(window.screen.width, window.screen.height) *
+      window.devicePixelRatio;
 };
 
 module.exports = Util;

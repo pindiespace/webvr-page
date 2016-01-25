@@ -33,10 +33,10 @@ function WebVRPageDialogs(params) {
   };
 
   // Save params.
-  this.params = params || {};
+  this.params = params || {uid: Util.getUniqueIncrementingId()};
 
   // Assign base uid for Player elements.
-  this.uid = (this.params.uid || Util.getUniqueId()) + this.dialogClasses.dialog;
+  this.uid = this.params.uid + this.dialogClasses.dialog;
 
   // Containing DOM element for dialog.
   this.container = document.body;

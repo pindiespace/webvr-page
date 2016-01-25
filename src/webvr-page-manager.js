@@ -41,7 +41,7 @@ function WebVRPageManager(renderer, effect, camera, params) {
 
   // Give a unique to ID to each manager.
   this.prefix = 'webvr';
-  this.uid = Util.getUniqueId(this.prefix);
+  this.uid = Util.getUniqueIncrementingId(this.prefix);
 
   // Set manager uid.
   params.prefix = this.prefix;
@@ -384,7 +384,7 @@ WebVRPageManager.prototype.setMode = function(mode) {
     case Modes.ViewStates.FULLSCREEN:
       break;
     case Modes.ViewStates.VR:
-      //this.setHMDVRDeviceParams_(this.getViewer());
+      this.setHMDVRDeviceParams_(this.getViewer());
       break;
     default:
       console.error('Unknown mode: %s => %s', this.mode, mode);
