@@ -3,13 +3,13 @@ var BarrelDistortionFragment = {
 
   
   uniforms: {
-    'texture':   { type: 't', value: null },
-    'distortion': { type: 'v2', value: new THREE.Vector2(0.441, 0.156) },
-    'projectionLeft':    { type: 'v4', value: new THREE.Vector4(1.0, 1.0, -0.5, -0.5) },
-    'unprojectionLeft':  { type: 'v4', value: new THREE.Vector4(1.0, 1.0, -0.5, -0.5) },
-    'backgroundColor': { type: 'v4', value: new THREE.Vector4(0.0, 0.0, 0.0, 1.0) },
-    'showCenter': { type: 'i', value: 0},
-    'dividerColor': { type: 'v4', value: new THREE.Vector4(0.5, 0.5, 0.5, 1.0) },
+    texture:   { type: 't', value: null },
+    distortion: { type: 'v2', value: new THREE.Vector2(0.441, 0.156) },
+    projectionLeft:    { type: 'v4', value: new THREE.Vector4(1.0, 1.0, -0.5, -0.5) },
+    unprojectionLeft:  { type: 'v4', value: new THREE.Vector4(1.0, 1.0, -0.5, -0.5) },
+    backgroundColor: { type: 'v4', value: new THREE.Vector4(0.0, 0.0, 0.0, 1.0) },
+    showCenter: { type: 'i', value: 0},
+    dividerColor: { type: 'v4', value: new THREE.Vector4(0.5, 0.5, 0.5, 1.0) },
   },
 
   vertexShader: [
@@ -36,7 +36,7 @@ var BarrelDistortionFragment = {
     'varying vec2 vUV;',
 
     'float poly(float val) {',
-      'return (showCenter == 1 && val < 0.00005) ? ',
+      'return (showCenter == 1 && val < 0.00010) ? ',
       '10000.0 : 1.0 + (distortion.x + distortion.y * val) * val;',
     '}',
 

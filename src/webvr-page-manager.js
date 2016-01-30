@@ -89,10 +89,12 @@ function WebVRPageManager(renderer, effect, camera, params) {
   // Get info for any HMD (head-mounted device).
   this.getDeviceByType_(HMDVRDevice).then(function(hmd) {
     if (hmd) {
+      // Enable barrel distortion.
       console.log('forcing distortion, hmd present:' + hmd.deviceName);
       this.distorter.setActive(true);
       this.hmd = hmd;
     } else if (WebVRConfig.FORCE_DISTORTION) {
+      // Enable barrel distortion.
       console.log('no hmd, forcing distortion due to WebVRConfig');
       this.distorter.setActive(true);
     } else {
@@ -134,18 +136,18 @@ WebVRPageManager.Modes = Modes;
 // Make Util visible so we can use it in scene construction.
 WebVRPageManager.Util = Util;
 
-// Render the scene.
+/**
+ * Render the scene. Either render directly, or render to a
+ * texture, adding appropriated barrel distortion for the current
+ * HMD.
+ */
 WebVRPageManager.prototype.render = function(scene) {
-  //this.camera.updateProjectionMatrix();
-  //this.effect.render(scene, this.camera);
 
   if(this.mode == Modes.ViewStates.VR) {
     this.distorter.preRender();
-    this.effect.render(scene, this.camera);
+    this.effect.render(scene, this.camera); // Stereo images.
     this.distorter.postRender();
   } else {
-    //this.renderer.render(scene, this.camera);
-    ////////////this.effect.render(scene, this.camera); //this gives 2 images.
     // Scene may be an array of two scenes, one for each eye.
     if (scene instanceof Array) {
       this.renderer.render(scene[0], this.camera);
@@ -153,13 +155,14 @@ WebVRPageManager.prototype.render = function(scene) {
       this.renderer.render(scene, this.camera);
     }
   }
-
 };
 
+// Get the current Viewer.
 WebVRPageManager.prototype.getViewer = function() {
   return this.deviceInfo.getViewer(); // TODO: Also updates device.
 };
 
+// Get the current device.
 WebVRPageManager.prototype.getDevice = function() {
   return this.deviceInfo.getDevice();
 };
@@ -267,8 +270,8 @@ WebVRPageManager.prototype.onOrientationChange_ = function(e) {
 
 // Callback for window resize events.
 WebVRPageManager.prototype.onResize_ = function(e) {
-  console.log('resize event');
   var size = this.player.getSize();
+  console.log('onresize event, width:' + size.width + ' height:' + size.height);
   this.resize(size.width, size.height);
 };
 
@@ -287,7 +290,7 @@ WebVRPageManager.prototype.onFullscreenChange_ = function(e) {
   // Catches exit from fullscreen, both manually, and via 'escape' key pressed in fullscreen view.
   if (document.fullscreenElement === null) {
     console.log('Manager, exitFullscreen event triggered, dispatching exitfullscreen event');
-    document.exitFullscreen();
+    /////////////document.exitFullscreen();
     var event = new CustomEvent('exitfullscreen');
     document.dispatchEvent(event);
   } else {
@@ -299,7 +302,7 @@ WebVRPageManager.prototype.onFullscreenChange_ = function(e) {
 
 // Take action when exiting a fullscreen. Triggered by custom event 'exitfullscreen'.
 WebVRPageManager.prototype.onExitFullscreen_ = function(e) {
-  console.log('Manager onExitFullscreen_ custom event, object is:' + e);
+  console.log('>>>>>>>>Manager onExitFullscreen_ custom event, object is:' + e);
   this.exitFullscreen();
 };
 
@@ -310,52 +313,61 @@ WebVRPageManager.prototype.onErrorFullscreen_ = function(e) {
 
 // Trigger a fullscreen event.
 WebVRPageManager.prototype.requestFullscreen = function() {
-  // Trigger fullscreen only if we support it.
+  // Trigger fullscreen or fullscreen-VR only if we support it.
   if (this.params.detector.webgl) {
-    console.log('Manager entering fullscreen, mode:' + this.mode);
+    console.log('Manager requestFullscreen() - entering fullscreen, mode:' + this.mode);
     if (this.mode == Modes.ViewStates.VR) {
+      console.log('Manager requestFullscreen() - exiting VR');
       this.exitVR();
     }
 
-    // Adjust the scene to the screen dimensions.
-    console.log("WIDTH:" + screen.width + " HEIGHT:" + screen.height)
-
-    // Reset effect size.
-    this.effect.setSize(screen.width, screen.height);
+    // Set to fullscreen mode. May be changed if we go to VR.
+    this.setMode(Modes.ViewStates.FULLSCREEN);
 
     // Let the player know we are going to fullscreen, and let it choose the fullscreen element.
     this.player.requestFullscreen(this.hmd);
+
+    // Adjust the scene to the screen dimensions.
+    console.log("in requestFullscreen() WIDTH:" + screen.width + " HEIGHT:" + screen.height)
+
   }
 };
 
 // Trigger an exitfullscreen event.
 WebVRPageManager.prototype.exitFullscreen = function() {
-  console.log('exiting exitFullscreen');
+  console.log('exiting exitFullscreen, FIRST mode is:' + this.mode);
   if(this.mode == Modes.ViewStates.VR) {
     this.exitVR(); // Normal screen never VR.
   }
-  this.player.exitFullscreen();
-  document.exitFullscreen();
+  console.log("exiting exitFullscreen, SECOND mode is:" + this.mode);
+  /*
+   * We have to do this tests since an exit from fullscreen might happen by
+   * 1. button pressed (would generate loops due to CustomEvent)
+   * 2. escape key pressed (requires CustomEvent to fire properly)
+   */
+  if(this.mode !== Modes.ViewStates.DOM) {
+    this.player.exitFullscreen();
+    this.setMode(Modes.ViewStates.DOM);
+    document.exitFullscreen();
+  }
+
 };
 
 // Jump to VR (stereo) rendering mode. Also jumps to fullscreen.
 WebVRPageManager.prototype.requestVR = function() {
-
-  this.requestFullscreen();
-  this.setMode(Modes.ViewStates.VR);
-
-  // Activate barrel distorter.
-  this.distorter.setActive(true);
-
   // Patch renderer to render barrel-distorted images in stereo.
+  if (this.mode === Modes.ViewStates.VR) {
+    console.warn('warning mode is already VR');
+    return;
+  }
+  this.requestFullscreen();
   this.distorter.patch(this.camera);
+  this.setMode(Modes.ViewStates.VR);
 };
 
-// Exit VR (stereo) rendering mode. Exits fullscreen to DOM.
+// Exit VR (stereo) rendering mode. Called by exitFullscreen() fullscreen to DOM.
 WebVRPageManager.prototype.exitVR = function() {
-
   this.distorter.unpatch();
-  this.setMode(Modes.ViewStates.DOM);
 };
 
 // Update according to the current mode.

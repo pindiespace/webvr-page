@@ -99,7 +99,7 @@ ViewerInfo.prototype.detectViewer_ = function() {
   return this.viewer;
 };
 
-// Scan for a list of devices matching keywords
+// Scan for a list of Viewers matching keywords
 ViewerInfo.prototype.searchViewer = function(keywords) {
   //TODO: write a progressive search funciton
 };

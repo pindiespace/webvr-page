@@ -222,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Canvas size determined by markup, not JS.
   var w = parseFloat(getComputedStyle(canvas).getPropertyValue('width'));
   var h = parseFloat(getComputedStyle(canvas).getPropertyValue('height'));
-  var aspect = w/h;
+  var aspect = w / h;
 
   /*
   * 3d world example at:
@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
   */
 
   // Create a three.js camera.
-  var camera = new THREE.PerspectiveCamera(75, w / h, 0.1, 10000);
+  var camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 10000);
 
   // Apply VR headset positional data to camera.
   var controls = new THREE.VRControls(camera);
