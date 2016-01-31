@@ -137,38 +137,22 @@
    * does not contain a match for android.
    * https://storage.googleapis.com/cardboard-dpdb/dpdb.json
    */
-  this.getDPDB = function(ua) {
+  this.getDPDB = function(ua, callback) {
 
     fetch(this.ONLINE_DPDB_URL, {
     	method: 'get'
     }).then(function(response) {
-      // Parse the JSON.
-      var dpdb = JSON.parse(response);
-      if (dpdb) {
-        var width = Util.getScreenWidth();
-        var height = Util.getScreenHeight();
-        // Match rules. If found, convert to our device format.
-        for (var i in dpdb.devices) {
-          var device = dpdb.devices[i];
-          if (device.rules) {
-            for (var j = 0; j < device.rules.length; j++) {
-              var rule = dpdb.rules[j];
-              if (rule.ua && rule.res) {
-                if (rule.ua && ua.indexOf(rule.ua) >= 0) {
-
-                  //TODO:convert to our object format here.
-                  console.log('found device:' + rule.ua);
-                  break;
-                }
-              }
-            }
-          }
-        }
-        // See if we found a matching rule.
-
-      }
+      console.log('got a response');
+      return response.json();
+    }).then(function(json){
+      console.log('in second then');
+      window.jjj = json;
+      //that.list.dpdb = json;
+      console.log('ua:' + ua); //////////////////////////////////////////
     }).catch(function(err) {
-    	// Error :(
+      console.error(err);
+      window.te = err;
+      console.error('failed to load DPDB database');
     }); // End of Promise.
 
   }; // End of getDPDB.

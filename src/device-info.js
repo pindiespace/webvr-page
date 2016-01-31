@@ -179,7 +179,16 @@ DeviceInfo.prototype.detectDevice = function() {
   } else { // 2%, Symbian, Series 40, 60 Firefox OS, others.
     //TBD
   }
+//////////////////////////////////////
+//TODO: make these all async in a promise chain
+//TODO: make the loop below a separate callback function.
+//TOOD: different loops for different types, possibly in the device-list function.
+  this.json = this.devList.getDPDB(this.ua); ////////////////////////
+  window.jj = this.json;
+////////////////////////////////////////
+
   // Using the device list, run the tests.
+  // TODO: move into deviceList
   for (var i in devices) {
     if (devices[i].detect(this.ua, this.display, this.tests)) {
       //console.log('i:' + i)
