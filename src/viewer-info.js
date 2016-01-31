@@ -20,7 +20,10 @@
 /*
  * This object loads VR viewer descriptions.
  */
+
  var Util = require('./util.js');
+ var Emitter = require('./emitter.js');
+ var Modes = require('./modes.js');
  var ViewerList = require('./viewer/viewer-list.js');
 
 function ViewerInfo(params) {
@@ -31,12 +34,18 @@ function ViewerInfo(params) {
 
   // Get a viewer by default.
   if(params.viewerName) {
-      this.setViewer(params.viewerName);
-  } else {
-    this.getViewer(); // Default.
+    console.log('VIEWER SEARCHING FOR:' + params.viewerName)
+      if (this.setViewer(params.viewerName)) {
+        console.log("successfully set Viewer to:" + params.viewerName)
+        this.emit(Modes.EmitterModes.VIEWER_CHANGED, this.viewer); /////////////////////////////
+      }
   }
+  console.log(">>>>>THIS VIEWER:" + this.viewer);
+  // Call this.getViewer() to search for a viewer.
 
 };
+
+ViewerInfo.prototype = new Emitter();
 
 // Get a named viewer.
 ViewerInfo.prototype.getViewer = function() {
@@ -51,7 +60,7 @@ ViewerInfo.prototype.setViewer = function(viewerName) {
     return this.detectViewer_(viewerName);
   }
   console.error('ViewerInfo.setViewer(), no viewer name set');
-  return {};
+  return false;
 };
 
 // Get a list of viewer names
@@ -86,7 +95,7 @@ ViewerInfo.prototype.getViewerByName = function(viewerName) {
     return viewer;
   }
   console.error('Viewer ' + viewerName + ' not found in lists');
-  return {};
+  return null;
 };
 
 // Detect a Viewer, if it can be detected.
@@ -96,6 +105,11 @@ ViewerInfo.prototype.detectViewer_ = function() {
   // Otherwise, get the default viewer.
   console.warn('using generic viewer');
   this.viewer = this.viewerList.getDefault();
+
+  // Emit view change.
+  console.log('########ABOUT TO VIEWER EMIT');
+  this.emit(Modes.EmitterModes.VIEWER_CHANGED, this.viewer); /////////////////////////////
+
   return this.viewer;
 };
 

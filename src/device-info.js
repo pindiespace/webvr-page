@@ -23,6 +23,8 @@
  */
 
 var Util = require('./util.js');
+var Emitter = require('./emitter.js');
+var Modes = require('./modes.js');
 var Distortion = require('./distortion/distortion.js');
 var ViewerInfo = require('./viewer-info.js');
 var DeviceList = require('./device/device-list.js');
@@ -43,7 +45,8 @@ function DeviceInfo(params) {
   } else {
     this.viewerInfo = new ViewerInfo();
   }
-  this.viewer = this.getViewer(); //this.viewerInfo.getViewer();
+
+  // Use this.viewerInfo.getViewer() to assign the viewer.
 
   // Current device.
   this.device = null;
@@ -56,19 +59,22 @@ function DeviceInfo(params) {
 
   // If a device name was supplied, set it. Otherwise, detect the device.
   if(params.deviceName) {
-    this.setDevice(deviceName);
+    if(this.setDevice(deviceName)) {
+      this.emit(Modes.EmitterModes.DEVICE_CHANGED, this.device); ////////////////////////////////
+    }
   } else {
     // Run feature and user agent detects on the browser.
     this.detectGL_();
     this.detectDisplay_();
     this.detectOS_();
     this.detectFormFactor_();
-
-    //Get our device.
-    this.getDevice();
   }
 
+  // call this.getDevice() to search for a device.
+
 };
+
+DeviceInfo.prototype = new Emitter();
 
 // Get the found device.
 DeviceInfo.prototype.getDevice = function() {
@@ -96,7 +102,7 @@ DeviceInfo.prototype.setDevice = function(deviceName) {
     return this.device;
   }
   console.error('device ' + deviceName + ' not found in deviceList');
-  return {};
+  return false;
 };
 
 // Return the names of all devices used for detection.
@@ -130,7 +136,7 @@ DeviceInfo.prototype.getDeviceByName = function(deviceName) {
     return dev;
   }
   console.error('Device ' + deviceName + ' not found in lists');
-  return {};
+  return null;
 };
 
 // Scan for a list of devices matching keywords, return the device(s) in an array.
@@ -158,20 +164,20 @@ DeviceInfo.prototype.detectDevice = function() {
    * - Android - check for the OS first
    */
   if (this.deviceGroup.android) { // 80% in 2015.
-    devices = this.devList.getList(this.devList.DEVICE_ANDROID);
+    this.device = this.devList.searchLocalDB(this.devList.DEVICE_ANDROID, this.ua, this.display, this.tests);
   } else if (this.deviceGroup.iphone) { // iOS 15% IN 2015.
-    devices = this.devList.getList(this.devList.DEVICE_IPHONE);
+    this.device = this.devList.searchLocalDB(this.devList.DEVICE_IPHONE, this.ua, this.display, this.tests);
   } else if (this.deviceGroup.ipad) {
     this.tests.devicemotion = this.detectEvents_(window, 'devicemotion'); // window.DeviceOrientationEvent INCORRECTLY returns true for ipad 1
-    devices = this.devList.getList(this.devList.DEVICE_IPAD);
+    this.device = this.devList.searchLocalDB(this.devList.DEVICE_IPAD, this.ua, this.display, this.tests);
   } else if (this.deviceGroup.ipod) {
-    devices = this.devList.getList(this.devList.DEVICE_IPOD);
+    this.device = this.devList.searchLocalDB(this.devList.DEVICE_IPOD, this.ua, this.display, this.tests);
   } else if (this.deviceGroup.windowsphone) { // 3% IN 2015.
-    devices = this.devList.getList(this.devList.DEVICE_WINDOWS_PHONE);
+    this.device = this.devList.searchLocalDB(this.devList.DEVICE_WINDOWS_PHONE, this.ua, this.display, this.tests);
   } else if (this.deviceGroup.blackberry) {
-    devices = this.devList.getList(this.devList.DEVICE_BLACKBERRY);
+    this.device = this.devList.searchLocalDB(this.devList.DEVICE_BLACKBERRY, this.ua, this.display, this.tests);
   } else if (this.os.tizen) {
-    devices = this.devList.getList(this.devList.DEVICE_TIZEN);
+    this.device = this.devList.searchLocalDB(this.devList.DEVICE_TIZEN, this.ua, this.display, this.tests);
   } else if (this.os.windows) {
         // Not used.
   } else if (this.os.mac) {
@@ -179,31 +185,52 @@ DeviceInfo.prototype.detectDevice = function() {
   } else { // 2%, Symbian, Series 40, 60 Firefox OS, others.
     //TBD
   }
-//////////////////////////////////////
-//TODO: make these all async in a promise chain
-//TODO: make the loop below a separate callback function.
-//TOOD: different loops for different types, possibly in the device-list function.
-  this.json = this.devList.getDPDB(this.ua); ////////////////////////
-  window.jj = this.json;
-////////////////////////////////////////
 
-  // Using the device list, run the tests.
-  // TODO: move into deviceList
-  for (var i in devices) {
-    if (devices[i].detect(this.ua, this.display, this.tests)) {
-      //console.log('i:' + i)
-      this.device = devices[i];
-      console.log('device found:' + this.device.label + '.');
-      return true;
-    }
+  // If we didn't find the device in our fast local (sync) search, load libraries async.
+  if (!this.device) {
+    // DPDB database
+    var that = this;
+    fetch(this.devList.ONLINE_DPDB_URL, {
+      method: 'get'
+    }).then(function(response) {
+      console.log('got a response');
+      return response.json();
+    }).then(function(json){
+      console.log('in second then');
+      window.jjj = json;
+      //that.list.dpdb = json;
+      //scan through, create object and return if found.
+      console.log('ua:' + ua); //////////////////////////////////////////
+      that.emit(Modes.EmitterModes.DEVICE_CHANGED, that.device); ////////////////////////////////
+    }).catch(function(err) {
+      console.error(err);
+      window.te = err;
+      console.error('failed to load DPDB database');
+    }); // End of Promise.
   }
-  console.warn('using generic device');
-  this.device = this.devList.getDefault(this.display);
+
+  // If we don't find a device in our local lists, look further.
+  // Async call.
+
+  /*
+   * Use Google Android device databases in async mode.
+   * Load if local database
+   * does not contain a match for android.
+   * https://storage.googleapis.com/cardboard-dpdb/dpdb.json
+   */
+  if (!this.device) {
+    console.warn('using generic device');
+    this.device = this.devList.getDefault(this.display);
+  }
 
   // If we defaulted to desktop, consider this a detect.
-  if(this.desktop == true) {
+  if(this.device || this.desktop == true) {
     this.detected = true;
   }
+
+  console.log('##########ABOUT TO DEVICE EMIT');
+  this.emit(Modes.EmitterModes.DEVICE_CHANGED, this.device); ////////////////////////////////
+
   return this.device;
 }; // End of find device.
 
@@ -211,20 +238,35 @@ DeviceInfo.prototype.detectDevice = function() {
 // https://www.browserleaks.com/webgl#howto-detect-webgl
 DeviceInfo.prototype.detectGL_ = function() {
   var cs, ctx, canvas, webGL, glVersion, glVendor, glShaderVersion;
+
+  // If we are using the FeatureDetector, use its results.
+  if(FeatureDetector && FeatureDetector.webgl) {
+    this.tests.webGL = true;
+    this.tests.glVersion = FeatureDetector.glVersion;
+    return;
+  }
+
   // Test for HTML5 canvas
   this.tests.canvas = !!window.CanvasRenderingContext2D;
+
+  console.log("RUNNING DETECTGL IN DEVICEINFO")
 
   // Test for WebGL.
   if (this.tests.canvas) {
     this.tests.webGL = false;
     cs = document.createElement('canvas');
     var names = ['webgl', 'webgl2', 'experimental-webgl', 'experimental-webgl2', 'moz-webgl', '3d', 'webkit-3d'];
+    console.log("ABOUT TO RUN THROUGH WEBGL VERSIONS");
     for (i in names) {
+      console.log("NAMES I IS: " + names[i])
       try {
         ctx = cs.getContext(names[i]);
-        if (ctx && ctx instanceof 'WebGLRenderingContext') {
+        console.log("CTX IS A:" + typeof ctx)
+        if (ctx && ctx instanceof WebGLRenderingContext) {
+          console.log(">>>>>>>>>>>>>>>>>GOT THE WEB GL")
           this.tests.webGL = true;
           this.tests.webGLCtxName = names[i];
+          break;
         }
       } catch (e) {}
     }
@@ -232,6 +274,7 @@ DeviceInfo.prototype.detectGL_ = function() {
 
   // Get WebGL information for better feature detection.
   if (ctx) {
+    console.log(">>>>>>>>>>>>>>>>>>HAVE A CONTEXT");
       this.tests.glVersion =  ctx.getParameter(ctx.VERSION).toLowerCase();
       this.tests.glVendor = ctx.getParameter(ctx.VENDOR).toLowerCase();
       this.tests.glShaderVersion = ctx.getParameter(ctx.SHADING_LANGUAGE_VERSION).toLowerCase();
@@ -351,8 +394,10 @@ DeviceInfo.prototype.detectFormFactor_ = function() {
  * Calculates field of view for the left eye.
  */
 DeviceInfo.prototype.getDistortedFieldOfViewLeftEye = function() {
-  var viewer = this.viewer;
+  var viewer = this.getViewer();
   var device = this.device;
+
+  console.log(">>>>>>>>>>>>>>>>>VIEWER:" + this.viewer)
 
   var distortion = new Distortion(viewer.distortionCoefficients);
 
@@ -419,7 +464,7 @@ DeviceInfo.prototype.getProjectionMatrixLeftEye = function(opt_isUndistorted) {
 
 DeviceInfo.prototype.getUndistortedViewportLeftEye = function() {
   var p = this.getUndistortedParams_();
-  var viewer = this.viewer;
+  var viewer = this.getViewer();
   var device = this.device;
 
   var eyeToScreenDistance = viewer.screenLensDistance;
@@ -453,7 +498,7 @@ DeviceInfo.prototype.getUndistortedFieldOfViewLeftEye = function() {
 };
 
 DeviceInfo.prototype.getUndistortedParams_ = function() {
-  var viewer = this.viewer;
+  var viewer = this.getViewer();
   var device = this.device;
   var distortion = new Distortion(viewer.distortionCoefficients);
 

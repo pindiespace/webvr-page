@@ -76,6 +76,7 @@ var FeatureDetector = (function() {
           try {
             ctx = cs.getContext(names[i]);
             if (ctx && typeof ctx.getParameter == 'function') {
+              tests['glversion'] = ctx.getParameter(ctx.VERSION).toLowerCase();
               cs = ctx = null;
               return true;
             }

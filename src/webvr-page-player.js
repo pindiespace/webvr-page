@@ -84,6 +84,7 @@ function WebVRPagePlayer(renderer, params, buttonTypes) {
   this.ready = true;
 };
 
+// Make this an Emitter.
 WebVRPagePlayer.prototype = new Emitter();
 
 // Overwrite the <canvas> with errors if we can't run.

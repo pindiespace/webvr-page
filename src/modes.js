@@ -13,17 +13,16 @@
  * limitations under the License.
  */
 
-var Modes = {
-  UNKNOWN: 'unknown',
-  DOM: 'dom', // Not fullscreen, may be in DOM.
-  FULLSCREEN: 'fullscreen', // Magic window fullscreen immersive mode.
-  VR: 'vr', // VR mode (always in fullscreen).
-  REQUEST_FULLSCREEN: 'requestfullscreen', // Request fullscreen in progress.
-  EXIT_FULLSCREEN: 'exitfullscreen', // Exiting fullscreen.
-  BACK: 'back', // Back button.
-  INFO: 'info', // Information dialog foremost.
+// Emitter message strings.
+var EmitterModes = {
+  PROGRAM_INITIALIZED: '-initialized', // Manager-specific
+  MODE_CHANGE: '-modechange',
+  DEVICE_CHANGED: 'devicechanged', // Common to multiple managers on the page.
+  VIEWER_CHANGED: 'viewerchanged'
+  //TODO: add Emitter mode strings
 };
 
+// Ui (View) states.
 var ViewStates = {
   UNKNOWN: 'unknown',
   THUMBNAIL: 'thumbnail',
@@ -32,12 +31,13 @@ var ViewStates = {
   VR: 'vr' // VR mode (always in fullscreen).
 };
 
-// State of elements, e.g. in DOM or in 3D scene.
+// State of elements in DOM or in 3D scene.
 var ElementStates = {
   IN_DOM: 'text-in-dom', // Element is a 2D DOM element
   IN_SPRITE: 'text-in-sprite' // Element is a sprite in the scene
 };
 
+// Type of modal dialog windows.
 var DialogTypes = {
   DIALOG: 'dialog',
   DIALOG_ALERT: 'alert',
@@ -45,6 +45,7 @@ var DialogTypes = {
   DIALOG_HMD_SELECT: 'hmd-select'
 };
 
+// Types and features of control panels in the Player.
 var PanelTypes = {
   PANEL: 'panel',
   // Panel name: state
@@ -60,6 +61,7 @@ var PanelTypes = {
   CENTER_CENTER: 'centercenter'
 };
 
+// Types of buttons in the Player control panels.
 var ButtonTypes = {
   BUTTON_CARDBOARD: 'cardboard', //TODO: currently not used, using BUTTON_VR
   BUTTON_HMD: 'hmd',
@@ -71,7 +73,7 @@ var ButtonTypes = {
   BUTTON_SETTINGS_DEVICE: 'settings-device'
 };
 
-module.exports.Modes = Modes;
+module.exports.EmitterModes = EmitterModes;
 module.exports.ViewStates = ViewStates;
 module.exports.DialogTypes = DialogTypes;
 module.exports.PanelTypes = PanelTypes;

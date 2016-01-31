@@ -95,7 +95,7 @@ CardboardDistorter.prototype.preRender = function() {
     return;
   }
   var size = this.renderer.getSize();
-  console.log("WW:" + size.width + " HH:" + size.height)
+  ///////////console.log("WW:" + size.width + " HH:" + size.height)
   this.renderer.setRenderTarget(this.textureTarget);
 };
 

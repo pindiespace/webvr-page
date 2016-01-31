@@ -43,6 +43,7 @@ function WebVRPageDialogs(params) {
 
  };
 
+// Make this an emitter.
 WebVRPageDialogs.prototype = new Emitter();
 
 // Create a page dialog.

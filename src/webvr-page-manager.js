@@ -68,15 +68,33 @@ function WebVRPageManager(renderer, effect, camera, params) {
   // Get available device information, along with viewer params.
   this.deviceInfo = new DeviceInfo(params);
   this.viewerInfo = this.deviceInfo.viewerInfo;
-  console.log('Using the %s viewer.', this.viewerInfo.getViewer().label);
 
   window.deviceInfo = this.deviceInfo; //TODO: remove....
 
   // Get the Cardboard distorter.
-  this.distorter = new CardboardDistorter(renderer, this.deviceInfo);
+  this.distorter = new CardboardDistorter(renderer);
 
+  // Bind updates in Device to callback distorter recalculations.
+  this.deviceInfo.on(Modes.EmitterModes.DEVICE_CHANGED, this.onDeviceChanged_.bind(this));
+  this.deviceInfo.getDevice();
+  console.log('Using the %s device.', this.deviceInfo.getDevice());
 
-  // Init the state buttons in the Player state panel.
+  /*
+   * Bind updates in viewer to callback field of view calculations. These calcs
+   * use both Device and Viewer information.
+   * getDistortedFieldOfViewLeftEye()
+   * getUndistortedViewportLeftEye()
+   * getUndistortedParams_()
+   */
+  this.viewerInfo.on(Modes.EmitterModes.VIEWER_CHANGED, this.onViewerChanged_.bind(this));
+  this.deviceInfo.viewer = this.viewerInfo.getViewer();
+  console.log('Using the %s viewer.', this.viewerInfo.getViewer().label);
+
+  /*
+  * Bind the state Buttons in the Player state panel to callbacks. We emit the individual
+  * button.id value rather than a generic emit() string to make it specific to the Button
+  * and this Manager (allowing multiple Managers on the page).
+  */
   this.stateButtons = this.player.getStatePanel();
   this.stateButtons.on(this.stateButtons.getButtonId(Modes.ButtonTypes.BUTTON_FULLSCREEN), this.requestFullscreen.bind(this));
   this.stateButtons.on(this.stateButtons.getButtonId(Modes.ButtonTypes.BUTTON_VR), this.requestVR.bind(this));
@@ -125,9 +143,10 @@ function WebVRPageManager(renderer, effect, camera, params) {
   // Bind events.
 
   // Emit an a general initialization event to all managers on the page.
-  this.emit(this.prefix + '-initialized');
+  this.emit(this.prefix + Modes.EmitterModes.PROGRAM_INITIALIZED);
 };
 
+// Make this an Emitter.
 WebVRPageManager.prototype = new Emitter();
 
 // Make Modes visible statically to all parts of our app.
@@ -159,15 +178,15 @@ WebVRPageManager.prototype.render = function(scene) {
 
 // Get the current Viewer.
 WebVRPageManager.prototype.getViewer = function() {
-  return this.deviceInfo.getViewer(); // TODO: Also updates device.
+  return this.deviceInfo.getViewer();
 };
 
-// Get the current device.
+// Get the current Device.
 WebVRPageManager.prototype.getDevice = function() {
   return this.deviceInfo.getDevice();
 };
 
-// Get the VR device, hmd, positionsensor.
+// Get the VR Device, hmd, positionsensor.
 WebVRPageManager.prototype.getDeviceByType_ = function(type) {
   return new Promise(function(resolve, reject) {
     navigator.getVRDevices().then(function(devices) {
@@ -273,6 +292,16 @@ WebVRPageManager.prototype.onResize_ = function(e) {
   var size = this.player.getSize();
   console.log('onresize event, width:' + size.width + ' height:' + size.height);
   this.resize(size.width, size.height);
+};
+
+// Callback for Viewer changed.
+WebVRPageManager.prototype.onViewerChanged_ = function(viewer) {
+  console.log('Viewer changed to:' + viewer.label);
+};
+
+// Callback for Device changed.
+WebVRPageManager.prototype.onDeviceChanged_ = function(device) {
+  console.log('Device changed to:' + device.label);
 };
 
 // Resize the effect to a specific size. Does NOT resize the player container.
@@ -396,7 +425,7 @@ WebVRPageManager.prototype.setMode = function(mode) {
     case Modes.ViewStates.FULLSCREEN:
       break;
     case Modes.ViewStates.VR:
-      this.setHMDVRDeviceParams_(this.getViewer());
+      this.setHMDVRDeviceParams_(this.viewerInfo.getViewer());
       break;
     default:
       console.error('Unknown mode: %s => %s', this.mode, mode);
@@ -404,7 +433,7 @@ WebVRPageManager.prototype.setMode = function(mode) {
   }
 
   // Emit an event indicating the mode changed.
-  this.emit(this.prefix + '-modechange', mode, oldMode);
+  this.emit(this.prefix + Modes.EmitterModes.MODE_CHANGE, mode, oldMode);
 
 };
 

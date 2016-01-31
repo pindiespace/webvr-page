@@ -20,7 +20,7 @@
 /*
  * Device database, returns an object
  */
- function DeviceList() {
+function DeviceList() {
    this.DEVICE_ALL = 0,
    this.DEVICE_IPHONE = 1,
    this.DEVICE_IPAD = 2,
@@ -132,30 +132,24 @@
     return arguments[0];
   };
 
-  /*
-   * Use Google Android device databases. Load if local database
-   * does not contain a match for android.
-   * https://storage.googleapis.com/cardboard-dpdb/dpdb.json
-   */
-  this.getDPDB = function(ua, callback) {
+  // Search local databases in our native format.
+  this.searchLocalDB = function(key, ua, display, tests) {
+    var devices = this.getList(key);
+    for (var i in devices) {
+      if (devices[i].detect(ua, display, tests)) {
+        //console.log('i:' + i)
+        console.log('device found:' + devices[i].label + '.');
+        return devices[i];
+      }
+    }
+    return; // Device is undefined.
+  };
 
-    fetch(this.ONLINE_DPDB_URL, {
-    	method: 'get'
-    }).then(function(response) {
-      console.log('got a response');
-      return response.json();
-    }).then(function(json){
-      console.log('in second then');
-      window.jjj = json;
-      //that.list.dpdb = json;
-      console.log('ua:' + ua); //////////////////////////////////////////
-    }).catch(function(err) {
-      console.error(err);
-      window.te = err;
-      console.error('failed to load DPDB database');
-    }); // End of Promise.
+  // Given a returned result from the DPDB database, convert to our format.
+  this.searchDPDB = function(devices) {
+    return; // Device undefined.
+  };
 
-  }; // End of getDPDB.
 
   /*
    * Data lists.
@@ -255,7 +249,7 @@
   iphone6s: {
     label: 'iPhone 6s',
     detect: function(ua, display, tests) {
-      return (display.longest <= 736 && (tests.glVersion.indexOf('a9') >= 0));
+      return (display.longest <= 736 && display.pixelRatio <= 2 && (tests.glVersion.indexOf('a9') >= 0));
     },
     width: 750,
     height: 1334,
@@ -266,13 +260,13 @@
     heightMeters: 0.0584,
     bevelMeters: 0.004
   },
-  iphone6plus: {
-    label: 'iPhone 6 Plus',
+  iphone6splus: {
+    label: 'iPhone 6s Plus',
     detect: function(ua, display, tests) {
-      return (display.longest <= 736 && (tests.glVersion.indexOf('a8') >= 0));
+      return (display.longest <= 750 && display.pixelRatio > 2 && (tests.glVersion.indexOf('a9') >= 0));
     },
-    width: 1242,
-    height: 2208,
+    width: 1920,
+    height: 1080,
     diag: 5.5,
     ppi: 401,
     pxlr: 2.46,
@@ -287,10 +281,7 @@
     ipad1: {
       label: 'ipad1',
       detect: function(ua, display, tests) {
-        if(display.retina && !tests.devicemotion) { //no accelerometer.
-          return false;
-        }
-        return true;
+        return (display.retina && !tests.devicemotion);
       },
       width: 1024,
       height: 768,
@@ -304,9 +295,7 @@
     ipad2: { // has accelerometer.
       label: 'iPad 2',
       detect: function(ua, display, tests) {
-        if(display.retina && display.longest <= 1024 && /543/.test(tests.glVersion)) {
-          return false;
-        }
+        return(!display.retina && display.longest <= 1024 && /543/.test(tests.glVersion));
       },
       width: 1024,
       height: 768,
@@ -660,6 +649,20 @@
     heightMeters: 0.0635,
     bevelMeters: 0.0035
   },
+  galaxys6edge: {
+    label: 'Galaxy S6 Edge+',
+    detect: function(ua, display, tests) {
+      return /sm-g928t/.test(ua);
+    },
+    width: 2560,
+    height: 1440,
+    diag: 5.1,
+    ppi: 577,
+    pxlr: 3.5,
+    widthMeters: 0.1126,
+    heightMeters: 0.0634,
+    bevelMeters: 0
+  },
   galaxya3: { // 4.7"
     label: 'Galaxy A3',
     detect: function(ua, display, tests) {
@@ -669,6 +672,7 @@
     height: 720,
     diag: 4.7,
     ppi: 312,
+    pxlr: 3.5,
     widthMeters: 0.1042,
     heightMeters: 0.0586,
     bevelMeters: 0

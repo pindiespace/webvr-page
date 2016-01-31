@@ -56,6 +56,7 @@ function WebVRPageButtons(type, position, container, params) {
   this.ready = true;
 };
 
+// Make this an Emitter.
 WebVRPageButtons.prototype = new Emitter();
 
 // Get the Panel Id.
