@@ -68,7 +68,7 @@ var FeatureDetector = (function() {
    * Test for WebGL enabled.
    * IE 9, 10 Polyfill: https://github.com/iewebgl/iewebgl
    */
-  tests['webgl'] = function() {
+  tests['webGL'] = function() {
     if (tests['canvas']() && document.createElement) {
         cs = document.createElement('canvas');
         var names = ['3d', 'webgl', 'experimental-webgl', 'experimental-webgl2', 'moz-webgl'];
@@ -76,7 +76,7 @@ var FeatureDetector = (function() {
           try {
             ctx = cs.getContext(names[i]);
             if (ctx && typeof ctx.getParameter == 'function') {
-              tests['glversion'] = ctx.getParameter(ctx.VERSION).toLowerCase();
+              tests['glVersion'] = ctx.getParameter(ctx.VERSION).toLowerCase();
               cs = ctx = null;
               return true;
             }

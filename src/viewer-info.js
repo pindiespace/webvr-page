@@ -29,14 +29,16 @@
 function ViewerInfo(params) {
   this.viewer = null;
 
+  this.params = params || {};
+
   // Get the viewer database.
   this.viewerList = new ViewerList();
 
   // Get a viewer by default.
-  if(params.viewerName) {
-    console.log('VIEWER SEARCHING FOR:' + params.viewerName)
-      if (this.setViewer(params.viewerName)) {
-        console.log("successfully set Viewer to:" + params.viewerName)
+  if(this.params.viewerName) {
+    console.log('VIEWER SEARCHING FOR:' + this.params.viewerName)
+      if (this.setViewer(this.params.viewerName)) {
+        console.log("successfully set Viewer to:" + this.params.viewerName)
         this.emit(Modes.EmitterModes.VIEWER_CHANGED, this.viewer); /////////////////////////////
       }
   }

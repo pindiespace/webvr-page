@@ -205,14 +205,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Use an existing <canvas> in the markup.
     var canvas = document.getElementById('scene-cube');
     var renderer;
-    if(FeatureDetector.webgl) { // 3D scenes ok.
+    if(FeatureDetector.webGL) { // 3D scenes ok.
       renderer = new THREE.WebGLRenderer({
         antialias: true,
         canvas: canvas
       });
       renderer.setPixelRatio(window.devicePixelRatio);
     } else { // Can't do 3d, just draw the scene once and use as a fallback image.
-    console.warn('no webgl, fallback to canvas still image rendering of scene');
+    console.warn('no webGL, fallback to canvas still image rendering of scene');
     renderer = new THREE.CanvasRenderer({
       antialias: true,
       canvas: canvas
@@ -318,7 +318,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Kick off animation loop, or draw a still image one time.
-  if(FeatureDetector.webgl) { // Render animated 3D scene.
+  if(FeatureDetector.webGL) { // Render animated 3D scene.
     animate(performance ? performance.now() : Date.now());
   } else { // Render exactly once to canvas, treat as image.
     manager.render(scene, camera);

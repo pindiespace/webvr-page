@@ -40,11 +40,9 @@ function DeviceInfo(params) {
   this.tests = {};
 
   // Assign a specific Viewer, or get a default one.
-  if(params) {
-    this.viewerInfo = new ViewerInfo(params);
-  } else {
-    this.viewerInfo = new ViewerInfo();
-  }
+  this.params = params || {};
+
+  this.viewerInfo = new ViewerInfo(this.params);
 
   // Use this.viewerInfo.getViewer() to assign the viewer.
 
@@ -144,9 +142,11 @@ DeviceInfo.prototype.searchDevice = function(keywords) {
   //TODO: write a progressive search funciton
 }; // End of searchDevice_ function.
 
+
 // Detect device.
 DeviceInfo.prototype.detectDevice = function() {
   var ua = this.ua;
+  display = this.display;
   var devices = {};
 
   // Broad device classification based on OS used to load data.
@@ -186,38 +186,37 @@ DeviceInfo.prototype.detectDevice = function() {
     //TBD
   }
 
-  // If we didn't find the device in our fast local (sync) search, load libraries async.
+  /*
+   * If we didn't find the device in our fast local (sync) search, load libraries async.
+   * The default device will load, and if a match is found later, emit an DEVICE_CHANGED
+   * event.
+   * https://storage.googleapis.com/cardboard-dpdb/dpdb.json
+   */
   if (!this.device) {
-    // DPDB database
     var that = this;
     fetch(this.devList.ONLINE_DPDB_URL, {
       method: 'get'
     }).then(function(response) {
-      console.log('got a response');
+      //console.log('got a response');
       return response.json();
     }).then(function(json){
-      console.log('in second then');
-      window.jjj = json;
-      //that.list.dpdb = json;
-      //scan through, create object and return if found.
-      console.log('ua:' + ua); //////////////////////////////////////////
-      that.emit(Modes.EmitterModes.DEVICE_CHANGED, that.device); ////////////////////////////////
+      //console.log('in second then');
+      // Parse through the device object, and if found.
+      if (json.devices) {
+        var dev = that.devList.convertDPDB(that.devList.searchDPDB(ua, display, json.devices));
+        if (dev) {
+          that.device = dev; // Change only if we found a match.
+          console.log("$$$$$ EMITING from DPDB");
+          that.emit(Modes.EmitterModes.DEVICE_CHANGED, dev);
+        }
+      }
     }).catch(function(err) {
-      console.error(err);
-      window.te = err;
-      console.error('failed to load DPDB database');
+      console.error('DPDB load error:' + err);
+      // Other libraries could be loaded.
     }); // End of Promise.
   }
 
-  // If we don't find a device in our local lists, look further.
-  // Async call.
-
-  /*
-   * Use Google Android device databases in async mode.
-   * Load if local database
-   * does not contain a match for android.
-   * https://storage.googleapis.com/cardboard-dpdb/dpdb.json
-   */
+  // Assign a generic device until the Promise resolves.
   if (!this.device) {
     console.warn('using generic device');
     this.device = this.devList.getDefault(this.display);
@@ -240,8 +239,9 @@ DeviceInfo.prototype.detectGL_ = function() {
   var cs, ctx, canvas, webGL, glVersion, glVendor, glShaderVersion;
 
   // If we are using the FeatureDetector, use its results.
-  if(FeatureDetector && FeatureDetector.webgl) {
+  if(this.params.detector.canvas && this.params.detector.webGL) {
     this.tests.webGL = true;
+    this.tests.canvas = true;
     this.tests.glVersion = FeatureDetector.glVersion;
     return;
   }
@@ -272,7 +272,7 @@ DeviceInfo.prototype.detectGL_ = function() {
     }
   }
 
-  // Get WebGL information for better feature detection.
+  // Get WebGL information for better feature detection. Valuable for iOS.
   if (ctx) {
     console.log(">>>>>>>>>>>>>>>>>>HAVE A CONTEXT");
       this.tests.glVersion =  ctx.getParameter(ctx.VERSION).toLowerCase();

@@ -77,7 +77,7 @@ function WebVRPageManager(renderer, effect, camera, params) {
   // Bind updates in Device to callback distorter recalculations.
   this.deviceInfo.on(Modes.EmitterModes.DEVICE_CHANGED, this.onDeviceChanged_.bind(this));
   this.deviceInfo.getDevice();
-  console.log('Using the %s device.', this.deviceInfo.getDevice());
+  console.log('Using the %s device.', this.deviceInfo.getDevice().label);
 
   /*
    * Bind updates in viewer to callback field of view calculations. These calcs
@@ -343,7 +343,7 @@ WebVRPageManager.prototype.onErrorFullscreen_ = function(e) {
 // Trigger a fullscreen event.
 WebVRPageManager.prototype.requestFullscreen = function() {
   // Trigger fullscreen or fullscreen-VR only if we support it.
-  if (this.params.detector.webgl) {
+  if (this.params.detector.webGL) {
     console.log('Manager requestFullscreen() - entering fullscreen, mode:' + this.mode);
     if (this.mode == Modes.ViewStates.VR) {
       console.log('Manager requestFullscreen() - exiting VR');

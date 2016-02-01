@@ -89,6 +89,7 @@ function DeviceList() {
     return this.ERROR;
   };
 
+  // Given width and height of display, return diagonal length.
   this.getDiagonal_ = function(w, h) {
     return (Math.sqrt(w*w + h*h));
   };
@@ -145,11 +146,41 @@ function DeviceList() {
     return; // Device is undefined.
   };
 
-  // Given a returned result from the DPDB database, convert to our format.
-  this.searchDPDB = function(devices) {
-    return; // Device undefined.
+  // Search a DPDB-format array for our device, based on user-agent.
+  this.searchDPDB = function(ua, display, devices) {
+    var len = devices.length;
+    for (var i = 0; i < len; i++) {
+      var rules = devices[i].rules.ua;
+      if (ua.indexOf(rules) >= 0) {
+        console.log('FOUND THE DEVICE IN DPDB');
+        window.dev = devices[i];
+        return devices[i];
+      }
+    }
+    return null;
   };
 
+  // Convert DPDB device data to our format.
+  this.convertDPDB = function(dpdbDevice, device) {
+    if (!dpdbDevice || !device) {
+      return null;
+    }
+    if (dpdbDevice.rules && dpdbDevice.rules['ua']) {
+      console.log('DPDB changed device label'); ///////////////////////////////////
+      device.label = dpdbDevice.rules['ua'];
+    }
+    if(dpdbDevice.ppi) {
+      console.log('DPDB changed device ppi'); /////////////////////////////////
+      device.ppi = dpdbDevice.dpi;
+    }
+    device.diag = this.getDiagonal_(device.width, device.height) / device.ppi;
+    if(dpdbDevice.bw) {
+      console.log('DPDB changed bevelMeters');
+      device.bevelMeters = this.metersFromPixels_(dpdbDevice.bw, device.ppi);
+    }
+    // Return the modified device params.
+    return device;
+  };
 
   /*
    * Data lists.
