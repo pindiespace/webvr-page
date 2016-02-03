@@ -20,33 +20,36 @@
 /*
  * Device database, returns an object
  */
+
 function DeviceList() {
-   this.DEVICE_ALL = 0,
-   this.DEVICE_IPHONE = 1,
-   this.DEVICE_IPAD = 2,
-   this.DEVICE_IPOD = 3,
-   this.DEVICE_ANDROID = 4,
-   this.DEVICE_WINDOWS_PHONE = 5,
-   this.DEVICE_TIZEN = 6,
-   this.DEVICE_BLACKBERRY = 7,
-   this.DEVICE_GAME_CONSOLE = 8,
-   this.DEVICE_TV = 9;
 
-   this.ERROR = -1;
+  //Device group names.
+  this.DEVICE_ALL = 0,
+  this.DEVICE_IPHONE = 1,
+  this.DEVICE_IPAD = 2,
+  this.DEVICE_IPOD = 3,
+  this.DEVICE_ANDROID = 4,
+  this.DEVICE_WINDOWS_PHONE = 5,
+  this.DEVICE_TIZEN = 6,
+  this.DEVICE_BLACKBERRY = 7,
+  this.DEVICE_GAME_CONSOLE = 8,
+  this.DEVICE_TV = 9;
 
-   // Use the dpdb datase.
-   this.ONLINE_DPDB_URL = 'https://storage.googleapis.com/cardboard-dpdb/dpdb.json';
+  this.ERROR = -1;
 
-   // TODO: Future versions could get this info from a dynamic database.
-   // Choose a DeviceList to load.
-   this.getList = function(whichList) {
-     if(!whichList) {
-       whichList = this.DEVICE_ALL;
-     }
-     switch(whichList) {
-       case this.DEVICE_ALL:
+  // Use the dpdb datase.
+  this.ONLINE_DPDB_URL = 'https://storage.googleapis.com/cardboard-dpdb/dpdb.json';
+
+  // TODO: Future versions could get this info from a dynamic database.
+  // Choose a DeviceList to load.
+  this.getList = function(whichList) {
+    if(!whichList) {
+      whichList = this.DEVICE_ALL;
+    }
+    switch(whichList) {
+      case this.DEVICE_ALL:
         return this.merge(this.list.iphone, this.list.ipad, this.list.ipod,
-          this.list.android, this.list.windowsphone, this.list.blackberry, this.list.tizen,
+        this.list.android, this.list.windowsphone, this.list.blackberry, this.list.tizen,
         this.list.gameconsole, this.list.tv);
         break;
       case this.DEVICE_IPHONE:

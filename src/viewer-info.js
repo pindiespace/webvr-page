@@ -101,12 +101,9 @@ ViewerInfo.prototype.getViewerByName = function(viewerName) {
 };
 
 // Detect a Viewer, if it can be detected.
-ViewerInfo.prototype.detectViewer_ = function() {
+ViewerInfo.prototype.detectViewer_ = function(viewerName) {
   //TODO: write a detection script..
-
-  // Otherwise, get the default viewer.
-  console.warn('using generic viewer');
-  this.viewer = this.viewerList.getDefault();
+  this.viewer = this.viewerList.getDefault(viewerName);
 
   // Emit view change.
   console.log('########ABOUT TO VIEWER EMIT');

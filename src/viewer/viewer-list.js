@@ -22,8 +22,12 @@
  */
 
 function ViewerList() {
+
+  // Viewer group names.
   this.VIEWER_ALL = 0,
   this.VIEWER_CARDBOARD = 1;
+  this.VIEWER_INCREDISONIC = 2;
+  this.VIEWER_DESKTOP = 3;
 
   this.getList = function(whichList) {
     if(!whichList) {
@@ -31,11 +35,17 @@ function ViewerList() {
     }
     switch(whichList) {
       case this.VIEWER_ALL:
-        return this.merge(this.list.cardboard);
+        return this.merge(this.list.cardboard, this.list.incredisonic, this.list.desktop);
         break;
       case this.VIEWER_CARDBOARD:
         return this.list.cardboard;
         break;
+      case this.VIEWER_INCREDISONIC:
+        return this.list.incredisonic;
+        break;
+      case this.VIEWER_DESKTOP: // Desktop and large tablets.
+        return this.list.desktop;
+        beak;
       default:
         return {};
         break;
@@ -44,9 +54,23 @@ function ViewerList() {
   };
 
   // Default viewer object.
-  this.getDefault = function() {
+  this.getDefault = function(viewerName) {
+    switch (viewerName) {
+      case this.VIEWER_DESKTOP:
+        console.warn('using generic desktop viewer');
+        return this.list.desktop.generic;
+      break;
+      case this.VIEWER_CARDBOARD:
+        console.warn('using generic mobile viewer');
+        return this.list.cardboard.cardboardv1;
+      break;
+      default:
+        console.warn('using generic mobile viewer');
+        return this.list.cardboard.cardboardv1;
+      break;
+    }
     //return this.list.cardboard.cardboardv1;
-    return this.list.incredisonic.vue;
+    //return this.list.incredisonic.vue;
   };
 
   /*
@@ -66,7 +90,19 @@ function ViewerList() {
   };
 
   this.list = {};
-
+  this.list.desktop = { // Desktop and large tablets. Dynamically compute approximate screen size.
+    generic: {
+      label: 'Generic Desktop',
+      fov: 40,
+      interLensDistance: ((screen.width / 4) / 96 ) * 0.0254,
+      baselineLensDistance: ((screen.width / 8) / 96) * 0.0254,
+      screenLensDistance: 1,
+      distortionCoefficients: [0.441, 0.156],
+      inverseCoefficients: [-0.4410035, 0.42756155, -0.4804439, 0.5460139,
+        -0.58821183, 0.5733938, -0.48303202, 0.33299083, -0.17573841,
+        0.0651772, -0.01488963, 0.001559834]
+    }
+  },
   this.list.cardboard = {
     cardboardv1: {
       label: 'Cardboard I/O 2014',

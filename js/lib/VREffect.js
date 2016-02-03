@@ -74,16 +74,22 @@ THREE.VREffect = function ( renderer, onError ) {
 
 	};
 
+	//NOTE: added
+	this.setFOV = function(fovL, fovR) {
+		eyeFOVL = fovL;
+		eyeFOVR = fovR;
+	};
+
 	// fullscreen
 
 	var isFullscreen = false;
 
 	var canvas = renderer.domElement;
-	var fullscreenchange = canvas.mozRequestFullScreen ? 'mozfullscreenchange' : 'webkitfullscreenchange';
+	var fullscreenchange = canvas.fullscreenchange || (canvas.mozRequestFullScreen ? 'mozfullscreenchange' : 'webkitfullscreenchange');
 
 	document.addEventListener( fullscreenchange, function ( event ) {
 
-		isFullscreen = document.mozFullScreenElement || document.webkitFullscreenElement;
+		isFullscreen = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement;
 
 	}, false );
 
@@ -92,7 +98,10 @@ THREE.VREffect = function ( renderer, onError ) {
 		if ( vrHMD === undefined ) return;
 		if ( isFullscreen === boolean ) return;
 
-		if ( canvas.mozRequestFullScreen ) {
+		if ( canvas.requestFullscreen ) {
+			canvas.requestFullscreen( { vrDisplay: vrHMD } );
+
+		} else if ( canvas.mozRequestFullScreen ) {
 
 			canvas.mozRequestFullScreen( { vrDisplay: vrHMD } );
 
@@ -128,6 +137,9 @@ THREE.VREffect = function ( renderer, onError ) {
 			}
 
 			var size = renderer.getSize();
+
+			console.log("*********************EFFECT RENDERER SIZE WIDTH:" + size.width + " HEIGHT:" + size.height)
+
 			size.width /= 2;
 
 			renderer.enableScissorTest( true );

@@ -63,7 +63,7 @@ function WebVRPageManager(renderer, effect, camera, params) {
   this.isUndistorted = !!this.params.isUndistorted;
 
   // Create the Player and define its buttons.
-  this.player = new WebVRPagePlayer(renderer, params);
+  this.player = new WebVRPagePlayer(this.renderer, params);
 
   // Get available device information, along with viewer params.
   this.deviceInfo = new DeviceInfo(params);
@@ -72,13 +72,17 @@ function WebVRPageManager(renderer, effect, camera, params) {
   window.deviceInfo = this.deviceInfo; //TODO: remove....
 
   // Get the Cardboard distorter.
-  this.distorter = new CardboardDistorter(renderer);
+  this.distorter = new CardboardDistorter(this.renderer);
 
   // Bind updates in Device to callback distorter recalculations.
   this.deviceInfo.on(Modes.EmitterModes.DEVICE_CHANGED, this.onDeviceChanged_.bind(this));
-  this.deviceInfo.getDevice();
+  var dev = this.deviceInfo.getDevice();
   console.log('Using the %s device.', this.deviceInfo.getDevice().label);
 
+  // Force viewerType if we are a desktop or large tablet (which couldn't fit into a Cardboard viewer).
+  if (this.deviceInfo.desktop || this.deviceInfo.tablet) {
+    this.viewerInfo.setViewer(this.viewerInfo.viewerList.VIEWER_DESKTOP);
+  }
   /*
    * Bind updates in viewer to callback field of view calculations. These calcs
    * use both Device and Viewer information.
@@ -297,6 +301,16 @@ WebVRPageManager.prototype.onResize_ = function(e) {
 // Callback for Viewer changed.
 WebVRPageManager.prototype.onViewerChanged_ = function(viewer) {
   console.log('Viewer changed to:' + viewer.label);
+  // this.viewerInfo.setViewer(viewer);
+
+  // Update the distortion appropriately.
+  this.distorter.updateDeviceInfo(this.deviceInfo);
+
+  // And update the HMDVRDevice parameters.
+  this.setHMDVRDeviceParams_(viewer);
+
+  // Notify anyone interested in this event.
+  //this.emit(Modes.EmitterModes.VIEWER_CHANGED, viewer);
 };
 
 // Callback for Device changed.
@@ -389,6 +403,17 @@ WebVRPageManager.prototype.requestVR = function() {
     console.warn('warning mode is already VR');
     return;
   }
+
+  /*
+   * TODO: we get distortion because we can't make two square stereo images.
+   * TODO: we can do one of two things:
+   * TODO: 1. change vertical FieldOfView
+   * TODO: 2. shrink longest dimension of <canvas> so stereo images are exactly square.
+   *
+   * TODO: flip to fullscreen on orientation change, out when flipping back.
+   * TODO: do by computing width and height. 
+   */
+
   this.requestFullscreen();
   this.distorter.patch(this.camera);
   this.setMode(Modes.ViewStates.VR);

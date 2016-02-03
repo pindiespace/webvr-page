@@ -340,7 +340,6 @@ Util.isAppMode = function() {
       document.webkitExitFullscreen ||
       document.msExitFullscreen ||
       function (d) {
-        d.d = true;
         if (document.fullscreenEnabled === true) {
           document.removeEventListener('keydown', escHandler, false);
           var event = new CustomEvent('fullscreenchange');

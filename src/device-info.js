@@ -84,7 +84,7 @@ DeviceInfo.prototype.getDevice = function() {
 
 DeviceInfo.prototype.getViewer = function() {
   if(!this.viewer) {
-    return this.viewerInfo.getViewer();
+    this.viewer = this.viewerInfo.getViewer();
   }
   return this.viewer;
 };
@@ -242,7 +242,9 @@ DeviceInfo.prototype.detectGL_ = function() {
   if(this.params.detector.canvas && this.params.detector.webGL) {
     this.tests.webGL = true;
     this.tests.canvas = true;
-    this.tests.glVersion = FeatureDetector.glVersion;
+    console.log("GLVERSION IS:" + this.params.detector.glVersion)
+    this.tests.glVersion = this.params.detector.glVersion;
+    // TODO: context name
     return;
   }
 

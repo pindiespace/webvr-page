@@ -126,6 +126,8 @@ CardboardDistorter.prototype.updateDeviceInfo = function(deviceInfo) {
   var undistortedProj = deviceInfo.getProjectionMatrixLeftEye(true);
   var viewport = deviceInfo.getUndistortedViewportLeftEye();
 
+  console.log("$$$$$$$$DEVICE WIDTH:" + deviceInfo.device.width + " VIEWPORT WIDTH:" + viewport.width);
+
   var device = deviceInfo.device;
   var params = {
     xScale: viewport.width / (device.width / 2),
@@ -140,7 +142,8 @@ CardboardDistorter.prototype.updateDeviceInfo = function(deviceInfo) {
       Util.projectionMatrixToVector_(undistortedProj, params));
 
   // Set distortion coefficients.
-  var coefficients = deviceInfo.viewer.distortionCoefficients;
+  console.log(">>>>>>>>>>>>DEVICICE INFO VIEWER:" + deviceInfo.getViewer());
+  var coefficients = deviceInfo.getViewer().distortionCoefficients;
   uniforms.distortion.value.set(coefficients[0], coefficients[1]);
 
 

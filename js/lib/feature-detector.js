@@ -25,6 +25,7 @@ var FeatureDetector = (function() {
   var self = this; // Scope.
   var cs, ctx, tests = [], retests = {}; self.results = {};
 
+  var names = ['3d', 'webgl', 'experimental-webgl', 'experimental-webgl2', 'moz-webgl'];
 
   /*
    * Feature detection.
@@ -71,18 +72,39 @@ var FeatureDetector = (function() {
   tests['webGL'] = function() {
     if (tests['canvas']() && document.createElement) {
         cs = document.createElement('canvas');
-        var names = ['3d', 'webgl', 'experimental-webgl', 'experimental-webgl2', 'moz-webgl'];
         for (i in names) {
           try {
             ctx = cs.getContext(names[i]);
             if (ctx && typeof ctx.getParameter == 'function') {
-              tests['glVersion'] = ctx.getParameter(ctx.VERSION).toLowerCase();
               cs = ctx = null;
               return true;
             }
           } catch (e) {}
         }
     }
+    cs = ctx = null;
+    return false;
+  };
+
+  /*
+   * Due to program structure, it is easier to re-create the context,
+   * instead of trying to set it in tests[webGL].
+   */
+  tests['glVersion'] = function() {
+    if (tests['canvas']() && document.createElement) {
+        cs = document.createElement('canvas');
+        for (i in names) {
+          try {
+            ctx = cs.getContext(names[i]);
+            if (ctx && typeof ctx.getParameter == 'function') {
+              var vers = ctx.getParameter(ctx.VERSION).toLowerCase();
+              cs = ctx = null;
+              return vers;
+            }
+          } catch (e) {}
+        }
+    }
+    cs = ctx = null;
     return false;
   };
 
