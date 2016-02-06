@@ -42,9 +42,6 @@ function DeviceInfo(params) {
   // Assign a specific Viewer, or get a default one.
   this.params = params || {};
 
-  this.viewerInfo = new ViewerInfo(this.params);
-
-  // Use this.viewerInfo.getViewer() to assign the viewer.
 
   // Current device.
   this.device = null;
@@ -55,18 +52,32 @@ function DeviceInfo(params) {
   // Load the device database.
   this.devList = new DeviceList();
 
-  // If a device name was supplied, set it. Otherwise, detect the device.
+  // If a device name was supplied, set it.
   if(params.deviceName) {
     if(this.setDevice(deviceName)) {
       this.emit(Modes.EmitterModes.DEVICE_CHANGED, this.device); ////////////////////////////////
     }
-  } else {
-    // Run feature and user agent detects on the browser.
-    this.detectGL_();
-    this.detectDisplay_();
-    this.detectOS_();
-    this.detectFormFactor_();
   }
+    // Run feature and user agent detects on the browser in all cases.
+  this.detectGL_();
+  this.detectDisplay_();
+  this.detectOS_();
+  this.detectFormFactor_();
+
+  // Create the Viewer.
+  this.viewerInfo = new ViewerInfo(this.params);
+
+  /*
+   * the Cardboard and similar viewers can't be dynamically detected - it is either a default, or
+   * a user select. However, since the boilerplate might be used on desktops, we need
+   * to force viewerType if we are a desktop or large tablet (which couldn't fit into a Cardboard viewer).
+   */
+  if (this.desktop || this.tablet) {
+    this.viewerInfo.setViewer(this.viewerInfo.viewerList.VIEWER_DESKTOP);
+  }
+
+  // Use this.viewerInfo.getViewer() to assign the viewer.
+
 
   // call this.getDevice() to search for a device.
 
@@ -80,6 +91,11 @@ DeviceInfo.prototype.getDevice = function() {
     return this.detectDevice();
   }
   return this.device;
+};
+
+// Alias for compatibility with borismus webvr-boilerplate.
+DeviceInfo.prototype.updateDeviceInfo = function() {
+  return (this.getDevice() || this.device);
 };
 
 DeviceInfo.prototype.getViewer = function() {
@@ -399,7 +415,8 @@ DeviceInfo.prototype.getDistortedFieldOfViewLeftEye = function() {
   var viewer = this.getViewer();
   var device = this.device;
 
-  console.log(">>>>>>>>>>>>>>>>>VIEWER:" + this.viewer)
+  console.log(">>>>>>>>>>>>>>>>>VIEWER:" + this.viewer.label)
+  console.log(">>>>>>>>>>>>>>>>>DEVICE:" + this.device.label)
 
   var distortion = new Distortion(viewer.distortionCoefficients);
 

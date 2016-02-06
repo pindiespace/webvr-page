@@ -44,7 +44,6 @@ CardboardDistorter.prototype.patch = function() {
   }.bind(this);
 
   this.renderer.setSize = function(width, height) {
-    console.log("IN MESH DISTORTER, SETTING SIZE TO WIDTH:" + width + " HEIGHT:" + height) //////////////////////////////////
     this.renderTarget.setSize(width, height);
     this.genuineSetSize.call(this.renderer, width, height);
   }.bind(this);

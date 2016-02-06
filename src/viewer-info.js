@@ -30,6 +30,7 @@ function ViewerInfo(params) {
   this.viewer = null;
 
   this.params = params || {};
+  window.params = params;
 
   // Get the viewer database.
   this.viewerList = new ViewerList();
@@ -51,7 +52,9 @@ ViewerInfo.prototype = new Emitter();
 
 // Get a named viewer.
 ViewerInfo.prototype.getViewer = function() {
+
   if(!this.viewer) {
+    console.log("++++++++++++++detecting a viewer")
     this.detectViewer_();
   }
   return this.viewer;
@@ -108,7 +111,7 @@ ViewerInfo.prototype.detectViewer_ = function(viewerName) {
   // Emit view change.
   console.log('########ABOUT TO VIEWER EMIT');
   this.emit(Modes.EmitterModes.VIEWER_CHANGED, this.viewer); /////////////////////////////
-
+  console.log('#######EMITTED VIEWEREMIT')
   return this.viewer;
 };
 

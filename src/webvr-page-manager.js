@@ -69,10 +69,10 @@ function WebVRPageManager(renderer, effect, camera, params) {
   this.deviceInfo = new DeviceInfo(params);
   this.viewerInfo = this.deviceInfo.viewerInfo;
 
-  window.deviceInfo = this.deviceInfo; //TODO: remove....
+  window.deviceInfo = this.deviceInfo; //TODO: remove....//////////////////////////////////////
 
   // Get the Cardboard distorter.
-  this.distorter = new CardboardDistorter(this.renderer);
+  this.distorter = new CardboardDistorter(this.renderer, this.deviceInfo);
 
   // Bind updates in Device to callback distorter recalculations.
   this.deviceInfo.on(Modes.EmitterModes.DEVICE_CHANGED, this.onDeviceChanged_.bind(this));
@@ -303,6 +303,7 @@ WebVRPageManager.prototype.onViewerChanged_ = function(viewer) {
   console.log('Viewer changed to:' + viewer.label);
   // this.viewerInfo.setViewer(viewer);
 
+  console.log("ONVIEWERCHANGED: this.distorter.updateDeviceInfo");
   // Update the distortion appropriately.
   this.distorter.updateDeviceInfo(this.deviceInfo);
 
@@ -315,7 +316,13 @@ WebVRPageManager.prototype.onViewerChanged_ = function(viewer) {
 
 // Callback for Device changed.
 WebVRPageManager.prototype.onDeviceChanged_ = function(device) {
+  console.log("******+++++++*********IN UPDATEDEVICEINFO")
+
   console.log('Device changed to:' + device.label);
+  //this.deviceInfo.updateDeviceParams(newParams);
+  console.log("ONDEVICECHANGED: this.distorter.updateDeviceInfo:" + this.distorter.updateDeviceInfo)
+  this.distorter.updateDeviceInfo(this.deviceInfo);
+  console.log(")))))))WE ARE PAST THE UPDATEDEVICEINFO CALL")
 };
 
 // Resize the effect to a specific size. Does NOT resize the player container.
@@ -411,7 +418,7 @@ WebVRPageManager.prototype.requestVR = function() {
    * TODO: 2. shrink longest dimension of <canvas> so stereo images are exactly square.
    *
    * TODO: flip to fullscreen on orientation change, out when flipping back.
-   * TODO: do by computing width and height. 
+   * TODO: do by computing width and height.
    */
 
   this.requestFullscreen();

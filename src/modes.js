@@ -19,7 +19,6 @@ var EmitterModes = {
   MODE_CHANGE: '-modechange',
   DEVICE_CHANGED: 'devicechanged', // Common to multiple managers on the page.
   VIEWER_CHANGED: 'viewerchanged'
-  //TODO: add Emitter mode strings
 };
 
 // Ui (View) states.

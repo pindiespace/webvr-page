@@ -1,7 +1,7 @@
 var BarrelDistortionFragment = {
   type: 'fragment_v2',
 
-  
+
   uniforms: {
     texture:   { type: 't', value: null },
     distortion: { type: 'v2', value: new THREE.Vector2(0.441, 0.156) },

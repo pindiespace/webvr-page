@@ -55,7 +55,7 @@ function createRenderTarget(renderer) {
   return new THREE.WebGLRenderTarget(width, height, parameters);
 }
 
-function CardboardDistorter(renderer) {
+function CardboardDistorter(renderer, deviceInfo) {
   this.shaderPass = new ShaderPass(BarrelDistortion);
   this.renderer = renderer;
 
@@ -127,6 +127,8 @@ CardboardDistorter.prototype.updateDeviceInfo = function(deviceInfo) {
   var viewport = deviceInfo.getUndistortedViewportLeftEye();
 
   console.log("$$$$$$$$DEVICE WIDTH:" + deviceInfo.device.width + " VIEWPORT WIDTH:" + viewport.width);
+  window.dev = deviceInfo.device;
+  window.vp = viewport;
 
   var device = deviceInfo.device;
   var params = {
