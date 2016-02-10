@@ -38,6 +38,12 @@ var FeatureDetector = (function() {
   // https://davidwalsh.name/vendor-prefix
   tests['vendorPrefix'] = function() {
     // Get the vendor prefix for the client.
+    if (!window.getComputedStyle) {
+      return {
+        js: '',
+        css: ''
+      };
+    } else {
     var styles = window.getComputedStyle(document.documentElement, ''),
     pre = (Array.prototype.slice
         .call(styles)
@@ -47,6 +53,7 @@ var FeatureDetector = (function() {
           js: pre,
           css: '-' + pre + '-',
         };
+    }
   };
 
   /*

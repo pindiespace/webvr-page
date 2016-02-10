@@ -445,14 +445,18 @@ WebVRPageManager.prototype.requestVR = function() {
    */
 
   this.requestFullscreen();
-  this.requestPointerLock_();
+  if (WebVRConfig.FORCE_POINTER_LOCK) {
+    this.requestPointerLock_();
+  }
   this.distorter.patch(this.camera);
   this.setMode(Modes.ViewStates.VR);
 };
 
 // Exit VR (stereo) rendering mode. Called by exitFullscreen() fullscreen to DOM.
 WebVRPageManager.prototype.exitVR = function() {
-  this.releasePointerLock_();
+  if (WebVRConfig.FORCE_POINTER_LOCK) {
+    this.releasePointerLock_();
+  }
   this.distorter.unpatch();
 };
 

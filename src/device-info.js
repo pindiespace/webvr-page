@@ -42,6 +42,11 @@ function DeviceInfo(params) {
   // Assign a specific Viewer, or get a default one.
   this.params = params || {};
 
+  if (!params.detector) {
+    console.warn('warning: feature detector not present. Some functions may fail');
+  }
+
+  this.detector = this.params.detector || {};
 
   // Current device.
   this.device = null;
@@ -78,7 +83,6 @@ function DeviceInfo(params) {
 
   // Use this.viewerInfo.getViewer() to assign the viewer.
 
-
   // call this.getDevice() to search for a device.
 
 };
@@ -98,6 +102,7 @@ DeviceInfo.prototype.updateDeviceInfo = function() {
   return (this.getDevice() || this.device);
 };
 
+// Get the Viewer (shortcut the the ViewerInfo object).
 DeviceInfo.prototype.getViewer = function() {
   if(!this.viewer) {
     this.viewer = this.viewerInfo.getViewer();
@@ -105,6 +110,7 @@ DeviceInfo.prototype.getViewer = function() {
   return this.viewer;
 };
 
+// Manually set the device (user choice or in testing).
 DeviceInfo.prototype.setDevice = function(deviceName) {
   var list = this.devList.getList(deviceList);
   var dev = list[deviceName];
@@ -130,6 +136,7 @@ DeviceInfo.prototype.getDeviceNames = function(deviceList) {
   return names;
 };
 
+// Get the label (text string) naming the device (not the JS device name).
 DeviceInfo.prototype.getDeviceLabels = function(deviceList) {
   var labels = [];
   if(!deviceList) {
@@ -143,6 +150,7 @@ DeviceInfo.prototype.getDeviceLabels = function(deviceList) {
   return labels;
 };
 
+// Get the device by its real JS object name.
 DeviceInfo.prototype.getDeviceByName = function(deviceName) {
   var list = this.deviceList.getList(this.deviceList.DEVICE_ALL);
   var dev = list[deviceName];
@@ -252,56 +260,21 @@ DeviceInfo.prototype.detectDevice = function() {
 // Check if WebGL is present and enabled.
 // https://www.browserleaks.com/webgl#howto-detect-webgl
 DeviceInfo.prototype.detectGL_ = function() {
-  var cs, ctx, canvas, webGL, glVersion, glVendor, glShaderVersion;
+  //var cs, ctx, canvas, webGL, glVersion, glVendor, glShaderVersion;
 
   // If we are using the FeatureDetector, use its results.
-  if(this.params.detector.canvas && this.params.detector.webGL) {
-    this.tests.webGL = true;
-    this.tests.canvas = true;
-    console.log("GLVERSION IS:" + this.params.detector.glVersion)
-    this.tests.glVersion = this.params.detector.glVersion;
-    // TODO: context name
-    return;
-  }
-
-  // Test for HTML5 canvas
-  this.tests.canvas = !!window.CanvasRenderingContext2D;
-
-  console.log("RUNNING DETECTGL IN DEVICEINFO")
-
-  // Test for WebGL.
-  if (this.tests.canvas) {
-    this.tests.webGL = false;
-    cs = document.createElement('canvas');
-    var names = ['webgl', 'webgl2', 'experimental-webgl', 'experimental-webgl2', 'moz-webgl', '3d', 'webkit-3d'];
-    console.log("ABOUT TO RUN THROUGH WEBGL VERSIONS");
-    for (i in names) {
-      console.log("NAMES I IS: " + names[i])
-      try {
-        ctx = cs.getContext(names[i]);
-        console.log("CTX IS A:" + typeof ctx)
-        if (ctx && ctx instanceof WebGLRenderingContext) {
-          console.log(">>>>>>>>>>>>>>>>>GOT THE WEB GL")
-          this.tests.webGL = true;
-          this.tests.webGLCtxName = names[i];
-          break;
-        }
-      } catch (e) {}
+  if (this.detector.canvas) {
+    if (this.detector.webGL) {
+      this.tests.webGL = true;
+      this.tests.canvas = true;
+      console.log("in deviceInfo, WebGL version is:" + this.detector.glVersion);
+      this.tests.glVersion = this.detector.glVersion;
+      return;
     }
+  } else {
+    // No detector.
+    console.error('FeatureDetector not present, exiting');
   }
-
-  // Get WebGL information for better feature detection. Valuable for iOS.
-  if (ctx) {
-    console.log(">>>>>>>>>>>>>>>>>>HAVE A CONTEXT");
-      this.tests.glVersion =  ctx.getParameter(ctx.VERSION).toLowerCase();
-      this.tests.glVendor = ctx.getParameter(ctx.VENDOR).toLowerCase();
-      this.tests.glShaderVersion = ctx.getParameter(ctx.SHADING_LANGUAGE_VERSION).toLowerCase();
-      this.tests.glRenderer = ctx.getParameter(ctx.RENDERER).toLowerCase();
-    }
-
-  // Undefine the context and <canvas> we created.
-  cs = ctx = undefined;
-
 };
 
 // Detect screen parameters reported by the browser.

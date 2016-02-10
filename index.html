@@ -35,40 +35,14 @@ like head.js
 -->
 <script src="js/lib/feature-detector.js"></script>
 
+<!--
+Handle old web browsers that don't support HTML5 canvas with a shiv, plus a
+fallback to PNG image.
+-->
 <script>
   if(FeatureDetector && !FeatureDetector.canvas) {
-
-    FeatureDetector.load([
-      [
-        {name: 'html5', path: 'js/lib/html5shiv.min.js', poly: true}
-      ]], function () {
-        console.log("added HTML5 Shiv");
-        // Replace canvas tags with images.
-        var c = document.getElementsByTagName('canvas');
-        console.log('c.length:' + c.length)
-        // Replace each canvas with a default image.
-        for(var i = 0; i < c.length; i++) {
-          //TODO: change so both canvas tags are replaced.
-          console.log('replacing canvas tag id:' + c[i].id);
-          var img = document.createElement('img');
-          img.src = 'img/fallback.png';
-          img.style.display = 'block';
-          var parentNode = c[i].parentNode;
-          parentNode.insertBefore(img, c[i]);
-        }
-      },
-      function (percent) {
-        console.log('progress function, ' + percent + '%');
-        var prog = document.getElementById('webvr-page-load-progress');
-        if(prog) {
-          // ie8 won't write to innerHTML here.
-          prog.parentNode.innerHTML = '<progress value=' + percent + '>' + percent + '%</progress>'
-        }
-      },
-      function (err) {
-        console.log('error function')
-      }
-    );
+    document.write('<script src="' + 'js/lib/html5shiv.min.js' + '" type="text/javascript"><\/script>');
+    document.write('<script src="' + 'js/lib/pngfallback.js' + '" type="text/javascript"><\/script>');
   }
 </script>
 
@@ -112,7 +86,8 @@ like head.js
    */
   WebVRConfig = {
      // Forces availability of VR mode.
-     FORCE_ENABLE_VR: true // Default: false. Enables VR toggles on Desktops.
+     FORCE_ENABLE_VR: true, // Default: false. Enables VR toggles on Desktops.
+     FORCE_POINTER_LOCK: false
      //FORCE_DISTORTION: true, // Default: false.
      // Complementary filter coefficient. 0 for accelerometer, 1 for gyro.
      //K_FILTER: 0.98, // Default: 0.98.
