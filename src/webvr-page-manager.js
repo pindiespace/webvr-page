@@ -23,6 +23,7 @@ var CardboardDistorter = require('./cardboard-distorter.js');
 var DeviceInfo = require('./device-info.js');
 var ViewerInfo = require('./viewer-info.js');
 var Util = require('./util.js');
+var WakeLock = require('./wakelock.js');
 var WebVRPagePlayer = require('./webvr-page-player.js');
 
 /**
@@ -86,9 +87,9 @@ function WebVRPageManager(renderer, effect, camera, params) {
   /*
    * Bind updates in viewer to callback field of view calculations. These calcs
    * use both Device and Viewer information.
-   * getDistortedFieldOfViewLeftEye()
-   * getUndistortedViewportLeftEye()
-   * getUndistortedParams_()
+   * - getDistortedFieldOfViewLeftEye()
+   * - getUndistortedViewportLeftEye()
+   * - getUndistortedParams_()
    */
   this.viewerInfo.on(Modes.EmitterModes.VIEWER_CHANGED, this.onViewerChanged_.bind(this));
   this.deviceInfo.viewer = this.viewerInfo.getViewer();
@@ -107,7 +108,8 @@ function WebVRPageManager(renderer, effect, camera, params) {
   this.backButtons = this.player.getBackPanel();
   this.backButtons.on(this.backButtons.getButtonId(Modes.ButtonTypes.BUTTON_BACK), this.exitFullscreen.bind(this));
 
-  console.log('about to check for hmd')
+  console.log('about to check for hmd');
+
   // Get info for any HMD (head-mounted device).
   this.getDeviceByType_(HMDVRDevice).then(function(hmd) {
     if (hmd) {
@@ -133,6 +135,7 @@ function WebVRPageManager(renderer, effect, camera, params) {
   var size = this.player.getSize();
   this.resize(size.width, size.height);
 
+  // Begin listening for motion events (TODO: not implemented).
   this.listenMotion_();
 
   // Begin listening for resize events.
@@ -144,7 +147,8 @@ function WebVRPageManager(renderer, effect, camera, params) {
   // Begin listening for device orientation events.
   this.listenOrientation_();
 
-  // Bind events.
+  // Create the necessary elements for wake lock to work.
+  this.wakelock = new WakeLock();
 
   // Emit an a general initialization event to all managers on the page.
   this.emit(this.prefix + Modes.EmitterModes.PROGRAM_INITIALIZED);
@@ -309,9 +313,6 @@ WebVRPageManager.prototype.onViewerChanged_ = function(viewer) {
 
   // And update the HMDVRDevice parameters.
   this.setHMDVRDeviceParams_(viewer);
-
-  // Notify anyone interested in this event.
-  //this.emit(Modes.EmitterModes.VIEWER_CHANGED, viewer);
 };
 
 // Callback for Device changed.

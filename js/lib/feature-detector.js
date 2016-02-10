@@ -34,6 +34,21 @@ var FeatureDetector = (function() {
    * can be re-tested after loading polyfills.
    */
 
+  // Client vendor prefixes.
+  // https://davidwalsh.name/vendor-prefix
+  tests['vendorPrefix'] = function() {
+    // Get the vendor prefix for the client.
+    var styles = window.getComputedStyle(document.documentElement, ''),
+    pre = (Array.prototype.slice
+        .call(styles)
+        .join('')
+        .match(/-(moz|webkit|ms|o|xv)-/) || ['',''])[1]; // Default to nothing.
+      return {
+          js: pre,
+          css: '-' + pre + '-',
+        };
+  };
+
   /*
    * Test for document.createElement.
    */

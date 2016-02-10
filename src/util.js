@@ -199,6 +199,7 @@ Util.isFullScreen = function() {
   return false;
 };
 
+// Check if program is running in standalone mode.
 Util.isAppMode = function() {
   return !!window.navigator.standalone;
 };
