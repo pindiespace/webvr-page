@@ -17,6 +17,42 @@
  */
 var Util = {};
 
+// Execute a prefixed command.
+Util.executePrefixed = function(element, pfx, cmd) {
+  if(element[cmd]) {
+    console.log('executing:' + cmd);
+    element[cmd]();
+  } else {
+    if(element[pfx + cmd]) {
+      console.log('executing:' + pfx + cmd);
+      element[pfx + cmd]();
+    }
+  }
+};
+
+Util.getPrefixed = function(element, pfx, prop) {
+  if(element[prop]) {
+    console.log('using property:' + prop);
+    return element[prop];
+  } else {
+    if (element[pfx + prop]) {
+      console.log('using property:' + pfx + prop);
+      return element[pfx + prop];
+    }
+  }
+  return null;
+};
+
+// See if we're running in an iframe.
+Util.isIFrame = function() {
+  try {
+    return window.self !== window.top;
+  } catch (e) {
+    return true;
+  }
+};
+
+// Cryptography used for UUID generation.
 Util.hasCrypto = (typeof(window.crypto) != 'undefined' &&
   typeof(window.crypto.getRandomValues) != 'undefined');
 
@@ -110,49 +146,6 @@ Util.getChildrenByTagName = function(elem, tagName) {
     }
   }
   return arr;
-};
-
-// Get element width in CSS pixels, as a number.
-Util.getElementWidth = function(elem) {
-  var w;
-  if (elem.style.clip) {
-    w = elem.style.clip.width;
-  } else if (elem.style.pixelWidth) {
-      w = elem.style.pixelWidth;
-  } else {
-    w = elem.offsetWidth;
-  }
-  return parseFloat(w);
-};
-
-// Get element height in CSS pixels, as a number.
-Util.getElementHeight = function(elem) {
-  var h;
-  if (elem.style.clip) {
-    h = elem.style.clip.height;
-  } else if (elem.style.pixelHeight) {
-    h = elem.style.pixelHeight;
-  } else {
-    h = elem.offsetHeight;
-  }
-  return parseFloat(h);
-};
-
-// Math function wrapper.
-Util.radToDeg = function(rads) {
-  if(THREE && THREE.Math) {
-      return THREE.Math.radToDeg(rads);
-  }
-  console.error('radToDeg not supported by your 3d library');
-  return 0;
-};
-
-Util.degToRad = function(degs) {
-  if(THREE && THREE.Math) {
-    return THREE.Math.degToRad(degs);
-  }
-  console.error('degToRad not supported by your 3d library');
-  return 0;
 };
 
 /**
@@ -371,15 +364,6 @@ Util.parseText = function(str) {
   return str.replace(/[0-9]/g, '');
 };
 
-// See if we're running in an iframe.
-Util.isIFrame = function() {
-  try {
-    return window.self !== window.top;
-  } catch (e) {
-    return true;
-  }
-};
-
 // From http://goo.gl/4WX3tg
 Util.getQueryParameter = function(name) {
   name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
@@ -403,6 +387,49 @@ Util.getScreenWidth = function() {
 Util.getScreenHeight = function() {
   return Math.min(window.screen.width, window.screen.height) *
       window.devicePixelRatio;
+};
+
+// Get element width in CSS pixels, as a number.
+Util.getElementWidth = function(elem) {
+  var w;
+  if (elem.style.clip) {
+    w = elem.style.clip.width;
+  } else if (elem.style.pixelWidth) {
+      w = elem.style.pixelWidth;
+  } else {
+    w = elem.offsetWidth;
+  }
+  return parseFloat(w);
+};
+
+// Get element height in CSS pixels, as a number.
+Util.getElementHeight = function(elem) {
+  var h;
+  if (elem.style.clip) {
+    h = elem.style.clip.height;
+  } else if (elem.style.pixelHeight) {
+    h = elem.style.pixelHeight;
+  } else {
+    h = elem.offsetHeight;
+  }
+  return parseFloat(h);
+};
+
+// Math function wrapper.
+Util.radToDeg = function(rads) {
+  if(THREE && THREE.Math) {
+      return THREE.Math.radToDeg(rads);
+  }
+  console.error('radToDeg not supported by your 3d library');
+  return 0;
+};
+
+Util.degToRad = function(degs) {
+  if(THREE && THREE.Math) {
+    return THREE.Math.degToRad(degs);
+  }
+  console.error('degToRad not supported by your 3d library');
+  return 0;
 };
 
 /**

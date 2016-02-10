@@ -40,6 +40,15 @@ var WebVRPagePlayer = require('./webvr-page-player.js');
 function WebVRPageManager(renderer, effect, camera, params) {
   this.params = params || {};
 
+  if (!params.detector) {
+    console.warn('warning: feature detector not present. Some functions may fail');
+  }
+
+  this.detector = params.detector || {};
+
+  // Store the vendor prefix, to simplify code.
+  this.jsPrefix = this.detector.vendorPrefix.js || '';
+
   // Give a unique to ID to each manager.
   this.prefix = 'webvr';
   this.uid = Util.getUniqueIncrementingId(this.prefix);
@@ -365,7 +374,7 @@ WebVRPageManager.prototype.onErrorFullscreen_ = function(e) {
 // Trigger a fullscreen event.
 WebVRPageManager.prototype.requestFullscreen = function() {
   // Trigger fullscreen or fullscreen-VR only if we support it.
-  if (this.params.detector.webGL) {
+  if (this.detector.webGL) {
     console.log('Manager requestFullscreen() - entering fullscreen, mode:' + this.mode);
     if (this.mode == Modes.ViewStates.VR) {
       console.log('Manager requestFullscreen() - exiting VR');
@@ -413,6 +422,19 @@ WebVRPageManager.prototype.requestVR = function() {
   }
 
   /*
+   * for now, don't implement touch panner, since it will probably be moved
+   * out of webvr-polyfill into this manager.
+   */
+
+  /*
+  if (this.mode == Modes.VR) {
+    WebVRConfig.TOUCH_PANNER_DISABLED = true;
+  } else {
+    WebVRConfig.TOUCH_PANNER_DISABLED = false;
+  }
+  */
+
+  /*
    * TODO: we get distortion because we can't make two square stereo images.
    * TODO: we can do one of two things:
    * TODO: 1. change vertical FieldOfView
@@ -423,13 +445,23 @@ WebVRPageManager.prototype.requestVR = function() {
    */
 
   this.requestFullscreen();
+  this.requestPointerLock_();
   this.distorter.patch(this.camera);
   this.setMode(Modes.ViewStates.VR);
 };
 
 // Exit VR (stereo) rendering mode. Called by exitFullscreen() fullscreen to DOM.
 WebVRPageManager.prototype.exitVR = function() {
+  this.releasePointerLock_();
   this.distorter.unpatch();
+};
+
+WebVRPageManager.prototype.requestPointerLock_ = function() {
+  Util.executePrefixed(this.renderer.domElement, this.jsPrefix, 'requestPointerLock');
+};
+
+WebVRPageManager.prototype.releasePointerLock_ = function() {
+  Util.executePrefixed(document, this.jsPrefix, 'exitPointerLock');
 };
 
 // Update according to the current mode.

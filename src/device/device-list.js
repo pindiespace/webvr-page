@@ -116,7 +116,7 @@ function DeviceList() {
       pxlr: display.pixelRatio,
       widthMeters: this.metersFromPixels_(w, ppi),
       heightMeters: this.metersFromPixels_(h, ppi),
-      bevelMeters: 0
+      bevelMeters: 0.004
     };
   };
 
