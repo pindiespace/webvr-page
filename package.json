@@ -19,7 +19,10 @@
   "devDependencies": {
     "jshint": "latest",
     "serve-favicon": "latest",
-    "express": "latest"
+    "express": "latest",
++   "browserify": "latest",
++   "derequire": "latest",
++   "watchify": "latest"
   },
   "dependencies": {
     "promise-polyfill": "latest",
