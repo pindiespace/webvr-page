@@ -232,6 +232,11 @@ WebVRPageManager.prototype.setHMDVRDeviceParams_ = function(viewer) {
       console.error('in setHMDVRDeviceParams_, no hmd present');
       return;
     }
+  
+  if (hmd.deviceName.indexOf('webvr-polyfill') === -1) {
+    // webvr-polyfill not in use, assume params are provided by browser/WebVR API
+    return;
+  }
 
     console.log('in setHMDVRDeviceParams, hmd present, setting HMDVRDeviceParams');
 
