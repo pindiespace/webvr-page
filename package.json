@@ -3,7 +3,7 @@
     "unsafe-perm": true
   },
   "scripts": {
-    "preinstall": "npm i -g bower grunt grunt-cli jshint copyfiles rimraf mkdirp browserify uglifyjs mocha",
+    "preinstall": "npm i -g bower grunt grunt-cli jshint copyfiles rimraf mkdirp browserify watchify derequire uglifyjs mocha",
     "install-three": "bower install threejs",
     "install-polyfill": "bower install webvr-polyfill && bower install html5shiv && npm install whatwg-fetch && npm install js-polyfills && npm install ie8 && npm install promise-polyfill && npm install custom-event-polyfill",
     "build-three": "copyfiles -f bower_components/three.js/build/three.min.js bower_components/three.js/examples/js/Detector.js bower_components/three.js/examples/js/controls/VRControls.js bower_components/three.js/examples/js/effects/VREffect.js bower_components/three.js/examples/js/renderers/CanvasRenderer.js bower_components/three.js/examples/js/renderers/Projector.js js/lib",
@@ -17,12 +17,8 @@
     "clean": "rimraf js"
   },
   "devDependencies": {
-    "jshint": "latest",
     "serve-favicon": "latest",
     "express": "latest",
-+   "browserify": "latest",
-+   "derequire": "latest",
-+   "watchify": "latest"
   },
   "dependencies": {
     "promise-polyfill": "latest",
