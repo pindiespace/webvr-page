@@ -482,7 +482,7 @@ var FeatureDetector = (function() {
   };
 
   // Detect features. Export so we can re-detect after polyfills are loaded.
-    // Create the results object.
+  // tests used by other tests can be pre-computed.
   function detect() {
     self.results = {
       deviceorientation: eventSupport_(window, 'deviceorientation'),
@@ -492,7 +492,11 @@ var FeatureDetector = (function() {
       reDetect: reDetect
     };
     for (var i in tests) {
-      self.results[i] = tests[i]();
+      if (typeof(tests[i]) === 'function') { // this allows us to pre-compute some results.
+        self.results[i] = tests[i]();
+      } else {
+        self.results[i] = tests[i];
+      }
     };
     return self.results;
   }

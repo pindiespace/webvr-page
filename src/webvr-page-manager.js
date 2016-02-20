@@ -232,7 +232,7 @@ WebVRPageManager.prototype.setHMDVRDeviceParams_ = function(viewer) {
       console.error('in setHMDVRDeviceParams_, no hmd present');
       return;
     }
-  
+
   if (hmd.deviceName.indexOf('webvr-polyfill') === -1) {
     // webvr-polyfill not in use, assume params are provided by browser/WebVR API
     return;
@@ -390,7 +390,11 @@ WebVRPageManager.prototype.requestFullscreen = function() {
     this.setMode(Modes.ViewStates.FULLSCREEN);
 
     // Let the player know we are going to fullscreen, and let it choose the fullscreen element.
-    this.player.requestFullscreen(this.hmd);
+    if (this.hmd.deviceName.indexOf('webvr-polyfill') === -1) {
+      this.player.requestFullscreen({vrDisplay: this.hmd});
+    } else {
+      this.player.requestFullscreen(); // don't pass polyfill hmd
+    }
 
     // Adjust the scene to the screen dimensions.
     console.log("in requestFullscreen() WIDTH:" + screen.width + " HEIGHT:" + screen.height)

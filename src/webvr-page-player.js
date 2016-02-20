@@ -262,8 +262,10 @@ WebVRPagePlayer.prototype.onFullscreenChange_ = function() {
 };
 
 // Fullscreen request initiated, add fullscreen class and return element.
-WebVRPagePlayer.prototype.requestFullscreen = function(hmd) {
+WebVRPagePlayer.prototype.requestFullscreen = function(hmdObj) {
   console.log('Player requestFullscreen');
+
+  // get the HMD object, {vrDisplay: this.hmd}
 
 //  window.hh = hmd.fieldOfViewLeft; // object with 4 fov values.
 
@@ -275,7 +277,12 @@ WebVRPagePlayer.prototype.requestFullscreen = function(hmd) {
   //this.effect.setFullScreen(true);
   //TODO: this is a way to pass in an altered HMD to the renderer
   //TODO: RECOMPUTE field of view for FF, when passing in.
-  cn.requestFullscreen();
+  if (hmdObj) {
+      cn.requestFullscreen(hmdObj);
+  } else {
+    cn.requestFullscreen();
+  }
+
   document.fullscreenElement = cn; //************KLUDGE NORMALLY ADDED BY FULLSCREEN API, but unpredictable when.
   return cn;
   //cs.style.width = screen.width;
