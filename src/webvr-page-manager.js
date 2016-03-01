@@ -126,6 +126,7 @@ function WebVRPageManager(renderer, effect, camera, params) {
       console.log('forcing distortion, hmd present:' + hmd.deviceName);
       this.distorter.setActive(true);
       this.hmd = hmd;
+      this.usingPolyfill = this.hmd.deviceName.indexOf('webvr-polyfill') !== -1;
     } else if (WebVRConfig.FORCE_DISTORTION) {
       // Enable barrel distortion.
       console.log('no hmd, forcing distortion due to WebVRConfig');
@@ -233,7 +234,8 @@ WebVRPageManager.prototype.setHMDVRDeviceParams_ = function(viewer) {
       return;
     }
 
-  if (hmd.deviceName.indexOf('webvr-polyfill') === -1) {
+  if (!this.usingPolyfill) {
+    console.log('webvr polyfill not used, assume params are in WebVR API');
     // webvr-polyfill not in use, assume params are provided by browser/WebVR API
     return;
   }

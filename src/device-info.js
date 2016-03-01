@@ -281,6 +281,7 @@ DeviceInfo.prototype.detectGL_ = function() {
 // https://github.com/LeaVerou/dpi/blob/gh-pages/dpi.js
 DeviceInfo.prototype.detectDisplay_ = function() {
 
+  // Use screen.width and screen.height to handle iOS 5 detection issue.
   this.display = {
     touch: !!(('ontouchstart' in window) || window.DocumentTouch && document instanceof DocumentTouch),
     pixelRatio: (window.devicePixelRatio ||

@@ -206,9 +206,13 @@ function DeviceList() {
    * http://www.devicespecifications.com/ (GREAT data, including video chips)
    * http://www.mobilemultimedia.be/en/mobile-phone-user-agent/LG-user-agent.html
    * https://github.com/piwik/device-detector/blob/df9e81508f65f33436bab0daaaf942e1d59c89a1/regexes/device/mobiles.yml
+   * http://info.localytics.com/blog/research-shows-the-iphone-6-is-the-most-adopted-iphone-model-with-the-highest-user-engagement
    */
   this.list = {};
 
+  // Some iOS Resolutions.
+  // http://www.paintcodeapp.com/news/ultimate-guide-to-iphone-resolutions
+  // NOTE: parsing this list is order-dependent.
   this.list.iphone = {
   iphone3: { // iPhone 1, 2, iPhone 3GS, non-Retina.
     label: 'iPhone 1, 2, 3',
@@ -266,7 +270,7 @@ function DeviceList() {
     heightMeters: 0.05127,
     bevelMeters: 0.00343
   },
-  iphone6: { // TODO: 1.16 http://info.localytics.com/blog/research-shows-the-iphone-6-is-the-most-adopted-iphone-model-with-the-highest-user-engagement
+  iphone6: {
     label: 'iPhone 6',
     detect: function(ua, display, tests) {
       return (display.longest <= 736 && (tests.glVersion.indexOf('a8') >= 0));
@@ -280,7 +284,7 @@ function DeviceList() {
     heightMeters: 0.0584,
     bevelMeters: 0.004
   },
-  iphone6s: {
+  iphone6s: { // Renders at 2x.
     label: 'iPhone 6s',
     detect: function(ua, display, tests) {
       return (display.longest <= 736 && display.pixelRatio <= 2 && (tests.glVersion.indexOf('a9') >= 0));
@@ -294,7 +298,7 @@ function DeviceList() {
     heightMeters: 0.0584,
     bevelMeters: 0.004
   },
-  iphone6splus: {
+  iphone6splus: { // Renders at 3x
     label: 'iPhone 6s Plus',
     detect: function(ua, display, tests) {
       return (display.longest <= 750 && display.pixelRatio > 2 && (tests.glVersion.indexOf('a9') >= 0));
