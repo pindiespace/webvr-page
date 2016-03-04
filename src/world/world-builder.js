@@ -13,6 +13,8 @@
  *
  */
 
+ //Note: we assume THREE.js is loaded.
+
 function WebVRWorld(Detector, width, height, depth) {
   this.canvas = null;
   this.camera = null;
@@ -24,17 +26,36 @@ function WebVRWorld(Detector, width, height, depth) {
 
 };
 
+// Set THREE.JS as our prototype. This makes world-building more direct.
+WebVRWorld.prototype = THREE;
+
+//TODO: the returns are temporary.
+
+WebVRWorld.prototype.addCanvas = function() {
+  return this.canvas;
+};
+
 // Create a camera to look at this world.
 WebVRWorld.prototype.addCamera = function(fov, aspect, near, far) {
-
+  this.camera = new this.PerspectiveCamera(fov, aspect, near, far);
+  return this.camera;
 };
 
-WebVRWorld.prototype.addControls = function() {
-
+WebVRWorld.prototype.addRenderer = function() {
+  return this.renderer;
 };
 
-WebVRWorld.prototype.createWorld = function() {
+WebVRWorld.prototype.addEffect = function() {
+  return this.effect;
+};
 
+WebVRWorld.prototype.addControls = function(controls) {
+  return this.controls;
+};
+
+WebVRWorld.prototype.createScene = function() {
+  this.scene = new this.Scene();
+  return this.scene;
 };
 
 // Create a world. Override specifics of world here.

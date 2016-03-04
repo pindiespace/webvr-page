@@ -218,11 +218,18 @@ document.addEventListener('DOMContentLoaded', function() {
   var effect = new THREE.VREffect(renderer);
 
   // Create an array to manage our 3D worlds.
+  /////////////////////////////////////////////
   var worlds = [];
-  worlds.push(new WebVRWorld(FeatureDetector, boxWidth, boxWidth, boxWidth));
+  var world = new WebVRWorld(FeatureDetector, boxWidth, boxWidth, boxWidth);
+  world.addCamera(75, aspect, 0.1, 10000);
+  worlds.push(world);
+  /////////////////////////////////////////////
 
   // Create a Manager.
   // TODO: pass a THREE.js world, instead of a single camera object.
+  // TODO: to make each world independent, we will have to modify the VRControls object (not the polyfill).
+  // TODO: put elements into world, then use it in manager.
+
   window.manager = new WebVRPageManager(worlds, renderer, effect, camera, {hideButton: false, detector: (FeatureDetector || THREE.Detector)});
 
   // Create a three.js scene.
