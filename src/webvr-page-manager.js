@@ -37,7 +37,7 @@ var WebVRPagePlayer = require('./webvr-page-player.js');
  * Naming conventions
  * @link https://google.github.io/styleguide/javascriptguide.xml
  */
-function WebVRPageManager(renderer, effect, camera, params) {
+function WebVRPageManager(worlds, renderer, effect, camera, params) {
   this.params = params || {};
 
   if (!params.detector) {
@@ -48,6 +48,9 @@ function WebVRPageManager(renderer, effect, camera, params) {
 
   // Store the vendor prefix, to simplify code.
   this.jsPrefix = this.detector.vendorPrefix.js || '';
+
+  // Save the worlds in our list
+  this.worlds = worlds;
 
   // Give a unique to ID to each manager.
   this.prefix = 'webvr';
