@@ -181,6 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Use an existing <canvas> in the markup.
     var canvas = document.getElementById('scene-cube');
+    /*
     var renderer;
     if(FeatureDetector.webGL) { // 3D scenes ok.
       renderer = new THREE.WebGLRenderer({
@@ -195,35 +196,40 @@ document.addEventListener('DOMContentLoaded', function() {
       canvas: canvas
     });
   }
+  */
 
   // Canvas size determined by markup, not JS.
   var w = parseFloat(getComputedStyle(canvas).getPropertyValue('width'));
   var h = parseFloat(getComputedStyle(canvas).getPropertyValue('height'));
   var aspect = w / h;
 
+  // Create an array to manage our 3D worlds.
+  /////////////////////////////////////////////
+  var worlds = [];
+
+  // Create our world manager.
   // Size of world (they are cubes).
   var boxWidth = 5;
+  var world = new WebVRWorld(canvas, boxWidth, boxWidth, boxWidth, FeatureDetector.webGL);
+  worlds.push(world);
+  /////////////////////////////////////////////
   /*
   * 3d world example at:
   * https://github.com/jeromeetienne/threejsboilerplate/blob/master/index.html
   */
 
   // Create a three.js camera.
-  var camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 10000);
-
+  //var camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 10000);
+  var camera = world.addView(75, aspect, 0.1, 10000);
   // Apply VR headset positional data to camera.
-  var controls = new THREE.VRControls(camera);
+  //var controls = new THREE.VRControls(camera);
+  var controls = world.controls;
 
   // Apply VR stereo rendering to renderer.
-  var effect = new THREE.VREffect(renderer);
-
-  // Create an array to manage our 3D worlds.
-  /////////////////////////////////////////////
-  var worlds = [];
-  var world = new WebVRWorld(FeatureDetector, boxWidth, boxWidth, boxWidth);
-  world.addCamera(75, aspect, 0.1, 10000);
-  worlds.push(world);
-  /////////////////////////////////////////////
+  var renderer = world.renderer;
+  var effect = world.effect;
+  
+  //var effect = new THREE.VREffect(renderer);
 
   // Create a Manager.
   // TODO: pass a THREE.js world, instead of a single camera object.
@@ -233,7 +239,8 @@ document.addEventListener('DOMContentLoaded', function() {
   window.manager = new WebVRPageManager(worlds, renderer, effect, camera, {hideButton: false, detector: (FeatureDetector || THREE.Detector)});
 
   // Create a three.js scene.
-  var scene = new THREE.Scene();
+  //var scene = new THREE.Scene();
+  var scene = world.scene;
 
   // Add a repeating grid as a skybox.
   var texture = THREE.ImageUtils.loadTexture(
@@ -251,14 +258,15 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   var skybox = new THREE.Mesh(geometry, material);
-
   // Add a separate uuid from the one THREE generates (crypto-secure).
   skybox.userData.uuid = WebVRPageManager.Util.getUUID();
 
   // Name it (so we could use .getObjectByName() later). Leave the generated .id alone.
   skybox.name = 'skybox';
 
-  scene.add(skybox);
+  world.addObject(skybox);
+
+//  scene.add(skybox);
 
   // Create 3D objects.
   var geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
@@ -273,9 +281,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Position cube mesh
   cube.position.z = -1;
+  world.addObject(cube);
 
   // Add cube mesh to your three.js scene
-  scene.add(cube);
+  //scene.add(cube);
 
   // Reset the position sensor when 'z' pressed.
   function onKey(event) {

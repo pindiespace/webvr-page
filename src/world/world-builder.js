@@ -15,13 +15,17 @@
 
  //Note: we assume THREE.js is loaded.
 
-function WebVRWorld(Detector, width, height, depth) {
-  this.canvas = null;
+function WebVRWorld(canvas, width, height, depth, webgl) {
+  this.canvas = canvas;
   this.camera = null;
-  this.renderer = null;
   this.effect = null;
   this.controls = null;
-  this.scene = null;
+  this.scene = new THREE.Scene();
+  this.aspect = null;
+
+  this.addVRRenderer(webgl);
+  this.addVREffect();
+
   // Return the world, decorated with required elements.
 
 };
@@ -31,25 +35,49 @@ WebVRWorld.prototype = THREE;
 
 //TODO: the returns are temporary.
 
-WebVRWorld.prototype.addCanvas = function() {
-  return this.canvas;
-};
-
 // Create a camera to look at this world.
-WebVRWorld.prototype.addCamera = function(fov, aspect, near, far) {
+WebVRWorld.prototype.addView = function(fov, aspect, near, far) {
+
   this.camera = new this.PerspectiveCamera(fov, aspect, near, far);
+  this.addVRControls();
   return this.camera;
 };
 
-WebVRWorld.prototype.addRenderer = function() {
+WebVRWorld.prototype.addVRRenderer = function(webGL) {
+  if(!this.canvas) {
+    console.error('no canvas, no renderer added');
+    return false;
+  }
+  if(webGL) { // 3D scenes ok.
+    this.renderer = new this.WebGLRenderer({
+      antialias: true,
+      canvas: this.canvas
+    });
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+  } else { // Can't do 3d, just draw the scene once and use as a fallback image.
+    console.warn('no webGL, fallback to canvas still image rendering of scene');
+    this.renderer = new this.CanvasRenderer({
+      antialias: true,
+      canvas: this.canvas
+    });
+  }
   return this.renderer;
 };
 
-WebVRWorld.prototype.addEffect = function() {
+WebVRWorld.prototype.addVREffect = function() {
+  if(!this.renderer) {
+    console.error('no renderer present, effect not added');
+  }
+  this.effect = new this.VREffect(this.renderer);
   return this.effect;
 };
 
-WebVRWorld.prototype.addControls = function(controls) {
+WebVRWorld.prototype.addVRControls = function() {
+  if(!this.camera) {
+    console.error('no camera present, no controls added');
+    return false;
+  }
+  this.controls = new this.VRControls(this.camera);
   return this.controls;
 };
 
@@ -58,7 +86,10 @@ WebVRWorld.prototype.createScene = function() {
   return this.scene;
 };
 
-// Create a world. Override specifics of world here.
-WebVRWorld.prototype.createWorldObject = function() {
-
+WebVRWorld.prototype.addObject = function(obj) {
+  return this.scene.add(obj)
 };
+
+WebVRWorld.prototype.removeObject = function(obj) {
+  return this.scene.remove(obj);
+}
