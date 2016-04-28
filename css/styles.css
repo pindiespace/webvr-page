@@ -1,7 +1,7 @@
 /* main stylesheet */
 
 /* CSS reset */
-body, header, section, footer, figure, h1 {
+body, header, section, footer, figure, h1, ul {
   margin:0;
   border:0;
   padding:0;
@@ -9,6 +9,7 @@ body, header, section, footer, figure, h1 {
 
 /* basic body styles */
 body {
+  font-family: arial, sans-serif;
   width: 100%;
   height: 100%;
   background-color: #000;
@@ -22,6 +23,36 @@ body {
 header, section, footer {
   width:100%;
   border-bottom: 1px solid red;
+}
+
+#vr-buttons { /* override generic header-box */
+  padding:14px;
+  margin: 8px;
+}
+
+/* boxes horizontally arranged in the header */
+.header-box {
+  width:45%;
+  display:inline-block;
+  margin:0.5em;
+  border: 1px solid #eee;
+  padding:1em;
+  background-color: #444;
+}
+
+/* for header VR buttons */
+nav ul li {
+  list-style:none;
+  display:inline-block;
+}
+
+#progress-bar {
+  padding:1em;
+}
+
+/* progress bar for loading */
+#webvr-page-load-progress {
+  border: 1px solid black;
 }
 
 /*

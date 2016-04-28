@@ -51,10 +51,15 @@ fallback to PNG image.
 <body>
   <header>
     <h1>WebVR - DOM Page-Friendly Boilerplate</h1>
-    <nav class="menu">
+    <!--progress bar for loading-->
+    <div id='progress-bar' class='progress header-box'>
+      <span>Load Progress: </span><progress id='webvr-page-load-progress'  value='0' max='100'><span>0</span>%</progress>
+    </div>
+    <!--navigation buttons (duplicated in webgl window)-->
+    <nav id="vr-buttons" class="menu header-box">
       <ul>
         <li><button id="go-fullscreen">Go Fullscreen</button></li>
-        <li><span>Load Progress: </span><progress id='webvr-page-load-progress' value='0' max='100'><span>0</span>%</progress></li>
+        <li><button id="go-vr">Go VR (Stereo)</button></li>
       </ul>
     </nav>
   </header>
@@ -68,17 +73,11 @@ fallback to PNG image.
           <figcaption>Cube World</figcaption>
         </figure>
       </article>
-      <!--second webvr sample goes here-->
-      <article id="second-webvr">
-        <figure class="webvr-page">
-          <canvas id='scene-text'></canvas>
-          <figcaption>3D Text World</figcaption>
-        </figure>
-      </article>
     </section>
   </main>
   <footer>
     <h2>Page Footer</h2>
+    <p>&copy; 2016 Vegan Meat Market. All rights reserved.</p>
   </footer>
 <script>
   /*
@@ -228,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Apply VR stereo rendering to renderer.
   var renderer = world.renderer;
   var effect = world.effect;
-  
+
   //var effect = new THREE.VREffect(renderer);
 
   // Create a Manager.
@@ -265,8 +264,6 @@ document.addEventListener('DOMContentLoaded', function() {
   skybox.name = 'skybox';
 
   world.addObject(skybox);
-
-//  scene.add(skybox);
 
   // Create 3D objects.
   var geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
@@ -323,7 +320,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   //END OF CALLBACK FOR LOADER
 
-}, function(percent) { // Progress function.
+}, function(percent) { // Progress Bar function.
     console.log('progress function, ' + percent + '%');
     var prog = document.getElementById('webvr-page-load-progress');
     if(prog) {
